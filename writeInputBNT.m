@@ -3,7 +3,7 @@ function writeInputBNT(inputFileID,userDir,arena,clusterFormat)
 %%% initialize structure 'folder' for data storage
 trode(1:4)={zeros(1,50)};
 unit(1:50)={struct('unit', trode)};
-folder=struct('trode',unit);
+folder=struct('trode',unit);   
 folder(200).trode(4).unit(50) = 0;
 
 %%% find all tetrode and cluster numbers
