@@ -7,31 +7,25 @@
 % Written by BRK 2014 based on Behavioral Neurology Toolbox (V. Frolov 2013).
 
 
-function rateMapPDF(inputFileID,clusterFormat)
+function rateMapPDF
 
-%%% input arguments
-global penguinInput arena mapLimits
+%% get globals
+global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
 if isempty(penguinInput)
     startup
 end
-if ~exist('inputFileID','var')
-    inputFileID = penguinInput;
-end
-if ~exist('clusterFormat','var')
-    clusterFormat = 'MClust'; 
-end
 
-%%% select folders to analyze and a folder for output
+%% select folders to analyze and a folder for output
 allFolders = uipickfilesBRK();
 if ~iscell(allFolders); return; end;
 outFolder = uigetdir('','Choose folder for PDF output');
 if outFolder == 0; return; end;
 
-%%% select settings
+%% select settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy','Publication quality'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','n'};
+defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0','n'};
 options='on';
 Answers = inputdlg(prompt,name,numlines,defaultanswer,options);
 if isempty(Answers); return; end;
@@ -44,7 +38,7 @@ else
     pubQual = 1;
 end
 
-%%% rate map scaling
+%% rate map scaling
 [selections, OK] = listdlg('PromptString','Choose rate map scaling', ...
     'SelectionMode','single',...
     'ListString',{'Autoscale','First session','Session w/max peak', 'As to A and Bs to B'}, ...
@@ -56,7 +50,7 @@ if ismember(2,selections); scaleMethod = 2; end
 if ismember(3,selections); scaleMethod = 3; end
 if ismember(4,selections); scaleMethod = 4; end
 
-%%% session labels
+%% session labels
 [selections, OK] = listdlg('PromptString','Choose experiment type', ...
     'SelectionMode','single',...
     'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E'}, ...
@@ -83,12 +77,12 @@ switch expType
         numSesh = 5;
 end
 
-%%% load data and make rate maps
+%% load data and make rate maps
 for iFolder = 1:length(allFolders)    
     cd(allFolders{1,iFolder});   
-    writeInputBNT(inputFileID,allFolders{1,iFolder},arena,clusterFormat)
-    loadSessionsBRK(inputFileID,clusterFormat);
-    %%% get positions, spikes, map, and rates
+    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
+    loadSessionsBRK(penguinInput,clusterFormat);
+    %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[0.2 0]);
     t = posAve(:,1);
     x = posAve(:,2);
@@ -111,18 +105,18 @@ for iFolder = 1:length(allFolders)
     end    
 end
 
-%%% how many sheets needed for each experiment
+%% how many sheets needed for each experiment
 counter = 1;
 numSheets = nan(1,50);
 for iSheet = 1:(length(allFolders)/numSesh)    
-    %%% number of cells with rate maps, divide by 4 to fit 4 cells per sheet
+    %% number of cells with rate maps, divide by 4 to fit 4 cells per sheet
     numSheets(iSheet) = ceil(size(mapMat(~cellfun(@isempty,mapMat(:,counter))),1)/4);
     counter = counter + numSesh;    
 end
-%%% initialize some variables
+%% initialize some variables
 sessionCount = 1;
 pdfName = 1;
-%%% setup for each experiment
+%% setup for each experiment
 for iExp = 1:(length(allFolders)/numSesh)  % every experiment
     cellCount = 1;
     sheetNumber = 0;    
@@ -130,9 +124,9 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         if iExp > 1            
             pdfName = iExp + (numSesh - 1);            
         end        
-        %%% get name of folder
+        %% get name of folder
         splitFolder = regexp(allFolders{1,pdfName},'\','split');        
-        %%% set subplot specs
+        %% set subplot specs
         switch numSesh            
             case 3       % 3 sessions
                 plotheight=16;
@@ -200,14 +194,14 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 fontsize=10;
                 sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey); 
         end
-        %%% set the Matlab figure
+        %% set the Matlab figure
         figBatchRM = figure;
         clf(figBatchRM);
         set(gcf, 'PaperUnits', 'centimeters');
         set(gcf, 'PaperSize', [plotwidth plotheight]);
         set(gcf, 'PaperPositionMode', 'manual');
         set(gcf, 'PaperPosition', [0 0 plotwidth plotheight]);        
-        %%% create subplots
+        %% create subplots
         for iPlotsY = 1:subplotsy           % each cell            
             if iPlotsY > 1 || iSheet > 1                
                 sessionCount = 1;                
@@ -215,7 +209,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                     sessionCount = iExp + (numSesh-1);                    
                 end                
             end            
-            %%% if we've plotted all the maps already...
+            %% if we've plotted all the maps already...
             if cellCount > size(mapMat(~cellfun(@isempty,mapMat(:,sessionCount))),1); break; end;            
             for iPlotsX = 1:subplotsx           % each session                
                 axes('position',sub_pos{iPlotsX,5-iPlotsY},'XGrid','off','XMinorGrid','off','FontSize',fontsize,'Box','on','Layer','top'); %#ok<LAXES>                
@@ -281,7 +275,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 else                    
                     cellCount = cellCount + 1;                    
                 end                
-                %%% subplot labels
+                %% subplot labels
                 axis off                
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');                
@@ -305,7 +299,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                             set(scaleBar,'FontSize',8)
                         end
                 end
-                %%% column labels
+                %% column labels
                 if iPlotsY == 1                    
                     switch expType                        
                         case 1      % labels for 1 Env 3 sessions                            
@@ -394,7 +388,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             end            
             cellCount = cellCount + 1;            
         end        
-        %%% change figure properties, then save as PDF and close
+        %% change figure properties, then save as PDF and close
         set(figBatchRM,'Color','w','Position', get(0,'Screensize'));
         sheetNumber = sheetNumber + 1;        
         switch numSesh            

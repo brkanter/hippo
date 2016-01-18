@@ -7,27 +7,21 @@
 % Written by BRK 2014 based on Behavioral Neurology Toolbox (V. Frolov 2013).
 
 
-function tuningCurvePDF(inputFileID,clusterFormat)
+function tuningCurvePDF
 
-%%% input arguments
-global penguinInput arena
+%% get globals
+global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
 if isempty(penguinInput)
     startup
 end
-if ~exist('inputFileID','var')
-    inputFileID = penguinInput;
-end
-if ~exist('clusterFormat','var')
-    clusterFormat = 'MClust'; 
-end
 
-%%% select folders to analyze and a folder for output
+%% select folders to analyze and a folder for output
 allFolders = uipickfilesBRK();
 if ~iscell(allFolders); return; end;
 outFolder = uigetdir('','Choose folder for PDF output');
 if outFolder == 0; return; end;
 
-%%% session labels
+%% session labels
 [selections, OK] = listdlg('PromptString','Choose experiment type', ...
     'SelectionMode','single',...
     'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E'}, ...
@@ -54,12 +48,12 @@ switch expType
         numSesh = 5;
 end
 
-%%% load data and make rate maps
+%% load data and make rate maps
 for iFolder = 1:length(allFolders)
     cd(allFolders{1,iFolder}); 
-    writeInputBNT(inputFileID,allFolders{1,iFolder},arena,clusterFormat)
-    loadSessionsBRK(inputFileID,clusterFormat);
-    %%% get positions, spikes, map, and rates
+    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
+    loadSessionsBRK(penguinInput,clusterFormat);
+    %% get positions, spikes, map, and rates
     pos = data.getPositions('average','off','speedFilter',[0.2 0]);
     t = pos(:,1);
     x = pos(:,2);
@@ -68,7 +62,7 @@ for iFolder = 1:length(allFolders)
     numClusters = size(cellMatrix,1);
     for iCluster = 1:numClusters          % loop through all cells in folder
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([t x y], spikes, 'smooth', 2, 'binWidth', 4, 'minTime', 0);
+        map = analyses.map([t x y], spikes, 'smooth', dSmoothing, 'binWidth', dBinWidth, 'minTime', 0, 'limits', mapLimits);
         mapMat{iCluster,iFolder} = map.z;
         [~,spkInd] = data.getSpikePositions(spikes,pos);
         try
@@ -95,18 +89,18 @@ end
 % save('C:\Users\Kentros Lab\Desktop\hd.mat')
 % load('C:\Users\Kentros Lab\Desktop\hd.mat')
 
-%%% how many sheets needed for each experiment
+%% how many sheets needed for each experiment
 counter = 1;
 numSheets = nan(1,50);
 for iSheet = 1:(length(allFolders)/numSesh)
-    %%% number of cells with rate maps, divide by 4 to fit 4 cells per sheet
+    %% number of cells with rate maps, divide by 4 to fit 4 cells per sheet
     numSheets(iSheet) = ceil(size(mapMat(~cellfun(@isempty,mapMat(:,counter))),1)/4);
     counter = counter + numSesh;
 end
-%%% initialize some variables
+%% initialize some variables
 sessionCount = 1;
 pdfName = 1;
-%%% setup for each experiment
+%% setup for each experiment
 for iExp = 1:(length(allFolders)/numSesh)  % every experiment
     cellCount = 1;
     sheetNumber = 0;
@@ -114,9 +108,9 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         if iExp > 1
             pdfName = iExp + (numSesh - 1);
         end
-        %%% get name of folder
+        %% get name of folder
         splitFolder = regexp(allFolders{1,pdfName},'\','split');
-        %%% set subplot specs
+        %% set subplot specs
         switch numSesh
             case 3       % 3 sessions
                 plotheight=16;
@@ -184,14 +178,14 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 fontsize=10;
                 sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);
         end
-        %%% set the Matlab figure
+        %% set the Matlab figure
         figBatchHD = figure;
         clf(figBatchHD);
         set(gcf, 'PaperUnits', 'centimeters');
         set(gcf, 'PaperSize', [plotwidth plotheight]);
         set(gcf, 'PaperPositionMode', 'manual');
         set(gcf, 'PaperPosition', [0 0 plotwidth plotheight]);
-        %%% create subplots
+        %% create subplots
         for iPlotsY = 1:subplotsy           % each cell
             if iPlotsY > 1 || iSheet > 1
                 sessionCount = 1;
@@ -199,7 +193,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                     sessionCount = iExp + (numSesh-1);
                 end
             end
-            %%% if we've plotted all the maps already...
+            %% if we've plotted all the maps already...
             if cellCount > size(mapMat(~cellfun(@isempty,mapMat(:,sessionCount))),1); break; end;
             for iPlotsX = 1:subplotsx           % each session
                 axes('position',sub_pos{iPlotsX,5-iPlotsY},'XGrid','off','XMinorGrid','off','FontSize',fontsize,'Box','on','Layer','top'); %#ok<LAXES>
@@ -209,7 +203,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 else
                     cellCount = cellCount + 1;
                 end
-                %%% subplot labels
+                %% subplot labels
                 axis off
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');
@@ -230,7 +224,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                             set(bottomTitle,'Position',[0,Ylims(2)+(Ylims(2)*0.1)],'VerticalAlignment','bottom','FontSize',9)
                         end
                 end
-                %%% column labels
+                %% column labels
                 if iPlotsY == 1
                     switch expType
                         case 1      % labels for 1 Env 3 sessions
@@ -306,7 +300,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             end
             cellCount = cellCount + 1;
         end
-        %%% change figure properties, then save as PDF and close
+        %% change figure properties, then save as PDF and close
         set(figBatchHD,'Color','w','Position', get(0,'Screensize'));
         sheetNumber = sheetNumber + 1;
         switch numSesh

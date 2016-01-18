@@ -7,28 +7,22 @@
 % Written by BRK 2014 based on Behavioral Neurology Toolbox (V. Frolov 2013).
 
 
-function emperorPenguin(inputFileID,clusterFormat)
+function emperorPenguin
 
 tic
 
-%%% input arguments
-global penguinInput arena mapLimits
+%% get globals
+global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
 if isempty(penguinInput)
     startup
 end
-if ~exist('inputFileID','var')
-    inputFileID = penguinInput;
-end
-if ~exist('clusterFormat','var')
-    clusterFormat = 'MClust'; 
-end
 
-%%% select folders to analyze
+%% select folders to analyze
 allFolders = uipickfilesBRK();
 if ~iscell(allFolders); return; end;
 % load allFolders
 
-%%% initialize options
+%% initialize options
 include_3Ss = 0;
 include_coherence = 0;
 include_fields = 0;
@@ -38,7 +32,7 @@ include_speed = 0;
 include_CC = 0;
 include_DS = 0;
 
-%%% choose what to calculate
+%% choose what to calculate
 [selections, OK] = listdlg('PromptString','Select what to calculate', ...
     'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)'}, ...
     'InitialValue',1:7, ...
@@ -53,7 +47,7 @@ if ismember(6,selections); include_speed = 1; end
 if ismember(7,selections); include_CC = 1; end
 if ismember(8,selections); include_DS = 1; end
 
-%%% get experiment details for cross corrs. and excel output
+%% get experiment details for cross corrs. and excel output
 if include_CC || include_DS
     prompt={'How many sessions per experiment?'};
     name='Sessions/experiment';
@@ -64,23 +58,23 @@ if include_CC || include_DS
     seshPerExp = str2double(Answers2{1});
 end
 
-%%% rate map settings
+%% rate map settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy'};
 name='Map settings';
 numlines=1;
-defaultanswer={'2','4','0'};
+defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0'};
 Answers3 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers3); return; end;
 smooth = str2double(Answers3{1});
 binWidth = str2double(Answers3{2});
 minTime = str2double(Answers3{3});
 
-%%% find field settings
+%% find field settings
 if include_fields
     prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Spatial bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
     name='Find field settings';
     numlines=1;
-    defaultanswer={'0.2','4','5','0.1'};
+    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'0.1'};
     Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers4); return; end;
     fieldThresh = str2double(Answers4{1});
@@ -89,7 +83,7 @@ if include_fields
     minPeak = str2double(Answers4{4});
 end
 
-%%% grid stats settings
+%% grid stats settings
 if include_grid
     prompt={'Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
     name='Grid stats settings';
@@ -104,14 +98,14 @@ if include_grid
     end
 end
 
-%%% excel output folder
+%% excel output folder
 excelFolder = uigetdir('','Choose folder for the Excel output');
 if excelFolder == 0; return; end;
 dt = datestr(clock,30);
 ending = ['\emperor' sprintf('%s.xlsx',dt)];
 fullName = [excelFolder ending];
 
-%%% excel column headers
+%% excel column headers
 colHeaders = {'Folder','Tetrode','Cluster','Mean rate','Peak rate','Total spikes','Spike width (usec)','Quality','L_Ratio','Isolation distance'};
 if include_3Ss
     colHeaders = [colHeaders,'Spatial info','Selectivity','Sparsity'];
@@ -132,13 +126,13 @@ if include_speed
     colHeaders = [colHeaders,'Speed score'];
 end
 
-%%% compute stats for each folder
+%% compute stats for each folder
 for iFolder = 1:length(allFolders)
     display(sprintf('Folder %d of %d',iFolder,length(allFolders)))
     cd(allFolders{1,iFolder});             % set current folder
-    writeInputBNT(inputFileID,allFolders{1,iFolder},arena,clusterFormat)
-    loadSessionsBRK(inputFileID,clusterFormat);
-    %%% get positions, spikes, map, and rates
+    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
+    loadSessionsBRK(penguinInput,clusterFormat);
+    %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[0.2 0]);
     posT = posAve(:,1);
     posX = posAve(:,2);
@@ -150,11 +144,21 @@ for iFolder = 1:length(allFolders)
     numClusters = size(cellMatrix,1);
     for iCluster = 1:numClusters     % loop through all cells
         display(sprintf('Cluster %d of %d',iCluster,numClusters))
-        %%% general calculations
+        %% general calculations
         spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);
         % qualitative cluster quality
         try
-            load(sprintf('TT%d_%d-Quality.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+%             load(sprintf('TT%d_%d-Quality.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+            if cellMatrix(iCluster,1) == 1
+                PP = 4;
+            elseif cellMatrix(iCluster,1) == 2
+                PP = 6;
+            elseif cellMatrix(iCluster,1) == 3
+                PP = 7;
+            elseif cellMatrix(iCluster,1) == 4
+                PP = 3;
+            end
+            load(sprintf('PP%d_TT%d_%d-Quality.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
         catch
             quality = 999999;
         end
@@ -162,9 +166,29 @@ for iFolder = 1:length(allFolders)
         try
             % MClust 4.3
             if cellMatrix(iCluster,2) < 10
-                load(sprintf('TT%d_0%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+%                 load(sprintf('TT%d_0%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+                if cellMatrix(iCluster,1) == 1
+                    PP = 4;
+                elseif cellMatrix(iCluster,1) == 2
+                    PP = 6;
+                elseif cellMatrix(iCluster,1) == 3                    
+                    PP = 7;
+                elseif cellMatrix(iCluster,1) == 4
+                    PP = 3;
+                end
+                load(sprintf('PP%d_TT%d_0%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
             else
-                load(sprintf('TT%d_%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+%                 load(sprintf('TT%d_%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+                if cellMatrix(iCluster,1) == 1
+                    PP = 4;
+                elseif cellMatrix(iCluster,1) == 2
+                    PP = 6;
+                elseif cellMatrix(iCluster,1) == 3                    
+                    PP = 7;
+                elseif cellMatrix(iCluster,1) == 4
+                    PP = 3;
+                end
+                load(sprintf('PP%d_TT%d_%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
             end
             L_ratio = CluSep.L_Ratio.Lratio;
             isolationDist = CluSep.IsolationDistance;
@@ -172,8 +196,6 @@ for iFolder = 1:length(allFolders)
             try
                 % MClust 3.5
                 load(sprintf('TT%d_%d-CluQual_MC35.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
-                L_ratio = L_Ratio;
-                isolationDist = IsolationDist;
             catch
                 L_ratio = 999999;
                 isolationDist = 999999;
@@ -192,14 +214,14 @@ for iFolder = 1:length(allFolders)
         catch
             spikeWidth = nan;
         end
-        %%% descriptive stats
+        %% descriptive stats
         if include_3Ss
             [info,spars,sel] = analyses.mapStatsPDF(map);
         end
         if include_coherence
             Coherence = analyses.coherence(map.z);
         end
-        %%% field stats and border scores
+        %% field stats and border scores
         if include_fields
             [fieldsMap, fields] = analyses.placefield(map,'threshold',fieldThresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
             if ~isempty(fields)
@@ -227,7 +249,7 @@ for iFolder = 1:length(allFolders)
                 border = nan;
             end
         end
-        %%% grid statistics
+        %% grid statistics
         if include_grid
             autoCorr = analyses.autocorrelation(map.z);
             try
@@ -253,7 +275,7 @@ for iFolder = 1:length(allFolders)
                 gridOrientation3 = nan;
             end
         end
-        %%% head direction
+        %% head direction
         if include_HD
             [~,spkInd] = data.getSpikePositions(spikes,posAve);
             try
@@ -269,12 +291,12 @@ for iFolder = 1:length(allFolders)
                 meanAngle = 999999;
             end
         end
-        %%% speed
+        %% speed
         if include_speed
             speedScore = analyses.speedScore(posAve,spikes);
         end
         
-        %%% store info from this folder in matrices
+        %% store info from this folder in matrices
         Mfolder{iCluster,iFolder} = allFolders{1,iFolder}; %#ok<*AGROW>
         Mtetrode(iCluster,iFolder) = cellMatrix(iCluster,1);
         Mcluster(iCluster,iFolder) = cellMatrix(iCluster,2);
@@ -319,10 +341,10 @@ for iFolder = 1:length(allFolders)
         end
     end
 end
-%%% compute cross correlations
+%% compute cross correlations
 if include_CC
     msgCC = msgbox('Computing cross correlations...');
-    %%% initialize
+    %% initialize
     numMaps = 1:1:seshPerExp;
     combo = nchoosek(numMaps,2);
     numExp(1:length(allFolders)/seshPerExp) = {nan(10000,size(combo,1))};
@@ -331,14 +353,14 @@ if include_CC
     CCoutput = [];
     upCount = 0;
     for iExp = 1:(length(allFolders)/seshPerExp)    % all experiments
-        %%% find true number of cells for current experiment
+        %% find true number of cells for current experiment
         cellCount = 0;       % initialize counter
         for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
             if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
                 cellCount = cellCount + 1;          % increase counter
             end
         end
-        %%% calculate all correlations
+        %% calculate all correlations
         for iCluster = 1:cellCount    % all cells
             for iCorrs = 1:size(combo,1)       % all session comparisons
                 CC = analyses.spatialCrossCorrelation(MrateMap{iCluster,combo(iCorrs,1)+upCount},MrateMap{iCluster,combo(iCorrs,2)+upCount});   % compute CC
@@ -346,21 +368,21 @@ if include_CC
                 CCstruct(1,iExp).expNum(iCluster,iCorrs) = CC;
             end
         end
-        %%% store correlations in repeated fashion to cover all sessions (for nice viewing on spreadsheet)
+        %% store correlations in repeated fashion to cover all sessions (for nice viewing on spreadsheet)
         CCstruct(1,iExp).expNum(1:(cellCount*seshPerExp),1:size(combo,1)) = repmat(CCstruct(1,iExp).expNum(any(CCstruct(1,iExp).expNum(:,:),2),1:size(combo,1)),seshPerExp,1);
         upCount = upCount + seshPerExp;        % move counter past all sessions to next experiment
         CCstruct(1,iExp).expNum(all(isnan(CCstruct(1,iExp).expNum),2),:) = [];     % remove rows of all nans
         CCoutput(end+1:end+size(CCstruct(1,iExp).expNum,1),:) = CCstruct(1,iExp).expNum;    % collapse all exps onto single sheet
     end
-    %%% close message box
+    %% close message box
     if exist('msgCC', 'var')
         delete(msgCC);
         clear('msgCC');
     end
 end
-%%% compute rate difference scores
+%% compute rate difference scores
 if include_DS
-    %%% initialize
+    %% initialize
     switch seshPerExp
         case 6
             comps = [5,1; 6,2; 3,1; 4,2; 2,1];
@@ -376,14 +398,14 @@ if include_DS
     DSpeakOutput = [];
     upCount = 0;
     for iExp = 1:(length(allFolders)/seshPerExp)    % all experiments
-        %%% find true number of cells for current experiment
+        %% find true number of cells for current experiment
         cellCount = 0;       % initialize counter
         for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
             if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
                 cellCount = cellCount + 1;          % increase counter
             end
         end
-        %%% calculate all diff scores
+        %% calculate all diff scores
         for iCluster = 1:cellCount    % all cells
             for iComps = 1:size(comps,1)       % all session comparisons
                 DSmeanStruct(1,iExp).expNum(iCluster,iComps) = ...
@@ -394,7 +416,7 @@ if include_DS
                     (MpeakRate(iCluster,comps(iComps,1)+upCount) + MpeakRate(iCluster,comps(iComps,2)+upCount));
             end
         end
-        %%% store scores in repeated fashion to cover all sessions (for nice viewing on spreadsheet)
+        %% store scores in repeated fashion to cover all sessions (for nice viewing on spreadsheet)
         DSmeanStruct(1,iExp).expNum(1:(cellCount*seshPerExp),1:size(comps,1)) = repmat(DSmeanStruct(1,iExp).expNum(any(DSmeanStruct(1,iExp).expNum(:,:),2),1:size(comps,1)),seshPerExp,1);
         DSpeakStruct(1,iExp).expNum(1:(cellCount*seshPerExp),1:size(comps,1)) = repmat(DSpeakStruct(1,iExp).expNum(any(DSpeakStruct(1,iExp).expNum(:,:),2),1:size(comps,1)),seshPerExp,1);
         upCount = upCount + seshPerExp;        % move counter past all sessions to next experiment
@@ -404,9 +426,9 @@ if include_DS
         DSpeakOutput(end+1:end+size(DSpeakStruct(1,iExp).expNum,1),:) = DSpeakStruct(1,iExp).expNum;    % collapse all exps onto single sheet
     end
 end
-%%% excel output
+%% excel output
 msgExcel = msgbox('Creating Excel output...');
-%%% collapse arrays into single columns and store everything in one cell array
+%% collapse arrays into single columns and store everything in one cell array
 emperor(:,1) = Mfolder(:);
 emperor(:,size(emperor,2)+1) = num2cell(Mtetrode(:));
 emperor(:,size(emperor,2)+1) = num2cell(Mcluster(:));
@@ -489,16 +511,16 @@ if include_DS
     end
     colHeaders = [colHeaders,DS_colHeaders];
 end
-%%% add headers and save excel sheet
+%% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];
 xlswrite(fullName,emperorExcel,'Main','A1');
-% %%% add maps and headers then save mat file
+% %% add maps and headers then save mat file
 % emperor(:,size(emperor,2)+1) = MrateMap(:);
 % emperor(:,size(emperor,2)+1) = McountMap(:);
 % colHeadersWithMaps = [colHeaders,'Rate map','Count map'];
 % emperorWithMaps = [colHeadersWithMaps; emperor];
 % save(sprintf('%s.mat',fullName(1:end-5)),'emperorWithMaps');
-%%% close message box
+%% close message box
 if exist('msgExcel', 'var')
     delete(msgExcel);
     clear('msgExcel');

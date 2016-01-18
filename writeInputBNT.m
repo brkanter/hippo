@@ -1,4 +1,4 @@
-function writeInputBNT(inputFileID,userDir,arena,clusterFormat)
+function writeInputBNT(penguinInput,userDir,arena,clusterFormat)
 
 %%% initialize structure 'folder' for data storage
 trode(1:4)={zeros(1,50)};
@@ -67,5 +67,5 @@ for iTrode = 1:4
 end
 
 %%% write BNT input file
-fileID = fopen(inputFileID,'w');
+fileID = fopen(penguinInput,'w');
 fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s\nRoom room146\nShape %s',userDir,tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},arena);

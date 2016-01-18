@@ -1,5 +1,7 @@
 function spikeWidth = halfMaxWidth(userDir, tetrode, spikes)
 
+
+%% load data
 nttFiles = dir('*.ntt');
 for iTrode = 1:length(nttFiles)
     found = regexp(nttFiles(iTrode).name,sprintf('TT%d',tetrode),'once');
@@ -20,7 +22,7 @@ end
 [DataPoints] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,3,clusterInds);
 DataPoints = DataPoints/100;        % convert to microvolts
 
-%%% calculate mean waves
+%% calculate mean waves
 meanWave = zeros(32,4);
 for iChannel = 1:4
     meanWave(:,iChannel) = squeeze(mean(DataPoints(:,iChannel,:),3));
@@ -32,9 +34,9 @@ end
 [maxPeak, maxPeakIdx] = max(peaks);
 halfMax = maxPeak / 2;
 
+%% interpolate
 interpWave = interp1(1:32,meanWave(:,maxPeakIdx),1:0.01:32,'spline');
 interpMaxIdx = find(interpWave == maxPeak);
-
 Diff = sort(abs(halfMax - interpWave(1:interpMaxIdx))); 
 Diff2 = sort(abs(halfMax - interpWave(interpMaxIdx+1:end)));
 closest = find(abs(halfMax - interpWave) == Diff(1));

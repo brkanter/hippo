@@ -30,7 +30,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 26-Apr-2015 13:41:24
+% Last Modified by GUIDE v2.5 13-Jan-2016 07:24:39
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,17 +60,11 @@ function penguin_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to penguin (see VARARGIN)
 
 % Choose default command line output for penguin
-global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
-if isempty(penguinInput)
-    startup
-end
+% global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
+% if isempty(penguinInput)
+%     startup
+% end
 handles.output = hObject;
-handles.inputFileID = penguinInput;
-handles.clusterFormat = clusterFormat;
-handles.arena = arena;
-handles.mapLimits = mapLimits;
-handles.dSmoothing = dSmoothing;
-handles.dBinWidth = dBinWidth;
 
 % Update handles structure
 guidata(hObject, handles);
@@ -95,8 +89,8 @@ function butt_video_Callback(hObject, eventdata, handles) %#ok<*INUSL,*DEFNU>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% initiliaze
-global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
+%% initiliaze
+global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
 if isempty(penguinInput)
     startup
 end
@@ -106,8 +100,9 @@ handles.arena = arena;
 handles.mapLimits = mapLimits;
 handles.dSmoothing = dSmoothing;
 handles.dBinWidth = dBinWidth;
+handles.dMinBins = dMinBins;
 
-%%% choose directory of behavioral session
+%% choose directory of behavioral session
 handles.userDir = '';
 handles.userDir = uigetdir('E:\HM3_CA3\Screening','Choose directory');
 cd(handles.userDir);             % make that directory the current one
@@ -115,11 +110,11 @@ h = msgbox('Loading...');
 set(handles.text_video, 'String', handles.userDir);
 if handles.userDir == 0; close(h); return; end;
 
-%%% load all data for designated session
+%% load all data for designated session
 writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
 loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     
-%%% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
+%% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
 clear posAve;
 try
     posAve = data.getPositions('speedFilter',[0.2 0]);
@@ -136,8 +131,8 @@ if handles.gotPos
     handles.spikePos = [];
 end
 
-%%% UPDATE EVERYTHING
-%%% update tetrode based on current folder
+%% UPDATE EVERYTHING
+%% update tetrode based on current folder
 clear current_tetCells;
 current_tetCells = data.getCells;
 handles.current_tetCells = current_tetCells;
@@ -150,7 +145,7 @@ selectedText = contents{get(handles.list_tetrode,'Value')};
 handles.tetrode = str2double(selectedText);
 set(handles.text_tetrode, 'String', handles.tetrode);
 
-%%% update cluster based on current tetrode
+%% update cluster based on current tetrode
 clust_indices = current_tetCells(:,1)==handles.tetrode;
 current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
 set(handles.list_cluster,'String',current_clusters,'Value',1);
@@ -160,7 +155,7 @@ selectedText = contents{get(handles.list_cluster,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
 
-%%% initialize
+%% initialize
 handles.meanRate = 0;
 handles.peakRate = 0;
 handles.totalSpikes = 0;
@@ -170,7 +165,7 @@ for iTrode = 1:4
    handles.trodeTS{iTrode} = ''; 
 end
 
-%%% plot animal path
+%% plot animal path
 if handles.gotPos
     axes(handles.axes1);
     pathTrialBRK('color',[.7 .7 .7])         
@@ -178,22 +173,22 @@ if handles.gotPos
     axis equal
 end
 
-%%% get spike info
+%% get spike info
 handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
 if handles.gotPos
     handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
 end
 
 if handles.gotPos
-    %%% calculate rate map
+    %% calculate rate map
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
     handles.map = map.z;
     
-    %%% calculate mean rate in Hz
+    %% calculate mean rate in Hz
     handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
     set(handles.text_meanRate, 'String', handles.meanRate);
     
-    %%% calculate peak rate in Hz
+    %% calculate peak rate in Hz
     if ~isfield(map,'peakRate')
         handles.peakRate = 0;
     else
@@ -202,11 +197,11 @@ if handles.gotPos
     set(handles.text_peakRate, 'String', handles.peakRate);
 end
 
-%%% calculate total spikes
+%% calculate total spikes
 handles.totalSpikes = length(handles.spikes);
 set(handles.text_totalSpikes, 'String', handles.totalSpikes);
 
-%%% calculate spike width
+%% calculate spike width
 try
     handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
     set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
@@ -214,7 +209,7 @@ catch
     set(handles.text_spikeWidth, 'String', 0);
 end
 
-%%% clear map stats
+%% clear map stats
 set(handles.text_spatContent, 'String', '');
 set(handles.text_sparsity, 'String', '');
 set(handles.text_selectivity, 'String', '');
@@ -235,13 +230,13 @@ function list_tetrode_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns list_tetrode contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from list_tetrode
 
-%%% update current tetrode
+%% update current tetrode
 contents = get(hObject,'String');
 selectedText = contents{get(hObject,'Value')};
 handles.tetrode = str2double(selectedText);
 set(handles.text_tetrode, 'String', handles.tetrode);
 
-%%% update cluster list based on current tetrode
+%% update cluster list based on current tetrode
 clust_indices = handles.current_tetCells(:,1)==handles.tetrode;
 current_clusters = cellstr(num2str(handles.current_tetCells(clust_indices,2)));
 set(handles.list_cluster,'String',current_clusters,'Value',1);
@@ -250,19 +245,19 @@ selectedText = contents{get(handles.list_cluster,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
 
-%%% get spike info
+%% get spike info
 handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
 handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
 
-%%% calculate rate map
+%% calculate rate map
 map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
 handles.map = map.z;
 
-%%% calculate mean rate in Hz
+%% calculate mean rate in Hz
 handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
 set(handles.text_meanRate, 'String', handles.meanRate);
 
-%%% calculate peak rate in Hz
+%% calculate peak rate in Hz
 if ~isfield(map,'peakRate')    
     handles.peakRate = 0;    
 else    
@@ -270,15 +265,15 @@ else
 end
 set(handles.text_peakRate, 'String', handles.peakRate);
 
-%%% calculate total spikes
+%% calculate total spikes
 handles.totalSpikes = length(handles.spikes);
 set(handles.text_totalSpikes, 'String', handles.totalSpikes);
 
-%%% calculate spike width
+%% calculate spike width
 handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
 set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
 
-%%% clear map stats
+%% clear map stats
 set(handles.text_spatContent, 'String', '');
 set(handles.text_sparsity, 'String', '');
 set(handles.text_selectivity, 'String', '');
@@ -287,7 +282,7 @@ set(handles.text_fieldNo, 'String', '');
 set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
-%%% plot animal path
+%% plot animal path
 pathTrialBRK('color',[.7 .7 .7])
 axis off
 axis equal
@@ -303,25 +298,25 @@ function list_cluster_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns list_cluster contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from list_cluster
 
-%%% update current cluster
+%% update current cluster
 contents = get(hObject,'String');
 selectedText = contents{get(hObject,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
 
-%%% get spike info
+%% get spike info
 handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
 handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
 
-%%% calculate rate map
+%% calculate rate map
 map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
 handles.map = map.z;
 
-%%% calculate mean rate in Hz
+%% calculate mean rate in Hz
 handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
 set(handles.text_meanRate, 'String', handles.meanRate);
 
-%%% calculate peak rate in Hz
+%% calculate peak rate in Hz
 if ~isfield(map,'peakRate')       
     handles.peakRate = 0;    
 else    
@@ -329,11 +324,11 @@ else
 end
 set(handles.text_peakRate, 'String', handles.peakRate);
 
-%%% calculate total spikes
+%% calculate total spikes
 handles.totalSpikes = length(handles.spikes);
 set(handles.text_totalSpikes, 'String', handles.totalSpikes);
 
-%%% calculate spike width
+%% calculate spike width
 try
     handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
     set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
@@ -342,7 +337,7 @@ catch
 end
 
 
-%%% clear map stats
+%% clear map stats
 set(handles.text_spatContent, 'String', '');
 set(handles.text_sparsity, 'String', '');
 set(handles.text_selectivity, 'String', '');
@@ -351,7 +346,7 @@ set(handles.text_fieldNo, 'String', '');
 set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
-%%% plot animal path
+%% plot animal path
 pathTrialBRK('color',[.7 .7 .7])
 axis off
 axis equal
@@ -380,7 +375,7 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of edit_markersize as text
 %        str2double(get(hObject,'String')) returns contents of edit_markersize as a double
 
-%%% change marker size for spike overlay
+%% change marker size for spike overlay
 handles.Marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
 pathTrialBRK('color',[.7 .7 .7])
@@ -398,7 +393,7 @@ function butt_batchSPP_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% prompt for settings
+%% prompt for settings
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 prompt={'Spike marker size'};
@@ -409,23 +404,23 @@ Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 Marker = str2double(Answers{1});
 
-%%% setup figure
+%% setup figure
 figBatchSPP = figure;
 set(figBatchSPP,'Name',handles.userDir,'Color','w')
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 
-%%% plot
+%% plot
 for iCluster = 1:numClusters    
-    %%% get spike times
+    %% get spike times
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     spikePos = data.getSpikePositions(spikes,handles.posAve);    
-    %%% plot animal path
+    %% plot animal path
     figure(figBatchSPP);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
     pathTrialBRK('color',[.7 .7 .7])
     hold on    
-    %%% overlay spikes
+    %% overlay spikes
     plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',Marker)
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
     axis off;
@@ -441,11 +436,11 @@ function butt_ratemap_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Scale to peak of previous session? (y/n)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','n','n'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -458,7 +453,7 @@ else
     pubQual = 1;
 end
 
-%%% calculate and plot
+%% calculate and plot
 if scale == 'n'
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime,'limits',handles.mapLimits);
     figRM = figure;
@@ -466,7 +461,7 @@ if scale == 'n'
     title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz\n',handles.tetrode,handles.cluster,handles.meanRate,map.peakRate),'fontweight','normal','fontsize',10)
     set(figRM,'Name',handles.userDir,'Color','w')
 else        % scale to peak    
-    %%% prompt user to find previous data
+    %% prompt user to find previous data
     userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
     if userDir == 0; return; end;
     prompt={'Tetrode', 'Cell'};
@@ -480,7 +475,7 @@ else        % scale to peak
     fileID = fopen(handles.inputFileID,'w');
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s\nRoom room146\nShape %s',userDir,trode{1,1},cell{1,1},handles.arena);
     
-    %%% load previous data and store it for comparisons
+    %% load previous data and store it for comparisons
     loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     clear posAve;
     posAve = data.getPositions('speedFilter',[0.2 0]);
@@ -492,14 +487,14 @@ else        % scale to peak
     map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     prevMax = nanmax(nanmax(map.z));
     
-    %%% reload current data
+    %% reload current data
     userDir = handles.userDir;
     if userDir == 0; return; end;
     cd(userDir);             % make that directory the current one    
     writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
     loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     
-    %%% plot scaled maps
+    %% plot scaled maps
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
     if ~isfield(map,'peakRate')
         map.peakRate = 0;
@@ -522,11 +517,11 @@ function butt_batchRM_Callback(hObject, eventdata, handles)
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Scale to peak of previous session? (y/n)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','n','n'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -539,7 +534,7 @@ else
     pubQual = 1;
 end
 
-%%% calculate and plot
+%% calculate and plot
 if scale == 'n'   
     splitHandlesUserDir = regexp(handles.userDir,'\','split');
     figBatchRM = figure;
@@ -560,7 +555,7 @@ if scale == 'n'
     end    
     saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));    
 else        % scale to peak    
-    %%% find previous data
+    %% find previous data
     userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
     if userDir == 0; return; end;
     cd(userDir);            
@@ -569,7 +564,7 @@ else        % scale to peak
     splitHandlesUserDir = regexp(handles.userDir,'\','split');
     set(figBatchRM,'Name',sprintf('%s scaled to %s',splitHandlesUserDir{end},splitUserDir{end}),'Color','w')
 
-    %%% load previous data and store for comparisons
+    %% load previous data and store for comparisons
     writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
     loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     cellMatrix = data.getCells;
@@ -587,7 +582,7 @@ else        % scale to peak
         map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
         prevMax(iCluster) = nanmax(nanmax(map.z));        
     end    
-    %%% reload current data
+    %% reload current data
     userDir = handles.userDir;
     if userDir == 0; return; end;
     cd(userDir);             % make that directory the current one    
@@ -595,7 +590,7 @@ else        % scale to peak
     loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);    
-    %%% plot scaled maps
+    %% plot scaled maps
     for iCluster = 1:numClusters        
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
@@ -626,11 +621,11 @@ function butt_findFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2','2','9','0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -638,7 +633,7 @@ binWidth = str2double(Answers{2});
 minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
 
-%%% calculate and plot
+%% calculate and plot
 [fieldMap,fields] = analyses.placefield(handles.map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
 if isempty(fields); warndlg('No fields found'); return; end;
 for iFieldNum = 1:size(fields,2)
@@ -658,18 +653,18 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% get cell list and all timestamps
+%% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 posAve = data.getPositions('speedFilter',[0.2 0]);
 times = posAve(:,1);
 numTimeStamps = length(times);
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Number of time blocks','Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'4','2','4','0','n'};
+defaultanswer={'4','2',num2str(handles.dBinWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 numBlocks = str2double(Answers{1});
@@ -682,7 +677,7 @@ else
     pubQual = 1;
 end
 
-%%% make rate maps for each time block
+%% make rate maps for each time block
 blockLength = floor(numTimeStamps/numBlocks);
 field_names = {'s','tMins','t','x','y'};
 empty_cells = repmat(cell(1),1,numel(field_names));
@@ -691,22 +686,22 @@ spikesStruct = struct(entries{:});
 for iCluster = 1:numClusters    
     figTimeDivRM = figure;
     set(figTimeDivRM,'Name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'Color','w');    
-    %%% get spike times
+    %% get spike times
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));    
     for iBlock = 1:numBlocks
-        if iBlock == 1   %%% first time block
+        if iBlock == 1   %% first time block
             spikesStruct(iBlock).s = spikes(spikes <= times(blockLength));    % spike times
             spikesStruct(iBlock).tMins = [0,floor(blockLength/1920)];         % time in mins (1920 b/c sampling at 32 Hz)
             spikesStruct(iBlock).t = posAve(1:blockLength,1);                 % position times
             spikesStruct(iBlock).x = posAve(1:blockLength,2);                 % x-coordinate times
             spikesStruct(iBlock).y = posAve(1:blockLength,3);                 % y-coordinate times
-        elseif iBlock == numBlocks      %%% last time block
+        elseif iBlock == numBlocks      %% last time block
             spikesStruct(iBlock).s = spikes(times((numBlocks-1)*blockLength) < spikes);
             spikesStruct(iBlock).tMins = [floor((numTimeStamps-blockLength)/1920),floor(numTimeStamps/1920)];
             spikesStruct(iBlock).t = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),1);
             spikesStruct(iBlock).x = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),2);
             spikesStruct(iBlock).y = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),3);
-        else    %%% middle time blocks
+        else    %% middle time blocks
             spikesStruct(iBlock).s = spikes(spikes <= times(iBlock*blockLength));
             spikesStruct(iBlock).s = spikes(spikesStruct(iBlock).s > times((iBlock-1)*blockLength));
             spikesStruct(iBlock).tMins = [floor(((iBlock-1)*blockLength)/1920),floor((iBlock*blockLength)/1920)];
@@ -715,7 +710,7 @@ for iCluster = 1:numClusters
             spikesStruct(iBlock).y = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,3);
         end
     end    
-    %%% make rate maps
+    %% make rate maps
     for iBlock = 1:numBlocks        
         map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
         meanRateMat(iCluster,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
@@ -738,7 +733,7 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% %%% prompt for settings
+% %% prompt for settings
 % prompt={'Number of circular bins'};
 % name='Bins';
 % numlines=1;
@@ -747,12 +742,12 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 % if isempty(Answers); return; end;
 % binWidth = str2double(Answers{1});
 
-%%% get N x 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
+%% get N x 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
 msg = msgbox('Loading position data for each LED...');
 pos = data.getPositions('average','off','speedFilter',[0.2 0]);
 close(msg);
 
-% %%% shuffle
+% %% shuffle
 % posX1 = pos(:,2);
 % posY1 = pos(:,3);
 % posX2 = pos(:,4);
@@ -776,7 +771,7 @@ close(msg);
 % end
 % cutoff = prctile(vectorShuffle,95)
 
-%%% calculate HD
+%% calculate HD
 [~,spkInd] = data.getSpikePositions(handles.spikes, handles.posAve);
 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
 allHD = analyses.calcHeadDirection(pos);
@@ -793,7 +788,7 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
+%% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
 msg = msgbox('Loading position data for each LED...');
 pos = data.getPositions('average','off','speedFilter',[0.2 0]);
 close(msg);
@@ -815,6 +810,7 @@ for iCluster = 1:numClusters
     circularTurningBRK(tc(:,2))
     axis equal
     title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,tcStat.mean));
+    title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),tcStat.r,tcStat.mean));
 end
 saveas(figBatchHD,sprintf('HDplots_%s.pdf',splitHandlesUserDir{end}));
 
@@ -824,11 +820,11 @@ function butt_grid_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','0.2'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -840,7 +836,7 @@ if gridThresh < 0 || gridThresh > 1
     display('Grid threshold value out of range, using default 0.2.')
 end
 
-% %%% prompt for settings
+% %% prompt for settings
 % prompt={'Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 % name='Settings';
 % numlines=1;
@@ -853,7 +849,7 @@ end
 %     display('Grid threshold value out of range, using default 0.2.')
 % end
 
-% %%% shuffle
+% %% shuffle
 % posX = handles.posAve(:,2);
 % posY = handles.posAve(:,3);
 % numTimestamps = length(handles.posAve(:,1));
@@ -875,7 +871,7 @@ end
 % end
 % cutoff = prctile(gridScoreShuffle,95)
 
-%%% autocorrelation
+%% autocorrelation
 map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
 autoCorr = analyses.autocorrelation(map.z);
 [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
@@ -887,7 +883,7 @@ else
     gridSpacing = nan;
 end  
     
-%%% plot autocorrelogram with score and spacing
+%% plot autocorrelogram with score and spacing
 ACfig = figure;
 colorMapBRK(autoCorr);
 if gridScore >= 0.5
@@ -908,11 +904,11 @@ function butt_batchGrid_Callback(hObject, eventdata, handles)
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','0.2'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -924,14 +920,14 @@ if gridThresh < 0 || gridThresh > 1
     display('Grid threshold value out of range, using default 0.2.')
 end
 
-%%% calculate and plot
+%% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchAC = figure;
 set(figBatchAC,'Name',splitHandlesUserDir{end},'Color','w')
 for iCluster = 1:numClusters    
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
-    %%% autocorrelations
+    %% autocorrelations
     autoCorr = analyses.autocorrelation(map.z);
     [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
     if ~isempty(stats.spacing)
@@ -941,7 +937,7 @@ for iCluster = 1:numClusters
         gridScore = nan;
         gridSpacing = nan;
     end   
-    %%% plot autocorrelogram with score and spacing
+    %% plot autocorrelogram with score and spacing
     figure(figBatchAC);
     plotSize = ceil(sqrt(numClusters));    
     subplot(plotSize,plotSize,iCluster)
@@ -963,11 +959,11 @@ function butt_border_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% rate map settings
+%% rate map settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','n'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -979,11 +975,11 @@ else
     pubQual = 1;
 end
 
-%%% find field settings
+%% find field settings
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2','2','9','0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -991,7 +987,7 @@ binWidth = str2double(Answers4{2});
 minBins = str2double(Answers4{3});
 minPeak = str2double(Answers4{4});
 
-% %%% shuffle
+% %% shuffle
 % posX = handles.posAve(:,2);
 % posY = handles.posAve(:,3);
 % numTimestamps = length(handles.posAve(:,1));
@@ -1016,7 +1012,7 @@ minPeak = str2double(Answers4{4});
 % end
 % cutoff = prctile(borderShuffle,95)
 
-%%% calculate and plot
+%% calculate and plot
 map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
 [fieldsMap, fields] = analyses.placefield(map,'threshold',fieldThresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
 if ~isempty(fields)
@@ -1049,11 +1045,11 @@ function butt_batchBorder_Callback(hObject, eventdata, handles)
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 
-%%% rate map settings
+%% rate map settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','4','0','n'};
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -1065,11 +1061,11 @@ else
     pubQual = 1;
 end
 
-%%% find field settings
+%% find field settings
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2','2','9','0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -1077,7 +1073,7 @@ binWidth = str2double(Answers4{2});
 minBins = str2double(Answers4{3});
 minPeak = str2double(Answers4{4});
 
-%%% calculate and plot
+%% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchBorder = figure;
 set(figBatchBorder,'Name',splitHandlesUserDir{end},'Color','w')
@@ -1109,7 +1105,7 @@ function butt_waves_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % h = msgbox('Loading waves...');
-%%% find field settings
+%% find field settings
 prompt={'Do you want to align all the peaks?','Maximum number of waves to plot'};
 name='Alignment';
 numlines=1;
@@ -1119,7 +1115,7 @@ if isempty(Answers); return; end;
 align = Answers{1};
 waveLimit = str2double(Answers{2});
 
-%%% get all data points for cluster
+%% get all data points for cluster
 nttFiles = dir('*.ntt');
 for iTrode = 1:length(nttFiles)
     found = regexp(nttFiles(iTrode).name,sprintf('TT%d',handles.tetrode),'once');
@@ -1147,7 +1143,7 @@ end
 ymin = (str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end)))*(-1);      % gets input range from header
 ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
 
-%%% create figure
+%% create figure
 figWaves = figure;
 set(figWaves,'Name',sprintf('T%d C%d',handles.tetrode,handles.cluster),'Color','w','position',get(0,'screensize'))
 numWaves = numSpikes;
@@ -1158,13 +1154,13 @@ catch
     clusterColor = [1 0 0];
 end
 
-%%% calculate mean waves
+%% calculate mean waves
 meanWave = zeros(32,4);
 for iChannel = 1:4
     meanWave(:,iChannel) = squeeze(mean(DataPoints(:,iChannel,:),3));
 end
 
-%%% plot waves
+%% plot waves
 subLocWaves = [1 2 6 7];
 DataPointsAligned = nan(32,4,numWaves);
 for iChannel = 1:4         % for each electrode
@@ -1173,11 +1169,11 @@ for iChannel = 1:4         % for each electrode
         for iWave = 1:numWaves
             voltages = squeeze(DataPoints(:,iChannel,iWave));
             if ~strcmpi(align,'n')
-                %%% peak alignment
+                %% peak alignment
                 peakInd = find(voltages==max(voltages),1);
                 shiftAmount = 8 - peakInd;
                 alignedVoltages = circshift(voltages,shiftAmount);
-                %%% cutoff tail
+                %% cutoff tail
                 if shiftAmount < 0
                     alignedVoltages(end-abs(shiftAmount):end) = nan;
                 end
@@ -1189,12 +1185,12 @@ for iChannel = 1:4         % for each electrode
             hold on
         end
         if ~strcmpi(align,'n')
-            %%% peak-align mean waves as well
+            %% peak-align mean waves as well
             for iTimepoint = 1:32
                 meanWave(iTimepoint,iChannel) = nanmean(DataPointsAligned(iTimepoint,iChannel,:));
             end
         end
-        %%% plot mean wave and bring to front
+        %% plot mean wave and bring to front
         hMean = animatedline(1:32,meanWave(:,iChannel));
         set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
     else        % limit number of waves plotted
@@ -1202,11 +1198,11 @@ for iChannel = 1:4         % for each electrode
         for iWave = 1:(numWaves/waveLimit):numWaves
             voltages = squeeze(DataPoints(:,iChannel,round(iWave)));
             if ~strcmpi(align,'n')
-                %%% peak alignment
+                %% peak alignment
                 peakInd = find(voltages==max(voltages),1);
                 shiftAmount = 8 - peakInd;
                 alignedVoltages = circshift(voltages,shiftAmount);
-                %%% cutoff tail
+                %% cutoff tail
                 if shiftAmount < 0
                     alignedVoltages(end-abs(shiftAmount):end) = nan;
                 end
@@ -1219,12 +1215,12 @@ for iChannel = 1:4         % for each electrode
             waveCounter = waveCounter + 1;
         end
         if ~strcmpi(align,'n')
-            %%% peak-align mean waves as well
+            %% peak-align mean waves as well
             for iTimepoint = 1:32
                 meanWave(iTimepoint,iChannel) = nanmean(DataPointsAligned(iTimepoint,iChannel,:));
             end
         end
-        %%% plot mean wave and bring to front
+        %% plot mean wave and bring to front
         hMean = animatedline(1:32,meanWave(:,iChannel));
         set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
     end
@@ -1238,7 +1234,7 @@ end
 
 guidata(hObject,handles);
 
-%%% calculate peaks
+%% calculate peaks
 [DataPoints0] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,1);  % open Nlx2MatSpike for help with arguments
 numWaves0 = size(DataPoints0,3);
 wavePeaks0 = zeros(4,numWaves0);
@@ -1248,7 +1244,7 @@ for iChannel = 1:4
     wavePeaks(iChannel,:) = squeeze(max(DataPoints(:,iChannel,:),[],1));
 end
 
-%%% plot peaks
+%% plot peaks
 subLocPeaks = [3 4 5 8 9 10];
 peakComps = [1 2; 1 3; 1 4; 2 3; 2 4; 3 4];
 for iPeakPlot = 1:length(peakComps)
@@ -1268,7 +1264,7 @@ function butt_autocorr_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% set parameters
+%% set parameters
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 numBins = 501;
@@ -1279,7 +1275,7 @@ splitHandlesUserDir = regexp(handles.userDir,'\','split');
 plotSize = ceil(sqrt(numClusters));
 for iCluster = 1:numClusters
     
-    %%% normalize spike times
+    %% normalize spike times
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     normSpikes = ((spikes - min(spikes))*1000)';
     if length(normSpikes) > 4000
@@ -1287,13 +1283,13 @@ for iCluster = 1:numClusters
     end
     numSpikes = length(normSpikes);
     
-    %%% find spike times within desired range
+    %% find spike times within desired range
     triMat = ones(numSpikes,1)*normSpikes - normSpikes'*ones(1,numSpikes);      % make triangular matrix
     triMatSqueeze = triMat(:);       % collapse into single column
     withinRange = triMatSqueeze(triMatSqueeze >= -range & triMatSqueeze <= range);   % find values within range
     withinRange(withinRange==0) = [];      % remove zeros
     
-    %%% plot
+    %% plot
     subplot(plotSize,plotSize,iCluster)
     hist(withinRange,numBins);
     h = findobj(gca,'Type','patch');
@@ -1311,11 +1307,11 @@ function butt_cellStats_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% prompt for settings
+%% prompt for settings
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2','2','9','0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -1325,7 +1321,7 @@ minPeak = str2double(Answers{4});
 
 msg = msgbox('Calculating...');
 
-%%% make smoothed rate map and position PDF, then calculate stats
+%% make smoothed rate map and position PDF, then calculate stats
 if (get(handles.checkSpatInfo, 'Value') == get(handles.checkSpatInfo, 'Max'))   % see if box is checked
     
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', 2, 'binWidth', binWidth, 'minTime', 0, 'limits', handles.mapLimits);
@@ -1345,7 +1341,7 @@ end
 
 if (get(handles.checkFieldNo, 'Value') == get(handles.checkFieldNo, 'Max'))
     
-    %%% calculate and store
+    %% calculate and store
     [~,fields] = analyses.placefield(handles.map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
     fieldNo = length(fields);
     set(handles.text_fieldNo, 'String', fieldNo);
@@ -1385,7 +1381,7 @@ function butt_emperor_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%%% external script for batching, can be used as standalone
+%% external script for batching, can be used as standalone
 
 emperorPenguin(handles.inputFileID,handles.clusterFormat);
 
@@ -1534,3 +1530,121 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in pushbutton44.
+function pushbutton44_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton44 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+cellMatrix = data.getCells;
+numClusters = size(cellMatrix,1);
+
+%% prompt for settings
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
+name='Settings';
+numlines=1;
+defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+smooth = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minTime = str2double(Answers{3});
+gridThresh = str2double(Answers{4});
+if gridThresh < 0 || gridThresh > 1
+    gridThresh = 0.2;
+    display('Grid threshold value out of range, using default 0.2.')
+end
+
+prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
+name='Find field settings';
+numlines=1;
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+thresh = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minBins = str2double(Answers{3});
+minPeak = str2double(Answers{4});
+
+for iCluster = 1:numClusters
+    figCheck = figure;
+    set(figCheck,'name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+      
+    %% path plot
+    subplot(221)
+    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikePos = data.getSpikePositions(spikes,handles.posAve);
+    pathTrialBRK('color',[.7 .7 .7])
+    hold on
+    plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
+    axis off;
+    axis equal;
+    hold off
+    
+    %% rate maps
+    subplot(222)
+    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+    meanRate = analyses.meanRate(spikes, handles.posAve);
+    if ~isfield(map,'peakRate')
+        map.peakRate = 0;
+    end
+    colorMapBRK(map.z,'bar','on');
+    title(sprintf('mean = %.4f Hz\npeak = %.4f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+    hold on
+    
+    %% HD
+    subplot(223)
+    pos = data.getPositions('average','off','speedFilter',[0.2 0]);
+    allHD = analyses.calcHeadDirection(pos);
+    [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
+    spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
+    tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
+    tcStat = analyses.tcStatistics(tc, 10, 20);
+    circularTurningBRK(tc(:,2))
+    axis equal
+    title(sprintf('length = %.2f angle = %.2f',tcStat.r,tcStat.mean),'fontweight','normal','fontsize',10);
+    
+    %% grid
+    subplot(224)
+    autoCorr = analyses.autocorrelation(map.z);
+    [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
+    if ~isempty(stats.spacing)
+        gridScore = score;
+        gridSpacing = mean(stats.spacing);
+    else
+        gridScore = nan;
+        gridSpacing = nan;
+    end
+    colorMapBRK(autoCorr);
+    title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontweight','normal','fontsize',10)
+    axis off
+    axis equal
+    hold on
+    
+    %% spatial info
+    [Info,spars,sel] = analyses.mapStatsPDF(map);
+    
+    %% border
+    [fieldsMap, fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
+    borderScore = analyses.borderScore(map.z, fieldsMap, fields);
+    
+    %% titles
+    subplot(221)
+    title(sprintf('info = %.4f\nborder = %.4f',Info.content,borderScore),'fontweight','normal','fontsize',10)
+    if gridScore >= 0.3608
+        text(-125,-80,'GRID','fontweight','bold','fontsize',10)
+    end
+    if borderScore >= 0.4416 && Info.content >= 0.6421
+        text(-125,-70,'BORDER','fontweight','bold','fontsize',10)
+    end
+    if tcStat.r >= 0.2246
+        text(-125,-60,'HD','fontweight','bold','fontsize',10)
+    end
+    if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
+        text(-125,-50,'SPATIAL','fontweight','bold','fontsize',10)
+    end
+
+end
+
