@@ -27,14 +27,14 @@ end
 [filename filepath] = uigetfile({'*.xlsx','*.xls'},'Select Excel workbook');
 if ~filename; return; end
 excelFile = fullfile(filepath,filename);
-sheetName = inputdlg('Worksheet name:','',1,{'selectedWithCellNums'});
+sheetName = inputdlg('Worksheet name:','',1,{'masterCellNums'});
 if isempty(sheetName); return; end
 [~,~,raw] = xlsread(excelFile,sheetName{1});
 
 %% set output location
 excelFolder = uigetdir('','Choose folder for the mat file output');
 if ~excelFolder; return; end
-matName = inputdlg('Mat file name:','',1,{'masterMEC'});
+matName = inputdlg('Mat file name:','',1,{'masterMat'});
 if isempty(matName); return; end
 matFile = fullfile(excelFolder,matName{1});
 

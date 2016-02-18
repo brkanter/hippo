@@ -32,7 +32,7 @@ end
 [filename filepath] = uigetfile({'*.xlsx','*.xls'},'Select Excel workbook');
 if ~filename; return; end
 excelFile = fullfile(filepath,filename);
-sheetName = inputdlg('Worksheet name:','',1,{'masterExcelCellNums'});
+sheetName = inputdlg('Worksheet name:','',1,{'masterCellNums'});
 if isempty(sheetName); return; end
 [~,~,raw] = xlsread(excelFile,sheetName{1});
 

@@ -15,12 +15,12 @@
 [filename filepath] = uigetfile({'*.xlsx','*.xls'},'Select Excel workbook');
 if ~filename; return; end
 excelFile = fullfile(filepath,filename);
-sheetName = inputdlg('Worksheet name:','',1,{'masterExcel'});
+sheetName = inputdlg('Worksheet name:','',1,{'master'});
 if isempty(sheetName); return; end
 [~,~,raw] = xlsread(excelFile,sheetName{1});
 
 %% set output location
-newSheetName = inputdlg('New worksheet name:','',1,{'masterExcelCellNums'});
+newSheetName = inputdlg('New worksheet name:','',1,{'masterCellNums'});
 if isempty(newSheetName); return; end
 newSheetName = newSheetName{1};
 
