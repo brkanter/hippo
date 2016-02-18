@@ -216,6 +216,6 @@ save(matFile,'dataOutput','labels');
 if strcmpi('HD',HD)
     dataOutput = [dataOutput, posArray, spikePosArray];
     labels = [labels, 'Positions','Spike positions'];
-    savefast matFile dataOutput labels;
+    savefast([matFile 'HD'],'dataOutput','labels')
 end
 
