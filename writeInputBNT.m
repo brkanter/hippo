@@ -1,12 +1,28 @@
+
+% Write input file for BNT by extracting names of cluster timestamp files
+% in specified directories.
+%
+%   USAGE
+%       writeInputBNT(penguinInput,userDir,arena,clusterFormat)
+%       penguinInput        string specifying where to write the input file
+%       userDir             directory of recording session
+%       arena               string with shape and size of recording arena
+%       clusterFormat       string describing spike timestamp files (e.g. 'MClust')
+%
+%   SEE ALSO
+%       penguin emperorPenguin emperorPenguinSelect startup
+%
+% Written by BRK 2015
+
 function writeInputBNT(penguinInput,userDir,arena,clusterFormat)
 
-%%% initialize structure 'folder' for data storage
+%% initialize structure 'folder' for data storage
 trode(1:4)={zeros(1,50)};
 unit(1:50)={struct('unit', trode)};
 folder=struct('trode',unit);   
 folder(200).trode(4).unit(50) = 0;
 
-%%% find all tetrode and cluster numbers
+%% find all tetrode and cluster numbers
 switch clusterFormat
     case 'MClust'
         clusterList = dir('*.t');            
@@ -55,7 +71,7 @@ switch clusterFormat
         end
 end
 
-%%% create unit list for input file
+%% create unit list for input file
 semi = ';';
 tetList{4} = '';
 for iTrode = 1:4
@@ -66,6 +82,6 @@ for iTrode = 1:4
     end
 end
 
-%%% write BNT input file
+%% write BNT input file
 fileID = fopen(penguinInput,'w');
 fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s\nRoom room146\nShape %s',userDir,tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},arena);

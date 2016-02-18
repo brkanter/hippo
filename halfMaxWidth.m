@@ -1,5 +1,21 @@
-function spikeWidth = halfMaxWidth(userDir, tetrode, spikes)
 
+% Calculate width at the half maximum of a waveform.
+%
+%   USAGE
+%       spikeWidth = halfMaxWidth(userDir,tetrode,spikes)
+%       userDir        directory of recording session
+%       tetrode        tetrode number
+%       spikes         list of spike timestamps
+%
+%   OUTPUT
+%       spikeWidth     width at half max
+%
+%   SEE ALSO
+%       penguin emperorPenguin emperorPenguinSelect
+%
+% Written by BRK 2014
+
+function spikeWidth = halfMaxWidth(userDir, tetrode, spikes)
 
 %% load data
 nttFiles = dir('*.ntt');

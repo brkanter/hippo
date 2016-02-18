@@ -1,11 +1,13 @@
 
-% rateMapPDF: make PDFs of rate maps, where each sheet has all recording sessions for a given cell.
+% Save PDFs of rate maps for a given experiment with 4 cells per sheet.
 %
-% 1. Requires proper installation of BNT (contact V. Frolov) and modified BNT files by BRK.
-% 2. Use ctrl+F 'C:' to locate machine-specific directories and modify appropriately.
+%   USAGE
+%       rateMapPDF
 %
-% Written by BRK 2014 based on Behavioral Neurology Toolbox (V. Frolov 2013).
-
+%   SEE ALSO
+%       penguin tuningCurvePDF
+%
+% Written by BRK 2014
 
 function rateMapPDF
 

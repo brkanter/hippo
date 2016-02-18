@@ -84,7 +84,7 @@ switch format
         r = circ_r(alpha);
         phi = circ_mean(alpha);
         zm = r*exp(1i*phi);
-        meanAngleDeg = mod(rad2deg(angle(zm)),360);
+        meanAngleDeg = mod(rad2deg(phi),360);
         if s
             hold on;
             plot([0 real(zm)], [0, imag(zm)],varargin{2:end})
