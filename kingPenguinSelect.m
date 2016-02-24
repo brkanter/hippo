@@ -80,8 +80,8 @@ for iFolder = 1:length(uniqueFolders)
         folder(iFolder).trode(t_num).unit(c_num) = c_num;  
     end
     semi = ';';
-    tetList = repmat('',1,4);
-    for iTrode = 1:4
+    tetList = repmat('',1,8);
+    for iTrode = 1:8
         if isempty(folder(iFolder).trode(iTrode).unit);
             tetList{iTrode} = num2str(iTrode);
         else
@@ -90,7 +90,7 @@ for iFolder = 1:length(uniqueFolders)
     end
     %% write BNT input file
     fileID = fopen(penguinInput,'w');
-    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},arena);
+    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);
     loadSessionsBRK(penguinInput,clusterFormat);
     %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[0.2 0]);

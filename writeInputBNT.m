@@ -17,10 +17,10 @@
 function writeInputBNT(penguinInput,userDir,arena,clusterFormat)
 
 %% initialize structure 'folder' for data storage
-trode(1:4)={zeros(1,50)};
+trode(1:8)={zeros(1,50)};
 unit(1:50)={struct('unit', trode)};
 folder=struct('trode',unit);   
-folder(200).trode(4).unit(50) = 0;
+folder(200).trode(8).unit(50) = 0;
 
 %% find all tetrode and cluster numbers
 switch clusterFormat
@@ -73,8 +73,8 @@ end
 
 %% create unit list for input file
 semi = ';';
-tetList{4} = '';
-for iTrode = 1:4
+tetList{8} = '';
+for iTrode = 1:8
     if isempty(folder(1).trode(iTrode).unit);
         tetList{iTrode} = num2str(iTrode);
     else
@@ -84,4 +84,4 @@ end
 
 %% write BNT input file
 fileID = fopen(penguinInput,'w');
-fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s\nRoom room146\nShape %s',userDir,tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},arena);
+fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',userDir,tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);

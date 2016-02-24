@@ -1226,36 +1226,26 @@ function butt_autocorr_Callback(hObject, eventdata, handles)
 %% set parameters
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-numBins = 501;
-range = 500;   % captures 500 msec on either side
 figAutocorr = figure;
 set(figAutocorr,'color','white')
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 plotSize = ceil(sqrt(numClusters));
 for iCluster = 1:numClusters
     
-    %% normalize spike times
+    %% autocorrelation
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    normSpikes = ((spikes - min(spikes))*1000)';
-    if length(normSpikes) > 4000
-        normSpikes = normSpikes(1:4000);
-    end
-    numSpikes = length(normSpikes);
-    
-    %% find spike times within desired range
-    triMat = ones(numSpikes,1)*normSpikes - normSpikes'*ones(1,numSpikes);      % make triangular matrix
-    triMatSqueeze = triMat(:);       % collapse into single column
-    withinRange = triMatSqueeze(triMatSqueeze >= -range & triMatSqueeze <= range);   % find values within range
-    withinRange(withinRange==0) = [];      % remove zeros
+    [counts,centers,thetaToDelta] = thetaIndex(spikes);
     
     %% plot
     subplot(plotSize,plotSize,iCluster)
-    hist(withinRange,numBins);
-    h = findobj(gca,'Type','patch');
-    set(h,'FaceColor','black','EdgeColor','black')
+    bar(centers,counts,'facecolor','k');
     xlabel('msec');
     ylabel('Count');
-    title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)));    
+    if thetaToDelta >= 5
+        title(sprintf('T%d C%d\nT/D = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaToDelta),'color','b');    
+    else
+        title(sprintf('T%d C%d\nT/D = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaToDelta),'fontweight','normal');
+    end
 end
 
 saveas(figAutocorr,sprintf('autocorrelations_%s.pdf',splitHandlesUserDir{end}));
@@ -1453,22 +1443,11 @@ for iCluster = 1:numClusters
     
     %% autocorrelation
     subplot(325)
-    numBins = 501;
-    range = 500;
-    normSpikes = ((spikes - min(spikes))*1000)';
-    if length(normSpikes) > 4000
-        normSpikes = normSpikes(1:4000);
-    end
-    numSpikes = length(normSpikes);
-    triMat = ones(numSpikes,1)*normSpikes - normSpikes'*ones(1,numSpikes);
-    triMatSqueeze = triMat(:);
-    withinRange = triMatSqueeze(triMatSqueeze >= -range & triMatSqueeze <= range);
-    withinRange(withinRange==0) = [];
-    hist(withinRange,numBins);
-    h = findobj(gca,'Type','patch');
-    set(h,'FaceColor','black','EdgeColor','black')
+    [counts,centers,thetaToDelta] = thetaIndex(spikes);
+    bar(centers,counts,'facecolor','k');
     xlabel('msec');
     ylabel('Count');
+    title(sprintf('T/D = %.2f',thetaToDelta),'fontweight','normal');   
     
     %% spatial info
     [Info,spars,sel] = analyses.mapStatsPDF(map);
@@ -1485,13 +1464,16 @@ for iCluster = 1:numClusters
         text(0.5,1,'GRID','fontweight','bold','fontsize',10)
     end
     if borderScore >= 0.4416 && Info.content >= 0.6421
-        text(0.5,0.66,'BORDER','fontweight','bold','fontsize',10)
+        text(0.5,0.75,'BORDER','fontweight','bold','fontsize',10)
     end
     if tcStat.r >= 0.2246
-        text(0.5,0.33,'HD','fontweight','bold','fontsize',10)
+        text(0.5,0.5,'HD','fontweight','bold','fontsize',10)
     end
     if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
-        text(0.5,0,'SPATIAL','fontweight','bold','fontsize',10)
+        text(0.5,0.25,'SPATIAL','fontweight','bold','fontsize',10)
+    end
+    if thetaToDelta >= 5 
+        text(0.5,0,'THETA','fontweight','bold','fontsize',10)
     end
     axis off
 
