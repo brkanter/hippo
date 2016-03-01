@@ -93,7 +93,7 @@ for iFolder = 1:length(uniqueFolders)
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);
     loadSessionsBRK(penguinInput,clusterFormat);
     %% get positions, spikes, map, and rates
-    posAve = data.getPositions('speedFilter',[0.2 0]);
+    posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);
     posX = posAve(:,2);
     posY = posAve(:,3);
@@ -114,7 +114,7 @@ for iFolder = 1:length(uniqueFolders)
         end
         %% HD
         if strcmpi('HD',HD)
-            posArray{folderInds(iCluster),1} = data.getPositions('average','off','speedFilter',[0.2 0]);
+            posArray{folderInds(iCluster),1} = data.getPositions('average','off','speedFilter',[2 0]);
         else
             posArray{folderInds(iCluster),1} = posAve;
         end
@@ -216,6 +216,6 @@ save(matFile,'dataOutput','labels');
 if strcmpi('HD',HD)
     dataOutput = [dataOutput, posArray, spikePosArray];
     labels = [labels, 'Positions','Spike positions'];
-    savefast([matFile 'HD'],'dataOutput','labels')
+    savefast([matFile '_HD'],'dataOutput','labels')
 end
 

@@ -27,7 +27,7 @@ function pathTrialBRK(trialNum, varargin)
     data.setTrial(trialNum);
 
     %%%
-    pos = data.getPositions('speedFilter',[0.2 0]);
+    pos = data.getPositions('speedFilter',[2 0]);
     %%%
     
     holded = ishold();

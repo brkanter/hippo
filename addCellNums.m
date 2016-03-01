@@ -11,6 +11,8 @@
 %
 % Written by BRK 2015
 
+function addCellNums
+
 %% read excel file to analyze
 [filename filepath] = uigetfile({'*.xlsx','*.xls'},'Select Excel workbook');
 if ~filename; return; end

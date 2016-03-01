@@ -114,7 +114,7 @@ loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
 %% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
 clear posAve;
 try
-    posAve = data.getPositions('speedFilter',[0.2 0]);
+    posAve = data.getPositions('speedFilter',[2 0]);
     handles.gotPos = 1;
 catch
     warndlg('Error getting position samples')
@@ -475,7 +475,7 @@ else        % scale to peak
     %% load previous data and store it for comparisons
     loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
     clear posAve;
-    posAve = data.getPositions('speedFilter',[0.2 0]);
+    posAve = data.getPositions('speedFilter',[2 0]);
     spikes = data.getSpikeTimes([]);
     if isempty(spikes); warndlg('No spikes found in previous session.'); return; end;
     t = posAve(:,1);
@@ -567,7 +567,7 @@ else        % scale to peak
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);
     clear posAve;
-    posAve = data.getPositions('speedFilter',[0.2 0]);
+    posAve = data.getPositions('speedFilter',[2 0]);
     spikes = data.getSpikeTimes([]);
     if isempty(spikes); warndlg('No spikes found in previous session.'); return; end;
     t = posAve(:,1);
@@ -653,7 +653,7 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 %% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-posAve = data.getPositions('speedFilter',[0.2 0]);
+posAve = data.getPositions('speedFilter',[2 0]);
 times = posAve(:,1);
 numTimeStamps = length(times);
 
@@ -749,7 +749,7 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 
 %% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
 msg = msgbox('Loading position data for each LED...');
-pos = data.getPositions('average','off','speedFilter',[0.2 0]);
+pos = data.getPositions('average','off','speedFilter',[2 0]);
 close(msg);
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
@@ -1231,20 +1231,21 @@ set(figAutocorr,'color','white')
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 plotSize = ceil(sqrt(numClusters));
 for iCluster = 1:numClusters
-    
+    subplot(plotSize,plotSize,iCluster)
     %% autocorrelation
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    [counts,centers,thetaToDelta] = thetaIndex(spikes);
-    
-    %% plot
-    subplot(plotSize,plotSize,iCluster)
-    bar(centers,counts,'facecolor','k');
-    xlabel('msec');
-    ylabel('Count');
-    if thetaToDelta >= 5
-        title(sprintf('T%d C%d\nT/D = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaToDelta),'color','b');    
+    if length(spikes) >= 100
+        [counts,centers,thetaInd] = thetaIndex(spikes);
+        bar(centers,counts,'facecolor','k');
+        xlabel('msec');
+        ylabel('Count');
+        if thetaInd >= 5
+            title(sprintf('T%d C%d\ntheta = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaInd),'color','b');
+        else
+            title(sprintf('T%d C%d\ntheta = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaInd),'fontweight','normal');
+        end
     else
-        title(sprintf('T%d C%d\nT/D = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaToDelta),'fontweight','normal');
+        title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal');
     end
 end
 
@@ -1414,7 +1415,7 @@ for iCluster = 1:numClusters
     
     %% HD
     subplot(323)
-    pos = data.getPositions('average','off','speedFilter',[0.2 0]);
+    pos = data.getPositions('average','off','speedFilter',[2 0]);
     allHD = analyses.calcHeadDirection(pos);
     [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
     spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
@@ -1443,11 +1444,15 @@ for iCluster = 1:numClusters
     
     %% autocorrelation
     subplot(325)
-    [counts,centers,thetaToDelta] = thetaIndex(spikes);
-    bar(centers,counts,'facecolor','k');
-    xlabel('msec');
-    ylabel('Count');
-    title(sprintf('T/D = %.2f',thetaToDelta),'fontweight','normal');   
+    if length(spikes) >= 100
+        [counts,centers,thetaInd] = thetaIndex(spikes);
+        bar(centers,counts,'facecolor','k');
+        xlabel('msec');
+        ylabel('Count');
+    else
+        thetaInd = nan;
+    end
+    title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');   
     
     %% spatial info
     [Info,spars,sel] = analyses.mapStatsPDF(map);
@@ -1472,7 +1477,7 @@ for iCluster = 1:numClusters
     if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
         text(0.5,0.25,'SPATIAL','fontweight','bold','fontsize',10)
     end
-    if thetaToDelta >= 5 
+    if thetaInd >= 5 
         text(0.5,0,'THETA','fontweight','bold','fontsize',10)
     end
     axis off

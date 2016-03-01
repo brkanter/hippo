@@ -60,12 +60,13 @@ include_fields = 0;
 include_grid = 0;
 include_HD = 0;
 include_speed = 0;
+include_theta = 0;
 include_CC = 0;
 include_DS = 0;
 
 %% choose what to calculate
 [selections, OK] = listdlg('PromptString','Select what to calculate', ...
-    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)'}, ...
+    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Theta indices','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)'}, ...
     'InitialValue',1:7, ...
     'ListSize',[400, 250]);
 if OK == 0; return; end;
@@ -75,8 +76,9 @@ if ismember(3,selections); include_fields = 1; end
 if ismember(4,selections); include_grid = 1; end
 if ismember(5,selections); include_HD = 1; end
 if ismember(6,selections); include_speed = 1; end
-if ismember(7,selections); include_CC = 1; end
-if ismember(8,selections); include_DS = 1; end
+if ismember(7,selections); include_theta = 1; end
+if ismember(8,selections); include_CC = 1; end
+if ismember(9,selections); include_DS = 1; end
 
 %% get experiment details for spatial correlations
 if include_CC || include_DS
@@ -149,6 +151,9 @@ end
 if include_speed
     colHeaders = [colHeaders,'Speed score'];
 end
+if include_theta
+    colHeaders = [colHeaders,'Theta index spikes','Theta index LFP'];
+end
 
 %% compute stats for each folder
 for iFolder = 1:length(uniqueFolders)
@@ -169,8 +174,8 @@ for iFolder = 1:length(uniqueFolders)
         folder(iFolder).trode(t_num).unit(c_num) = c_num;   % store in structure
     end
     semi = ';';
-    tetList = repmat('',1,4);
-    for iTrode = 1:4
+    tetList = repmat('',1,8);
+    for iTrode = 1:8
         if isempty(folder(iFolder).trode(iTrode).unit);
             tetList{iTrode} = num2str(iTrode);
         else
@@ -180,16 +185,16 @@ for iFolder = 1:length(uniqueFolders)
     
     %% write BNT input file
     fileID = fopen(penguinInput,'w');
-    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},arena);
+    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);
     loadSessionsBRK(penguinInput,clusterFormat);
     
     %% get positions, spikes, map, and rates
-    posAve = data.getPositions('speedFilter',[0.2 0]);
+    posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);
     posX = posAve(:,2);
     posY = posAve(:,3);
     if include_HD 
-        pos = data.getPositions('average','off','speedFilter',[0.2 0]);
+        pos = data.getPositions('average','off','speedFilter',[2 0]);
     end
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);
@@ -324,8 +329,8 @@ for iFolder = 1:length(uniqueFolders)
             try
                 allHD = analyses.calcHeadDirection(pos);
                 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
-                tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
-                tcStat = analyses.tcStatistics(tc, 10, 20);
+                tc = analyses.turningCurve(spkHDdeg,allHD,data.sampleTime,'binWidth',6);
+                tcStat = analyses.tcStatistics(tc,6,20);
                 vLength = tcStat.r;
                 meanAngle = tcStat.mean;
             catch
@@ -333,14 +338,35 @@ for iFolder = 1:length(uniqueFolders)
                 meanAngle = 999999;
             end
         end
+        %% speed
         if include_speed
             speedScore = analyses.speedScore(posAve,spikes);
         end    
+        %% theta
+        if include_theta
+            try
+                if length(spikes) > 100
+                    [~,~,thetaIndSpikes] = thetaIndex(spikes);
+                else
+                    thetaIndSpikes = nan;
+                end
+            catch
+                thetaIndSpikes = nan;
+            end
+            try
+                thetaIndLFP = thetaIndexLFP(uniqueFolders{1,iFolder},cellMatrix(iCluster,1));
+            catch
+                thetaIndLFP = nan;
+            end
+        end
         
         %% store info from this folder in matrices
         Mfolder{iCluster,iFolder} = uniqueFolders{1,iFolder}; %#ok<*AGROW>
         Mtetrode(iCluster,iFolder) = cellMatrix(iCluster,1);
         Mcluster(iCluster,iFolder) = cellMatrix(iCluster,2);
+        if sum(strcmpi('exp num',labels))
+            MexpNum(iCluster,iFolder) = cell2mat(dataInput(folderInds(iCluster),strcmpi('exp num',labels)));
+        end
         McellNum(iCluster,iFolder) = cell2mat(dataInput(folderInds(iCluster),strcmpi('cell num',labels)));
         MrateMap{iCluster,iFolder} = map.z;
         if ~isempty(map.count)
@@ -384,6 +410,10 @@ for iFolder = 1:length(uniqueFolders)
         end
         if include_speed
             MspeedScore(iCluster,iFolder) = speedScore;
+        end
+        if include_theta
+            MthetaSpikes(iCluster,iFolder) = thetaIndSpikes;
+            MthetaLFP(iCluster,iFolder) = thetaIndLFP;
         end
     end
 end
@@ -483,6 +513,9 @@ msgExcel = msgbox('Creating Excel output...');
 emperor(:,1) = Mfolder(:);             
 emperor(:,size(emperor,2)+1) = num2cell(Mtetrode(:));
 emperor(:,size(emperor,2)+1) = num2cell(Mcluster(:));
+if sum(strcmpi('exp num',labels))
+    emperor(:,size(emperor,2)+1) = num2cell(MexpNum(:));
+end
 emperor(:,size(emperor,2)+1) = num2cell(McellNum(:));
 emperor(:,size(emperor,2)+1) = num2cell(MmeanRate(:));
 emperor(:,size(emperor,2)+1) = num2cell(MpeakRate(:));
@@ -520,6 +553,10 @@ if include_HD
 end
 if include_speed 
     emperor(:,size(emperor,2)+1) = num2cell(MspeedScore(:));
+end
+if include_theta 
+    emperor(:,size(emperor,2)+1) = num2cell(MthetaSpikes(:));
+    emperor(:,size(emperor,2)+1) = num2cell(MthetaLFP(:));
 end
 if include_CC 
     emperor(any(cellfun(@isempty,emperor)'),:) = [];      % remove rows with empties   
@@ -566,7 +603,7 @@ end
 
 %% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];
-xlswrite(fullName,emperorExcel,'Main','A1');
+xlswrite(fullName,emperorExcel,sheetName{1},'A1');
 % save(sprintf('%s.mat',fullName(1:end-5)),'emperor');
 
 %% add settings in another sheet
@@ -580,6 +617,7 @@ settingsNames = {'Cluster format', ...
     'Grids', ...
     'HD', ...
     'Speed', ...
+    'Theta', ...
     'Spatial correlations', ...
     'Rate difference scores', ...
     '', ...
@@ -623,6 +661,7 @@ settingsValues = {clusterFormat, ...
     include_grid, ...
     include_HD, ...
     include_speed, ...
+    include_theta, ...
     include_CC, ...
     include_DS, ...
     '', ...
