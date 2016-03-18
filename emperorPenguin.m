@@ -45,7 +45,7 @@ include_DS = 0;
 %% choose what to calculate
 [selections, OK] = listdlg('PromptString','Select what to calculate', ...
     'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Theta indices','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)'}, ...
-    'InitialValue',1:7, ...
+    'InitialValue',1:8, ...
     'ListSize',[400, 250]);
 if OK == 0; return; end;
 if ismember(1,selections); include_3Ss = 1; end
@@ -63,7 +63,7 @@ if include_CC || include_DS
     prompt={'How many sessions per experiment?'};
     name='Sessions/experiment';
     numlines=1;
-    defaultanswer={'3'};
+    defaultanswer={'6'};
     Answers2 = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers2); return; end;
     seshPerExp = str2double(Answers2{1});
@@ -85,7 +85,7 @@ if include_fields
     prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Spatial bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
     name='Find field settings';
     numlines=1;
-    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'0.1'};
+    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'1'};
     Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers4); return; end;
     fieldThresh = str2double(Answers4{1});
@@ -631,4 +631,5 @@ end
 
 toc
 
-
+load handel
+sound(y(1:7000),Fs)

@@ -107,7 +107,7 @@ if include_fields
     prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
     name='Find field settings';
     numlines=1;
-    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'0.1'};
+    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'1'};
     Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers4); return; end;
     fieldThresh = str2double(Answers4{1});
