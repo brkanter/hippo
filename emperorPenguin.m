@@ -225,7 +225,12 @@ for iFolder = 1:length(allFolders)
             [info,spars,sel] = analyses.mapStatsPDF(map);
         end
         if include_coherence
-            Coherence = analyses.coherence(map.z);
+            try
+                Coherence = analyses.coherence(map.z);
+            catch
+                display('Could not calculate coherence.')
+                Coherence = nan;
+            end
         end
         %% field stats and border scores
         if include_fields
@@ -366,6 +371,7 @@ for iFolder = 1:length(allFolders)
             MthetaLFP(iCluster,iFolder) = thetaIndLFP;
         end
     end
+    totalClusters(iFolder) = numClusters;
 end
 %% compute spatial correlations
 if include_CC
@@ -380,12 +386,13 @@ if include_CC
     upCount = 0;
     for iExp = 1:(length(allFolders)/seshPerExp)    % all experiments
         %% find true number of cells for current experiment
-        cellCount = 0;       % initialize counter
-        for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
-            if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
-                cellCount = cellCount + 1;          % increase counter
-            end
-        end
+%         cellCount = 0;       % initialize counter
+%         for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
+%             if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
+%                 cellCount = cellCount + 1;          % increase counter
+%             end
+%         end
+        cellCount = totalClusters(iExp*seshPerExp-(seshPerExp-1)); % get number of cells in first session of experiment
         %% calculate all correlations
         for iCluster = 1:cellCount    % all cells
             for iCorrs = 1:size(combo,1)       % all session comparisons

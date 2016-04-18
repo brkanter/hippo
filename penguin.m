@@ -158,7 +158,7 @@ handles.peakRate = 0;
 handles.totalSpikes = 0;
 handles.spikeWidth = 0;
 handles.Marker = 3;
-for iTrode = 1:4
+for iTrode = 1:8
    handles.trodeTS{iTrode} = ''; 
 end
 
@@ -731,6 +731,7 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% calculate HD
+pos = data.getPositions('average','off','speedFilter',[2 0]);
 [~,spkInd] = data.getSpikePositions(handles.spikes, handles.posAve);
 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
 allHD = analyses.calcHeadDirection(pos);
@@ -1325,32 +1326,6 @@ msgbox({'SPATIAL INFORMATION CONTENT (bits/spike) is a value between 0 and inf w
     'COHERENCE (unitless) is a value between 0 and inf which measures the correlation between rate in a given spatial bin with the average rate of its neighboring bins. HIGH for place cells.'...
     },'Stats helper')
 
-% --- Executes on button press in butt_emperor.
-function butt_emperor_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_emperor (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-%% external script for batching, can be used as standalone
-
-emperorPenguin(handles.inputFileID,handles.clusterFormat);
-
-% --- Executes on button press in butt_rateMapPDF.
-function butt_rateMapPDF_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_rateMapPDF (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-rateMapPDF(handles.inputFileID,handles.clusterFormat);
-
-% --- Executes on button press in butt_HD_PDF.
-function butt_HD_PDF_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_HD_PDF (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-tuningCurvePDF(handles.inputFileID,handles.clusterFormat);
-
 % --- Executes on button press in butt_MECcells.
 function butt_MECcells_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_MECcells (see GCBO)
@@ -1483,6 +1458,32 @@ for iCluster = 1:numClusters
     axis off
 
 end
+
+% --- Executes on button press in butt_emperor.
+function butt_emperor_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_emperor (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% external script for batching, can be used as standalone
+
+emperorPenguin
+
+% --- Executes on button press in butt_rateMapPDF.
+function butt_rateMapPDF_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_rateMapPDF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+rateMapPDF
+
+% --- Executes on button press in butt_HD_PDF.
+function butt_HD_PDF_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_HD_PDF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+tuningCurvePDF
 
 % --- Executes during object creation, after setting all properties.
 function list_tetrode_CreateFcn(hObject, eventdata, handles)

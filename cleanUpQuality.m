@@ -18,12 +18,12 @@ for iSession = 1:numSesh
 end
 raw = temp;
 
-%% remove off quality in all sessions
+%% remove cells that are never good quality
 clusterNums = unique(getCol(raw,labels,'cell num'),'stable');
 numClusters = length(clusterNums);
 for iCluster = 1:numClusters
     quality = getColComp(raw,labels,'quality','cell num',clusterNums{iCluster});
-    if sum(strcmpi(quality,offQ)) == length(quality)
+    if (sum(strcmpi(quality,offQ)) + sum(strcmpi(quality,badQ))) == length(quality)
         raw = deleteRowsComp(raw,labels,'cell num',clusterNums{iCluster});
     end
 end
