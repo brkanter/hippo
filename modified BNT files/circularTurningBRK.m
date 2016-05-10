@@ -114,6 +114,7 @@ function circularTurningBRK(data, varargin)
 
     hold on;
     plot(x, y, varargin{:},'k','linewidth',3);
+    set(gca,'ydir','reverse')
 
     if adjustAxis
         line([axisMin axisMax], [0 0], 'LineWidth', 0.5, 'color', 'k'); % x-axis

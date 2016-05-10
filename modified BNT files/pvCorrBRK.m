@@ -48,7 +48,7 @@
 %   pvCorr          Correlation values. Can be either 1D, 2D or 3D matrix based on
 %                   value of parameter 'full'
 %
-function pvCorr = populationVectorCorrelation(stack1, stack2, varargin)
+function pvCorr = pvCorrBRK(stack1, stack2, varargin)
 
     if nargin < 2 || mod(length(varargin), 2) ~= 0,
       error('Incorrect number of parameters (type ''help <a href="matlab:help analyses.populationVectorCorrelation">analyses.populationVectorCorrelation</a>'' for details).');
