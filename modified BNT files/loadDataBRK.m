@@ -201,7 +201,11 @@ for s = 1:numSessions
                     split2 = regexp(split{end},'_','split');
                     c_num = cellfun(@str2double,strtok(split2(end),'.'));
                     try       % oregon
-                        fileEnding = [split2{1} '_SS_' '0' num2str(c_num) '.t'];
+                        if num2str(c_num) < 10
+                            fileEnding = [split2{1} '_SS_' '0' num2str(c_num) '.t'];
+                        else
+                            fileEnding = [split2{1} '_SS_' num2str(c_num) '.t'];
+                        end
                         fullFileName = sprintf('%s%s',nameStart,fileEnding); 
                         spikeData = io.neuralynx.readMclustSpikeFile(fullFileName);
                     catch     % norway
