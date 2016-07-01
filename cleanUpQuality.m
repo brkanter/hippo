@@ -1,6 +1,6 @@
 
 
-function raw = cleanUpQuality(raw,labels,groupNames,numGroups,sessions,numSesh,badQ,offQ)
+function raw = cleanUpQuality(raw,labels,sessions,numSesh,badQ,offQ)
 
 %% switch erroneous offQ to badQ
 temp = {};

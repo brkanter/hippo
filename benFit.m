@@ -1,5 +1,5 @@
 
-% Fit data with polynomial of your choice and return correlation coefficients.
+% Fit data with polynomial of your choice and return coefficient of determination.
 %
 %   USAGE
 %       [R2,AR2,yfit] = benFit(x,y,degree,showLine)

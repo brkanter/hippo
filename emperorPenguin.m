@@ -145,7 +145,7 @@ for iFolder = 1:length(allFolders)
     display(sprintf('Folder %d of %d',iFolder,length(allFolders)))
     cd(allFolders{1,iFolder});             % set current folder
     writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
-    loadSessionsBRK(penguinInput,clusterFormat);
+    data.loadSessions(penguinInput);
     %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);

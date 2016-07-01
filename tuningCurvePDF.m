@@ -54,7 +54,7 @@ end
 for iFolder = 1:length(allFolders)
     cd(allFolders{1,iFolder}); 
     writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
-    loadSessionsBRK(penguinInput,clusterFormat);
+    data.loadSessions(penguinInput);
     %% get positions, spikes, map, and rates
     pos = data.getPositions('average','off','speedFilter',[0.2 0]);
     t = pos(:,1);

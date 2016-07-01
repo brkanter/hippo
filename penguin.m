@@ -109,8 +109,8 @@ if handles.userDir == 0; close(h); return; end;
 
 %% load all data for designated session
 writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
-loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
-    
+data.loadSessions(handles.inputFileID);
+
 %% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
 clear posAve;
 try
@@ -473,7 +473,7 @@ else        % scale to peak
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s\nRoom room146\nShape %s',userDir,trode{1,1},cell{1,1},handles.arena);
     
     %% load previous data and store it for comparisons
-    loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
+    data.loadSessions(handles.inputFileID);
     clear posAve;
     posAve = data.getPositions('speedFilter',[2 0]);
     spikes = data.getSpikeTimes([]);
@@ -489,7 +489,7 @@ else        % scale to peak
     if userDir == 0; return; end;
     cd(userDir);             % make that directory the current one    
     writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
-    loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
+    data.loadSessions(handles.inputFileID);
     
     %% plot scaled maps
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
@@ -563,7 +563,7 @@ else        % scale to peak
 
     %% load previous data and store for comparisons
     writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
-    loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
+    data.loadSessions(handles.inputFileID);
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);
     clear posAve;
@@ -584,7 +584,7 @@ else        % scale to peak
     if userDir == 0; return; end;
     cd(userDir);             % make that directory the current one    
     writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
-    loadSessionsBRK(handles.inputFileID,handles.clusterFormat);
+    data.loadSessions(handles.inputFileID);
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);    
     %% plot scaled maps

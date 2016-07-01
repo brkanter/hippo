@@ -53,35 +53,56 @@ switch clusterFormat
             end
             folder(1).trode(t_num).unit(c_num) = c_num;  
         end
-    case 'SS_ntt'
-        trodeList = dir('*.ntt');            
-        for iTrode = 1:length(trodeList)         
-            try
-                [ClusterNums] = Nlx2MatSpike(trodeList(iTrode).name, [0 0 1 0 0], 0, 1);   % find all cluster numbers
-            catch
-                continue;    % probably an error because this tetrode was disabled
-            end
-            cNums = unique(ClusterNums(ClusterNums>0));       
-            if ~isempty(cNums)
-                trodeIndex = str2double(trodeList(iTrode).name(end-4));     % always use TT nums as opposed to PP nums
-                for iCluster = 1:length(cNums)
-                    folder(1).trode(trodeIndex).unit(iCluster) = iCluster;   
-                end
-            end
-        end
 end
 
 %% create unit list for input file
-semi = ';';
 tetList{8} = '';
+unitList = [];
 for iTrode = 1:8
-    if isempty(folder(1).trode(iTrode).unit);
-        tetList{iTrode} = num2str(iTrode);
-    else
+    if sum(folder(1).trode(iTrode).unit) > 0;
         tetList{iTrode} = num2str([iTrode,folder(1).trode(iTrode).unit(folder(1).trode(iTrode).unit~=0)]);
+        unitList = [unitList, tetList{iTrode}, '; '];
     end
+end
+
+%% create cut list for input file
+cutList = [];
+if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
+    for iTrode = 1:4
+        if (length(tetList{iTrode}) > 1) && iTrode == 1
+            cutList = [cutList,'PP4_TT%u_%u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 2
+            cutList = [cutList,'PP6_TT%u_%u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 3
+            cutList = [cutList,'PP7_TT%u_%u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 4
+            cutList = [cutList,'PP3_TT%u_%u; '];
+        else
+            continue
+        end
+    end
+elseif ~isempty(strfind(clusterList(1).name,'PP')) && ~isempty(strfind(clusterList(1).name,'SS')) % norway SS
+    for iTrode = 1:4
+        if (length(tetList{iTrode}) > 1) && iTrode == 1
+            cutList = [cutList,'PP4_TT%u_SS_%02u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 2
+            cutList = [cutList,'PP6_TT%u_SS_%02u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 3
+            cutList = [cutList,'PP7_TT%u_SS_%02u; '];
+        elseif (length(tetList{iTrode}) > 1) && iTrode == 4
+            cutList = [cutList,'PP3_TT%u_SS_%02u; '];
+        else
+            continue
+        end
+    end
+elseif isempty(strfind(clusterList(1).name,'SS')) && isempty(strfind(clusterList(1).name,'PP')) % oregon MClust
+    cutList = 'TT; ';
+elseif ~isempty(strfind(clusterList(1).name,'SS')) && isempty(strfind(clusterList(1).name,'PP')) % oregon SS
+    cutList = 'TT%u_SS_%02u; ';
+else
+    error('Unknown cluster type.')
 end
 
 %% write BNT input file
 fileID = fopen(penguinInput,'w');
-fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',userDir,tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);
+fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',userDir,cutList,unitList,arena);

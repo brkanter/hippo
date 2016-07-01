@@ -79,19 +79,54 @@ for iFolder = 1:length(uniqueFolders)
         c_num = cell2mat(dataInput(folderInds(iCluster),strcmpi('cluster',labels)));
         folder(iFolder).trode(t_num).unit(c_num) = c_num;  
     end
-    semi = ';';
-    tetList = repmat('',1,8);
+    tetList{8} = '';
+    unitList = [];
     for iTrode = 1:8
-        if isempty(folder(iFolder).trode(iTrode).unit);
-            tetList{iTrode} = num2str(iTrode);
-        else
+        if sum(folder(iFolder).trode(iTrode).unit) > 0;
             tetList{iTrode} = num2str([iTrode,folder(iFolder).trode(iTrode).unit(folder(iFolder).trode(iTrode).unit~=0)]);
+            unitList = [unitList, tetList{iTrode}, '; '];
         end
+    end
+    cutList = [];
+    if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
+        for iTrode = 1:4
+            if (length(tetList{iTrode}) > 1) && iTrode == 1
+                cutList = [cutList,'PP4_TT%u_%u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 2
+                cutList = [cutList,'PP6_TT%u_%u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 3
+                cutList = [cutList,'PP7_TT%u_%u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 4
+                cutList = [cutList,'PP3_TT%u_%u; '];
+            else
+                continue
+            end
+        end
+    elseif ~isempty(strfind(clusterList(1).name,'PP')) && ~isempty(strfind(clusterList(1).name,'SS')) % norway SS
+        for iTrode = 1:4
+            if (length(tetList{iTrode}) > 1) && iTrode == 1
+                cutList = [cutList,'PP4_TT%u_SS_%02u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 2
+                cutList = [cutList,'PP6_TT%u_SS_%02u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 3
+                cutList = [cutList,'PP7_TT%u_SS_%02u; '];
+            elseif (length(tetList{iTrode}) > 1) && iTrode == 4
+                cutList = [cutList,'PP3_TT%u_SS_%02u; '];
+            else
+                continue
+            end
+        end
+    elseif isempty(strfind(clusterList(1).name,'SS')) && isempty(strfind(clusterList(1).name,'PP')) % oregon MClust
+        cutList = 'TT; ';
+    elseif ~isempty(strfind(clusterList(1).name,'SS')) && isempty(strfind(clusterList(1).name,'PP')) % oregon SS
+        cutList = 'TT%u_SS_%02u; ';
+    else
+        error('Unknown cluster type.')
     end
     %% write BNT input file
     fileID = fopen(penguinInput,'w');
-    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s\nRoom room146\nShape %s',uniqueFolders{1,iFolder},tetList{1},semi,tetList{2},semi,tetList{3},semi,tetList{4},semi,tetList{5},semi,tetList{6},semi,tetList{7},semi,tetList{8},arena);
-    loadSessionsBRK(penguinInput,clusterFormat);
+    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',uniqueFolders{1,iFolder},cutList,unitList,arena);
+    data.loadSessions(penguinInput);
     %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);
