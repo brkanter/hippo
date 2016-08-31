@@ -40,16 +40,37 @@ if sum(strcmpi('session',labels))   % we already have sessions
     for iRow = 2:size(raw,1)
         compList{iRow,1} = sessions{1};
     end
-else    % need to extract sessions    
+else    % need to extract sessions
     warning(['Extracting session names could fail miserably depending on your directory names. ' ...
         'If this happens to you, manually add a column with session names before running this script.']);
     labels{end+1} = 'Session';
     raw(1,1:end+1) = labels;
     for iRow = 2:size(raw,1)
-        splits = regexp(raw{iRow,strcmpi('folder',labels)},'\','split');
-        raw{iRow,strcmpi('session',labels)} = splits{end}(1);
-        if iRow == 2
-            firstSessionName = splits{end}(1);
+        %         splits = regexp(raw{iRow,strcmpi('folder',labels)},'\','split');
+        %         raw{iRow,strcmpi('session',labels)} = splits{end}(1);
+        %         if iRow == 2
+        %             firstSessionName = splits{end}(1);
+        %         end
+        ind = strfind(raw{iRow,strcmpi('folder',labels)},'BL2');
+        if isempty(ind)
+            ind2 = strfind(raw{iRow,strcmpi('folder',labels)},'CNO');
+            if isempty(ind2)
+                ind3 = strfind(raw{iRow,strcmpi('folder',labels)},'BL');
+                raw{iRow,strcmpi('session',labels)} = 'BL';
+                if iRow == 2
+                    firstSessionName = 'BL';
+                end
+            else
+                raw{iRow,strcmpi('session',labels)} = 'CNO';
+                if iRow == 2
+                    firstSessionName = 'CNO';
+                end
+            end
+        else
+            raw{iRow,strcmpi('session',labels)} = 'BL2';
+            if iRow == 2
+                firstSessionName = 'BL2';
+            end
         end
         compList{iRow,1} = firstSessionName;
     end

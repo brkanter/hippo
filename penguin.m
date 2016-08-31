@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 17-Feb-2016 09:10:20
+% Last Modified by GUIDE v2.5 04-Jul-2016 08:28:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -622,7 +622,7 @@ function butt_findFields_Callback(hObject, eventdata, handles)
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -661,7 +661,7 @@ numTimeStamps = length(times);
 prompt={'Number of time blocks','Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'4','2',num2str(handles.dBinWidth),'0','n'};
+defaultanswer={'2','2',num2str(handles.dBinWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 numBlocks = str2double(Answers{1});
@@ -710,19 +710,36 @@ for iCluster = 1:numClusters
     %% make rate maps
     for iBlock = 1:numBlocks        
         map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+        mapMat{iCluster,iBlock} = map.z;
         meanRateMat(iCluster,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
-%       subplot(1,numBlocks,iBlock)
         subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
         colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-%         title(sprintf('%d - %dmin',spikesStruct(iBlock).tMins(1),spikesStruct(iBlock).tMins(2)))
         title(sprintf('%.2f',meanRateMat(iCluster,iBlock)))
         hold on        
-    end    
+    end 
 end
-% 
-% splitUserDir = regexp(handles.userDir,'\','split');
-% outputFile = ['C:\Users\chrislyk\Desktop\' splitUserDir{end}];
-% save(outputFile,'meanRateMat');
+figure;
+numMaps = 1:1:numBlocks;
+combo = nchoosek(numMaps,2);
+for iCluster = 1:numClusters
+    nametag = sprintf('T%dC%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2));
+    text(1,iCluster,nametag,'horizontalalignment','center')
+    for iComp = 1:size(combo,1)
+        if iCluster == 1
+            comptag = sprintf('%d vs %d',combo(iComp,1),combo(iComp,2));
+            text((iComp+1),0,comptag,'horizontalalignment','center')
+        end
+        cc = analyses.spatialCrossCorrelation(mapMat{iCluster,combo(iComp,1)},mapMat{iCluster,combo(iComp,2)});
+        cctag = sprintf('%.2f',cc);
+        h = text((iComp+1),iCluster,cctag,'horizontalalignment','center');
+        if cc >= 0.5
+            set(h,'fontweight','bold','color','b')
+        end
+    end
+end
+axis([0 (iComp+1) 0 numClusters+1])
+set(gca,'ydir','reverse')
+axis off
 
 % --- Executes on button press in butt_headDirection.
 function butt_headDirection_Callback(hObject, eventdata, handles)
@@ -1025,7 +1042,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -1262,7 +1279,7 @@ function butt_cellStats_Callback(hObject, eventdata, handles)
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -1354,7 +1371,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -1614,6 +1631,3 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-
-

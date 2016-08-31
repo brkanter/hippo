@@ -21,6 +21,12 @@ if ~exist('showLine','var')
     showLine = 0;
 end
 
+%% remove nans
+xnan = isnan(x);
+ynan = isnan(y);
+x = x(~xnan & ~ynan);
+y = y(~xnan & ~ynan);
+
 %% do the fit
 p = polyfit(x,y,degree);
 yfit = polyval(p, x);

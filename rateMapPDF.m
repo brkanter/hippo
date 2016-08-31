@@ -103,7 +103,27 @@ for iFolder = 1:length(allFolders)
             peakMat{iCluster,iFolder} = map.peakRate;
         end        
         tetrodeMat{iCluster,iFolder} = cellMatrix(iCluster,1);
-        clusterMat{iCluster,iFolder} = cellMatrix(iCluster,2);        
+        clusterMat{iCluster,iFolder} = cellMatrix(iCluster,2);
+        try
+            if cellMatrix(iCluster,1) == 1
+                PP = 4;
+            elseif cellMatrix(iCluster,1) == 2
+                PP = 6;
+            elseif cellMatrix(iCluster,1) == 3
+                PP = 7;
+            elseif cellMatrix(iCluster,1) == 4
+                PP = 3;
+            end
+            load(sprintf('PP%d_TT%d_%d-Quality.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % norway
+            qualityMat{iCluster,iFolder} = num2str(quality);
+        catch
+            try
+                load(sprintf('TT%d_%d-Quality.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % oregon
+                qualityMat{iCluster,iFolder} = num2str(quality);
+            catch
+                qualityMat{iCluster,iFolder} = '';
+            end
+        end
     end    
 end
 
@@ -282,11 +302,27 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');                
                 switch expType                    
-                    case 1                        
-                        if ~isempty(mapMat{cellCount,sessionCount})                            
-                            bottomTitle = title(sprintf('T%dC%d  m=%.2f  p=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},meanMat{cellCount,sessionCount},peakMat{cellCount,sessionCount}));
+                    case 1
+                        %                         if ~isempty(mapMat{cellCount,sessionCount})
+                        %                             bottomTitle = title(sprintf('T%dC%d  m=%.2f  p=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},meanMat{cellCount,sessionCount},peakMat{cellCount,sessionCount}));
+                        %                             set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+7.5],'VerticalAlignment','bottom','FontSize',9)
+                        %                             set(scaleBar,'FontSize',8)
+                        %                         end
+                        if ~isempty(mapMat{cellCount,sessionCount})
+                            Q = qualityMat{cellCount,sessionCount};
+                            if strcmpi(Q,'4')
+                                Q = 'off';
+                            end
+                            bottomTitle = title(sprintf('T%dC%d  Q%s  m=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},Q,meanMat{cellCount,sessionCount}));
                             set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+7.5],'VerticalAlignment','bottom','FontSize',9)
-                            set(scaleBar,'FontSize',8)                            
+                            if strcmpi(Q,'3')
+                                set(bottomTitle,'color','r')
+                            elseif strcmpi(Q,'off')
+                                set(bottomTitle,'color','b')
+                            end
+                            try
+                                set(scaleBar,'FontSize',8)
+                            end
                         end
                     case {2,3,5,6}
                         if ~isempty(mapMat{cellCount,sessionCount})

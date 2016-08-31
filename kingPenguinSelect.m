@@ -85,8 +85,12 @@ for iFolder = 1:length(uniqueFolders)
         if sum(folder(iFolder).trode(iTrode).unit) > 0;
             tetList{iTrode} = num2str([iTrode,folder(iFolder).trode(iTrode).unit(folder(iFolder).trode(iTrode).unit~=0)]);
             unitList = [unitList, tetList{iTrode}, '; '];
+        else
+            tetList{iTrode} = '';
         end
     end
+    %% create cut list for input file
+    clusterList = dir('*.t');
     cutList = [];
     if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
         for iTrode = 1:4
@@ -169,36 +173,36 @@ labels{1,countMapIdx} = 'Count map';
 dataOutput = [dataInput, mapArray, mapCountArray];
 
 %% add mouse IDs using filenames
-% labels(end+1) = {'Mouse ID'};
-% for iRow = 1:size(dataOutput,1)
-%     filename = dataOutput{iRow,strcmpi('folder',labels)};
-%     %% aldis MEC
-% %     startIdx = strfind(filename,'DRD');
-% %     startIdx = startIdx(1);
-% %     mouseID = filename(startIdx:startIdx+4);
-%     %% aldis CA1
+labels(end+1) = {'Mouse ID'};
+for iRow = 1:size(dataOutput,1)
+    filename = dataOutput{iRow,strcmpi('folder',labels)};
+    %% aldis MEC
+%     startIdx = strfind(filename,'DRD');
+%     startIdx = startIdx(1);
+%     mouseID = filename(startIdx:startIdx+4);
+    %% aldis CA1
 %     startIdx = strfind(filename,'DRD');
 %     startIdx = startIdx(1);
 %     mouseID = filename(startIdx:startIdx+4);
 %     if strcmpi(mouseID(end),' ')
 %         mouseID = mouseID(1:end-1);
 %     end
-%     %% ben
-% %     startIdx = strfind(filename,'BK');
-% %     if ~isempty(startIdx)
-% %         mouseID = filename(startIdx:startIdx+4);
-% %     else
-% %         startIdx = strfind(filename,'CML');
-% %         mouseID = filename(startIdx:startIdx+3);
-% %     end
-%     dataOutput(iRow,strcmpi('mouse id',labels)) = {mouseID};
-% end
+    %% ben
+    startIdx = strfind(filename,'BK');
+    if ~isempty(startIdx)
+        mouseID = filename(startIdx:startIdx+4);
+    else
+        startIdx = strfind(filename,'CML');
+        mouseID = filename(startIdx:startIdx+3);
+    end
+    dataOutput(iRow,strcmpi('mouse id',labels)) = {mouseID};
+end
 
 %% add unique experiment numbers
 Answer = questdlg('Do all experiments have the same number of sessions?');
 % set flag to be able to break out
-expNumFlag = 1;
-while expNumFlag
+flag = 1;
+while flag
     if strcmpi(Answer,'Yes')
         labels(end+1) = {'Exp num'};
         folderList = uniqueFolders';
@@ -212,7 +216,7 @@ while expNumFlag
             else   % abort
                 warning('Not adding experiment numbers because you didn''t answer.');
                 labels = labels(1:end-1);
-                expNumFlag = 0;
+                flag = 0;
             end
         end
         % add exp nums here
@@ -227,9 +231,9 @@ while expNumFlag
             temp_data(iRow,strcmpi('exp num',labels)) = folderList(folderIdx,2);
         end
         dataOutput = temp_data;
-        expNumFlag = 0;
+        flag = 0;
     else
-        expNumFlag = 0;
+        flag = 0;
     end
 end
 
@@ -241,6 +245,18 @@ end
 if sum(strcmpi('exp num',labels))
     for iRow = 1:size(dataOutput,1)
         dataOutput{iRow,strcmpi('exp num',labels)} = num2str(dataOutput{iRow,strcmpi('exp num',labels)});
+    end
+end
+if sum(strcmpi('dose',labels))
+    for iRow = 1:size(dataOutput,1)
+        dataOutput{iRow,strcmpi('dose',labels)} = num2str(dataOutput{iRow,strcmpi('dose',labels)});
+    end
+end
+if sum(strcmpi('cno num',labels))
+    for iRow = 1:size(dataOutput,1)
+        if isnan(dataOutput{iRow,strcmpi('cno num',labels)})
+            dataOutput{iRow,strcmpi('cno num',labels)} = 0;
+        end
     end
 end
 
