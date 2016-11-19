@@ -67,7 +67,13 @@ end
 
 %% create cut list for input file
 cutList = [];
-if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
+if isempty(clusterList) % make fake .t file
+    ''; 
+    cellTS = 1;
+    save('PP4_TT1_99.t','cellTS')
+    unitList = '1 99;';
+    cutList = [cutList,'PP4_TT%u_%u; '];
+elseif ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
     for iTrode = 1:4
         if (length(tetList{iTrode}) > 1) && iTrode == 1
             cutList = [cutList,'PP4_TT%u_%u; '];

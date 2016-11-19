@@ -1,5 +1,5 @@
 
-% penGUIn: GUI for neurobiological analysis of spatial behavior.
+% penguin: GUI for neurobiological analysis of spatial behavior.
 %
 % Written by BRK 2014 based on Behavioral Neurology Toolbox (V. Frolov 2013).
 
@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 04-Jul-2016 08:28:12
+% Last Modified by GUIDE v2.5 28-Sep-2016 07:50:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -159,13 +159,13 @@ handles.totalSpikes = 0;
 handles.spikeWidth = 0;
 handles.Marker = 3;
 for iTrode = 1:8
-   handles.trodeTS{iTrode} = ''; 
+    handles.trodeTS{iTrode} = '';
 end
 
 %% plot animal path
 if handles.gotPos
     axes(handles.axes1);
-    pathTrialBRK('color',[.7 .7 .7])         
+    pathTrialBRK('color',[.7 .7 .7])
     axis off
     axis equal
 end
@@ -255,10 +255,10 @@ handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
 set(handles.text_meanRate, 'String', handles.meanRate);
 
 %% calculate peak rate in Hz
-if ~isfield(map,'peakRate')    
-    handles.peakRate = 0;    
-else    
-    handles.peakRate = map.peakRate;    
+if ~isfield(map,'peakRate')
+    handles.peakRate = 0;
+else
+    handles.peakRate = map.peakRate;
 end
 set(handles.text_peakRate, 'String', handles.peakRate);
 
@@ -314,10 +314,10 @@ handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
 set(handles.text_meanRate, 'String', handles.meanRate);
 
 %% calculate peak rate in Hz
-if ~isfield(map,'peakRate')       
-    handles.peakRate = 0;    
-else    
-    handles.peakRate = map.peakRate;    
+if ~isfield(map,'peakRate')
+    handles.peakRate = 0;
+else
+    handles.peakRate = map.peakRate;
 end
 set(handles.text_peakRate, 'String', handles.peakRate);
 
@@ -357,6 +357,7 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 pathTrialBRK('color',[.7 .7 .7])
+% set(gcf,'color','w')
 axis off
 axis equal
 hold on
@@ -407,22 +408,22 @@ set(figBatchSPP,'Name',handles.userDir,'Color','w')
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 
 %% plot
-for iCluster = 1:numClusters    
+for iCluster = 1:numClusters
     %% get spike times
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    spikePos = data.getSpikePositions(spikes,handles.posAve);    
+    spikePos = data.getSpikePositions(spikes,handles.posAve);
     %% plot animal path
     figure(figBatchSPP);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
     pathTrialBRK('color',[.7 .7 .7])
-    hold on    
+    hold on
     %% overlay spikes
     plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',Marker)
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
     axis off;
     axis equal;
-    hold off    
+    hold off
 end
 
 saveas(figBatchSPP,sprintf('SPPs_%s.pdf',splitHandlesUserDir{end}));
@@ -457,7 +458,7 @@ if scale == 'n'
     colorMapBRK(map.z,'bar','on','pubQual',pubQual);
     title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz\n',handles.tetrode,handles.cluster,handles.meanRate,map.peakRate),'fontweight','normal','fontsize',10)
     set(figRM,'Name',handles.userDir,'Color','w')
-else        % scale to peak    
+else        % scale to peak
     %% prompt user to find previous data
     userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
     if userDir == 0; return; end;
@@ -487,19 +488,19 @@ else        % scale to peak
     %% reload current data
     userDir = handles.userDir;
     if userDir == 0; return; end;
-    cd(userDir);             % make that directory the current one    
+    cd(userDir);             % make that directory the current one
     writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
     data.loadSessions(handles.inputFileID);
     
     %% plot scaled maps
-    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
+    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     if ~isfield(map,'peakRate')
         map.peakRate = 0;
-    end    
+    end
     figRM = figure;
     colorMapBRK(map.z,'cutoffs',[nanmin(nanmin(map.z)),prevMax],'bar','on','pubQual',pubQual);
     title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz\n',handles.tetrode,handles.cluster,handles.meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-    set(figRM,'Name',sprintf('%s scaled to peak of %s',handles.userDir,userDir),'Color','w')    
+    set(figRM,'Name',sprintf('%s scaled to peak of %s',handles.userDir,userDir),'Color','w')
 end
 
 guidata(hObject,handles);
@@ -532,35 +533,35 @@ else
 end
 
 %% calculate and plot
-if scale == 'n'   
+if scale == 'n'
     splitHandlesUserDir = regexp(handles.userDir,'\','split');
     figBatchRM = figure;
-    set(figBatchRM,'Name',splitHandlesUserDir{end},'Color','w')    
-    for iCluster = 1:numClusters        
+    set(figBatchRM,'Name',splitHandlesUserDir{end},'Color','w')
+    for iCluster = 1:numClusters
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        meanRate = analyses.meanRate(spikes, handles.posAve);        
-        if ~isfield(map,'peakRate')            
-            map.peakRate = 0;            
-        end        
+        meanRate = analyses.meanRate(spikes, handles.posAve);
+        if ~isfield(map,'peakRate')
+            map.peakRate = 0;
+        end
         figure(figBatchRM);
         plotSize = ceil(sqrt(numClusters));
         subplot(plotSize,plotSize,iCluster)
         colorMapBRK(map.z,'bar','on','pubQual',pubQual);
         title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-        hold on        
-    end    
-    saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));    
-else        % scale to peak    
+        hold on
+    end
+    saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));
+else        % scale to peak
     %% find previous data
     userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
     if userDir == 0; return; end;
-    cd(userDir);            
+    cd(userDir);
     figBatchRM = figure;
     splitUserDir = regexp(userDir,'\','split');
     splitHandlesUserDir = regexp(handles.userDir,'\','split');
     set(figBatchRM,'Name',sprintf('%s scaled to %s',splitHandlesUserDir{end},splitUserDir{end}),'Color','w')
-
+    
     %% load previous data and store for comparisons
     writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
     data.loadSessions(handles.inputFileID);
@@ -573,28 +574,28 @@ else        % scale to peak
     t = posAve(:,1);
     x = posAve(:,2);
     y = posAve(:,3);
-    prevMax = zeros(1,numClusters);    
-    for iCluster = 1:numClusters        
+    prevMax = zeros(1,numClusters);
+    for iCluster = 1:numClusters
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        prevMax(iCluster) = nanmax(nanmax(map.z));        
-    end    
+        prevMax(iCluster) = nanmax(nanmax(map.z));
+    end
     %% reload current data
     userDir = handles.userDir;
     if userDir == 0; return; end;
-    cd(userDir);             % make that directory the current one    
+    cd(userDir);             % make that directory the current one
     writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
     data.loadSessions(handles.inputFileID);
     cellMatrix = data.getCells;
-    numClusters = size(cellMatrix,1);    
+    numClusters = size(cellMatrix,1);
     %% plot scaled maps
-    for iCluster = 1:numClusters        
+    for iCluster = 1:numClusters
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        meanRate = analyses.meanRate(spikes, handles.posAve);        
+        meanRate = analyses.meanRate(spikes, handles.posAve);
         if ~isfield(map,'peakRate')
             map.peakRate = 0;
-        end    
+        end
         currentMin = nanmin(nanmin(map.z));
         figure(figBatchRM);
         plotSize = ceil(sqrt(numClusters));
@@ -607,9 +608,9 @@ else        % scale to peak
             colorMapBRK(map.z,'bar','on','pubQual',pubQual,'cutoffs',[currentMin,prevMax(iCluster)]);
         end
         title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-        hold on        
-    end    
-    saveas(figBatchRM,sprintf('rateMaps_%s_scaledto_%s.pdf',splitHandlesUserDir{end},splitUserDir{end}));    
+        hold on
+    end
+    saveas(figBatchRM,sprintf('rateMaps_%s_scaledto_%s.pdf',splitHandlesUserDir{end},splitUserDir{end}));
 end
 
 % --- Executes on button press in butt_findFields.
@@ -680,11 +681,11 @@ field_names = {'s','tMins','t','x','y'};
 empty_cells = repmat(cell(1),1,numel(field_names));
 entries = {field_names{:} ; empty_cells{:}};
 spikesStruct = struct(entries{:});
-for iCluster = 1:numClusters    
+for iCluster = 1:numClusters
     figTimeDivRM = figure;
-    set(figTimeDivRM,'Name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'Color','w');    
+    set(figTimeDivRM,'Name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'Color','w');
     %% get spike times
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));    
+    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     for iBlock = 1:numBlocks
         if iBlock == 1   %% first time block
             spikesStruct(iBlock).s = spikes(spikes <= times(blockLength));    % spike times
@@ -706,17 +707,17 @@ for iCluster = 1:numClusters
             spikesStruct(iBlock).x = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,2);
             spikesStruct(iBlock).y = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,3);
         end
-    end    
+    end
     %% make rate maps
-    for iBlock = 1:numBlocks        
+    for iBlock = 1:numBlocks
         map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
         mapMat{iCluster,iBlock} = map.z;
         meanRateMat(iCluster,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
         subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
         colorMapBRK(map.z,'bar','on','pubQual',pubQual);
         title(sprintf('%.2f',meanRateMat(iCluster,iBlock)))
-        hold on        
-    end 
+        hold on
+    end
 end
 figure;
 numMaps = 1:1:numBlocks;
@@ -849,7 +850,7 @@ end
 % cutoff = prctile(gridScoreShuffle,95)
 
 %% autocorrelation
-map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
+map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
 autoCorr = analyses.autocorrelation(map.z);
 [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
 if ~isempty(stats.spacing)
@@ -858,13 +859,13 @@ if ~isempty(stats.spacing)
 else
     gridScore = nan;
     gridSpacing = nan;
-end  
-    
+end
+
 %% plot autocorrelogram with score and spacing
 ACfig = figure;
 colorMapBRK(autoCorr);
 if gridScore >= 0.5
-% if gridScore >= cutoff
+    % if gridScore >= cutoff
     title(sprintf('SCORE = %.3f\nSPACING = %.3f', gridScore, gridSpacing),'fontweight','bold','fontsize',14)
 else
     title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontsize',14)
@@ -901,9 +902,9 @@ end
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchAC = figure;
 set(figBatchAC,'Name',splitHandlesUserDir{end},'Color','w')
-for iCluster = 1:numClusters    
+for iCluster = 1:numClusters
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);    
+    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     %% autocorrelations
     autoCorr = analyses.autocorrelation(map.z);
     [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
@@ -913,10 +914,10 @@ for iCluster = 1:numClusters
     else
         gridScore = nan;
         gridSpacing = nan;
-    end   
+    end
     %% plot autocorrelogram with score and spacing
     figure(figBatchAC);
-    plotSize = ceil(sqrt(numClusters));    
+    plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
     colorMapBRK(autoCorr);
     if gridScore >= 0.5
@@ -926,7 +927,7 @@ for iCluster = 1:numClusters
     end
     axis off
     axis equal
-    hold on    
+    hold on
 end
 saveas(figBatchAC,sprintf('autoCorrs_%s.pdf',splitHandlesUserDir{end}));
 
@@ -1382,98 +1383,98 @@ minPeak = str2double(Answers{4});
 for iCluster = 1:numClusters
     figCheck = figure;
     set(figCheck,'name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
-      
-    %% path plot
-    subplot(321)
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    spikePos = data.getSpikePositions(spikes,handles.posAve);
-    pathTrialBRK('color',[.7 .7 .7])
-    hold on
-    plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
-    axis off;
-    axis equal;
-    hold off
-    
-    %% rate maps
-    subplot(322)
-    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-    meanRate = analyses.meanRate(spikes, handles.posAve);
-    if ~isfield(map,'peakRate')
-        map.peakRate = 0;
+    try
+        %% path plot
+        subplot(321)
+        spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+        spikePos = data.getSpikePositions(spikes,handles.posAve);
+        pathTrialBRK('color',[.7 .7 .7])
+        hold on
+        plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
+        axis off;
+        axis equal;
+        hold off
+        
+        %% rate maps
+        subplot(322)
+        map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+        meanRate = analyses.meanRate(spikes, handles.posAve);
+        if ~isfield(map,'peakRate')
+            map.peakRate = 0;
+        end
+        colorMapBRK(map.z,'bar','on');
+        title(sprintf('mean = %.4f Hz\npeak = %.4f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+        hold on
+        
+        %% HD
+        subplot(323)
+        pos = data.getPositions('average','off','speedFilter',[2 0]);
+        allHD = analyses.calcHeadDirection(pos);
+        [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
+        spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
+        tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
+        tcStat = analyses.tcStatistics(tc, 10, 20);
+        circularTurningBRK(tc(:,2))
+        axis equal
+        title(sprintf('length = %.2f angle = %.2f',tcStat.r,tcStat.mean),'fontweight','normal','fontsize',10);
+        
+        %% grid
+        subplot(324)
+        autoCorr = analyses.autocorrelation(map.z);
+        [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
+        if ~isempty(stats.spacing)
+            gridScore = score;
+            gridSpacing = mean(stats.spacing);
+        else
+            gridScore = nan;
+            gridSpacing = nan;
+        end
+        colorMapBRK(autoCorr);
+        title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontweight','normal','fontsize',10)
+        axis off
+        axis equal
+        hold on
+        
+        %% autocorrelation
+        subplot(325)
+        if length(spikes) >= 100
+            [counts,centers,thetaInd] = thetaIndex(spikes);
+            bar(centers,counts,'facecolor','k');
+            xlabel('msec');
+            ylabel('Count');
+        else
+            thetaInd = nan;
+        end
+        title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
+        
+        %% spatial info
+        [Info,spars,sel] = analyses.mapStatsPDF(map);
+        
+        %% border
+        [fieldsMap, fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
+        borderScore = analyses.borderScore(map.z, fieldsMap, fields);
+        
+        %% titles
+        subplot(321)
+        title(sprintf('info = %.4f\nborder = %.4f',Info.content,borderScore),'fontweight','normal','fontsize',10)
+        subplot(326)
+        if gridScore >= 0.3608
+            text(0.5,1,'GRID','fontweight','bold','fontsize',10)
+        end
+        if borderScore >= 0.4416 && Info.content >= 0.6421
+            text(0.5,0.75,'BORDER','fontweight','bold','fontsize',10)
+        end
+        if tcStat.r >= 0.2246
+            text(0.5,0.5,'HD','fontweight','bold','fontsize',10)
+        end
+        if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
+            text(0.5,0.25,'SPATIAL','fontweight','bold','fontsize',10)
+        end
+        if thetaInd >= 5
+            text(0.5,0,'THETA','fontweight','bold','fontsize',10)
+        end
+        axis off
     end
-    colorMapBRK(map.z,'bar','on');
-    title(sprintf('mean = %.4f Hz\npeak = %.4f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-    hold on
-    
-    %% HD
-    subplot(323)
-    pos = data.getPositions('average','off','speedFilter',[2 0]);
-    allHD = analyses.calcHeadDirection(pos);
-    [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
-    spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
-    tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
-    tcStat = analyses.tcStatistics(tc, 10, 20);
-    circularTurningBRK(tc(:,2))
-    axis equal
-    title(sprintf('length = %.2f angle = %.2f',tcStat.r,tcStat.mean),'fontweight','normal','fontsize',10);
-    
-    %% grid
-    subplot(324)
-    autoCorr = analyses.autocorrelation(map.z);
-    [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
-    if ~isempty(stats.spacing)
-        gridScore = score;
-        gridSpacing = mean(stats.spacing);
-    else
-        gridScore = nan;
-        gridSpacing = nan;
-    end
-    colorMapBRK(autoCorr);
-    title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontweight','normal','fontsize',10)
-    axis off
-    axis equal
-    hold on
-    
-    %% autocorrelation
-    subplot(325)
-    if length(spikes) >= 100
-        [counts,centers,thetaInd] = thetaIndex(spikes);
-        bar(centers,counts,'facecolor','k');
-        xlabel('msec');
-        ylabel('Count');
-    else
-        thetaInd = nan;
-    end
-    title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');   
-    
-    %% spatial info
-    [Info,spars,sel] = analyses.mapStatsPDF(map);
-    
-    %% border
-    [fieldsMap, fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
-    borderScore = analyses.borderScore(map.z, fieldsMap, fields);
-    
-    %% titles
-    subplot(321)
-    title(sprintf('info = %.4f\nborder = %.4f',Info.content,borderScore),'fontweight','normal','fontsize',10)
-    subplot(326)
-    if gridScore >= 0.3608
-        text(0.5,1,'GRID','fontweight','bold','fontsize',10)
-    end
-    if borderScore >= 0.4416 && Info.content >= 0.6421
-        text(0.5,0.75,'BORDER','fontweight','bold','fontsize',10)
-    end
-    if tcStat.r >= 0.2246
-        text(0.5,0.5,'HD','fontweight','bold','fontsize',10)
-    end
-    if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
-        text(0.5,0.25,'SPATIAL','fontweight','bold','fontsize',10)
-    end
-    if thetaInd >= 5 
-        text(0.5,0,'THETA','fontweight','bold','fontsize',10)
-    end
-    axis off
-
 end
 
 % --- Executes on button press in butt_emperor.

@@ -55,7 +55,7 @@ if ismember(4,selections); scaleMethod = 4; end
 %% session labels
 [selections, OK] = listdlg('PromptString','Choose experiment type', ...
     'SelectionMode','single',...
-    'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E'}, ...
+    'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E','BL1 CNO'}, ...
     'InitialValue',1, ...
     'ListSize',[400, 400]);
 if OK == 0; return; end;
@@ -65,6 +65,7 @@ if ismember(3,selections); expType = 3; end
 if ismember(4,selections); expType = 4; end
 if ismember(5,selections); expType = 5; end
 if ismember(6,selections); expType = 6; end
+if ismember(7,selections); expType = 7; end
 
 switch expType
     case 1
@@ -77,6 +78,8 @@ switch expType
         numSesh = 4;
     case 6
         numSesh = 5;
+    case 7
+        numSesh = 2;
 end
 
 %% load data and make rate maps
@@ -215,6 +218,19 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 spacey=0.6;
                 fontsize=10;
                 sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey); 
+            case 2       % 2 sessions
+                plotheight=16;
+                plotwidth=16;
+                subplotsx=2;
+                subplotsy=4;
+                leftedge=1.2;
+                rightedge=0.4;
+                topedge=1;
+                bottomedge=1;
+                spacex=0.4;
+                spacey=0.8;
+                fontsize=10;
+                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);       
         end
         %% set the Matlab figure
         figBatchRM = figure;
@@ -302,12 +318,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');                
                 switch expType                    
-                    case 1
-                        %                         if ~isempty(mapMat{cellCount,sessionCount})
-                        %                             bottomTitle = title(sprintf('T%dC%d  m=%.2f  p=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},meanMat{cellCount,sessionCount},peakMat{cellCount,sessionCount}));
-                        %                             set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+7.5],'VerticalAlignment','bottom','FontSize',9)
-                        %                             set(scaleBar,'FontSize',8)
-                        %                         end
+                    case {1,7}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             Q = qualityMat{cellCount,sessionCount};
                             if strcmpi(Q,'4')
@@ -420,6 +431,13 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                 case 5
                                     text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/-5,'E','FontSize',26,'FontWeight','bold')
                             end
+                        case 7      % labels for 1 Env 3 sessions
+                            switch iPlotsX        % add column labels whose position is determined by current axes limits                                
+                                case 1                                    
+                                    text((Xlims(2)-Xlims(1))/3.5,(Ylims(1))-5,'BL1','FontSize',20,'FontWeight','bold')                                    
+                                case 2                                    
+                                    text((Xlims(2)-Xlims(1))/4,(Ylims(1))-5,'CNO','FontSize',20,'FontWeight','bold')                                                                   
+                            end  
                     end                    
                 end                                
                 sessionCount = sessionCount + 1;                
@@ -430,7 +448,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         set(figBatchRM,'Color','w','Position', get(0,'Screensize'));
         sheetNumber = sheetNumber + 1;        
         switch numSesh            
-            case 3                
+            case {2,3}                
                 if scaleMethod == 1                    
                     saveas(figBatchRM,sprintf('%s\\auto_%s[%d].pdf',outFolder,splitFolder{end},sheetNumber));                    
                 elseif scaleMethod == 2                    

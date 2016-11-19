@@ -154,6 +154,7 @@ for iFolder = 1:length(uniqueFolders)
         %% HD
         if strcmpi('HD',HD)
             posArray{folderInds(iCluster),1} = data.getPositions('average','off','speedFilter',[2 0]);
+            posAveArray{folderInds(iCluster),1} = data.getPositions('speedFilter',[2 0]);
         else
             posArray{folderInds(iCluster),1} = posAve;
         end
@@ -210,7 +211,7 @@ while flag
             seshNames = unique(dataOutput(:,strcmpi('session',labels)));
             numSesh = numel(seshNames);
         catch   % or maybe we don't
-            Answer2 = inputdlg('How many sessions are in each experiment?','',1,{'6'});
+            Answer2 = inputdlg('How many sessions are in each experiment?','',1,{'3'});
             if ~isempty(Answer2)
                 numSesh = str2double(Answer2{1});
             else   % abort
@@ -265,8 +266,8 @@ save(matFile,'dataOutput','labels');
 
 %% add positions and spike times
 if strcmpi('HD',HD)
-    dataOutput = [dataOutput, posArray, spikePosArray];
-    labels = [labels, 'Positions','Spike positions'];
+    dataOutput = [dataOutput, posArray, spikePosArray, posAveArray];
+    labels = [labels, 'Positions','Spike positions','Pos ave'];
     savefast([matFile '_HD'],'dataOutput','labels')
 end
 
