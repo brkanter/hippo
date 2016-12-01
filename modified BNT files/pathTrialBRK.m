@@ -33,8 +33,9 @@ function pathTrialBRK(trialNum, varargin)
     holded = ishold();
     for i = 1:data.getNumSessions()
         [startPos, endPos] = data.getRunIndices(i);
-        plot(pos(startPos:endPos, 2), pos(startPos:endPos, 3), varargin{:});
+        h = plot(pos(startPos:endPos, 2), pos(startPos:endPos, 3), varargin{:});
         %%%
+        set(h,'hittest','off')
         set(gca,'ydir','reverse')
         %%%
         if i == 1

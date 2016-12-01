@@ -174,12 +174,11 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
             data(isnan(data)) = m;
             
             cmap = colormap(a);
-            if ~isequal(cmap(1, :), [1 1 1])
-                colormap(a, [1 1 1; cmap]);
-            end
+            colormap(a, [get(a,'color'); cmap]);
         end
         p = imagesc(x, y, data, [m M]);
         set(a, 'color', [0 0 0]);
+        set(p,'hittest','off')
         if any(dimm~=1)
             alpha(p, 1 ./ (1 + threshold./(dimm+eps)));
         end
@@ -195,9 +194,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     end
     
     %%% BRK
-    set(gcf,'color','w')
-    set(gca,'DataAspectRatio',[1 1 1]);
-    axis off;
+    set(gca,'DataAspectRatio',[1 1 1])
+    axis off
     %%%
     
 end

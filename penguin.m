@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 28-Sep-2016 07:50:51
+% Last Modified by GUIDE v2.5 01-Dec-2016 13:08:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -165,8 +165,8 @@ end
 %% plot animal path
 if handles.gotPos
     axes(handles.axes1);
-    pathTrialBRK('color',[.7 .7 .7])
-    axis off
+    pathTrialBRK('color',[.3 .3 .3])
+    set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
     axis equal
 end
 
@@ -280,8 +280,8 @@ set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
-pathTrialBRK('color',[.7 .7 .7])
-axis off
+pathTrialBRK('color',[.3 .3 .3])
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
 guidata(hObject,handles);
@@ -344,8 +344,8 @@ set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
-pathTrialBRK('color',[.7 .7 .7])
-axis off
+pathTrialBRK('color',[.3 .3 .3])
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
 guidata(hObject,handles);
@@ -356,13 +356,12 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pathTrialBRK('color',[.7 .7 .7])
-% set(gcf,'color','w')
-axis off
+pathTrialBRK('color',[.3 .3 .3])
 axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
 hold off
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 
 % --- Executes on selection change in edit_markersize
 function edit_markersize_Callback(hObject, eventdata, handles)
@@ -376,12 +375,12 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 %% change marker size for spike overlay
 handles.Marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
-pathTrialBRK('color',[.7 .7 .7])
-axis(handles.axes1,'equal');
-axis(handles.axes1,'off');
+pathTrialBRK('color',[.3 .3 .3])
+axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
 hold off
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 
 guidata(hObject,handles);
 
@@ -416,7 +415,7 @@ for iCluster = 1:numClusters
     figure(figBatchSPP);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
-    pathTrialBRK('color',[.7 .7 .7])
+    pathTrialBRK('color',[.3 .3 .3])
     hold on
     %% overlay spikes
     plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',Marker)
@@ -434,75 +433,10 @@ function butt_ratemap_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%% prompt for settings
-prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Scale to peak of previous session? (y/n)','Publication quality? (y/n)'};
-name='Settings';
-numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
-Answers = inputdlg(prompt,name,numlines,defaultanswer);
-if isempty(Answers); return; end;
-smooth = str2double(Answers{1});
-binWidth = str2double(Answers{2});
-minTime = str2double(Answers{3});
-scale = Answers{4};
-if strcmp('n',Answers{5})
-    pubQual = 0;
-else
-    pubQual = 1;
-end
-
-%% calculate and plot
-if scale == 'n'
-    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime,'limits',handles.mapLimits);
-    figRM = figure;
-    colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-    title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz\n',handles.tetrode,handles.cluster,handles.meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-    set(figRM,'Name',handles.userDir,'Color','w')
-else        % scale to peak
-    %% prompt user to find previous data
-    userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
-    if userDir == 0; return; end;
-    prompt={'Tetrode', 'Cell'};
-    name='Previous cell';
-    numlines=1;
-    defaultanswer={num2str(handles.tetrode),num2str(handles.cluster)};
-    Answers = inputdlg(prompt,name,numlines,defaultanswer);
-    if isempty(Answers); return; end;
-    trode = Answers(1);
-    cell = Answers(2);
-    fileID = fopen(handles.inputFileID,'w');
-    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nUnits %s %s\nRoom room146\nShape %s',userDir,trode{1,1},cell{1,1},handles.arena);
-    
-    %% load previous data and store it for comparisons
-    data.loadSessions(handles.inputFileID);
-    clear posAve;
-    posAve = data.getPositions('speedFilter',[2 0]);
-    spikes = data.getSpikeTimes([]);
-    if isempty(spikes); warndlg('No spikes found in previous session.'); return; end;
-    t = posAve(:,1);
-    x = posAve(:,2);
-    y = posAve(:,3);
-    map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-    prevMax = nanmax(nanmax(map.z));
-    
-    %% reload current data
-    userDir = handles.userDir;
-    if userDir == 0; return; end;
-    cd(userDir);             % make that directory the current one
-    writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
-    data.loadSessions(handles.inputFileID);
-    
-    %% plot scaled maps
-    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-    if ~isfield(map,'peakRate')
-        map.peakRate = 0;
-    end
-    figRM = figure;
-    colorMapBRK(map.z,'cutoffs',[nanmin(nanmin(map.z)),prevMax],'bar','on','pubQual',pubQual);
-    title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz\n',handles.tetrode,handles.cluster,handles.meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-    set(figRM,'Name',sprintf('%s scaled to peak of %s',handles.userDir,userDir),'Color','w')
-end
-
+map = analyses.map([handles.posT handles.posX handles.posY],handles.spikes,'smooth',handles.dSmoothing,'binWidth',handles.dBinWidth,'limits',handles.mapLimits);
+colorMapBRK(map.z);
+axis on
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 guidata(hObject,handles);
 
 % --- Executes on button press in butt_batchRM.
@@ -511,12 +445,11 @@ function butt_batchRM_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
-prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Scale to peak of previous session? (y/n)','Publication quality? (y/n)'};
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
 defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
@@ -525,93 +458,26 @@ if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
-scale = Answers{4};
-if strcmp('n',Answers{5})
-    pubQual = 0;
-else
-    pubQual = 1;
-end
 
 %% calculate and plot
-if scale == 'n'
-    splitHandlesUserDir = regexp(handles.userDir,'\','split');
-    figBatchRM = figure;
-    set(figBatchRM,'Name',splitHandlesUserDir{end},'Color','w')
-    for iCluster = 1:numClusters
-        spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        meanRate = analyses.meanRate(spikes, handles.posAve);
-        if ~isfield(map,'peakRate')
-            map.peakRate = 0;
-        end
-        figure(figBatchRM);
-        plotSize = ceil(sqrt(numClusters));
-        subplot(plotSize,plotSize,iCluster)
-        colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-        title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-        hold on
+splitHandlesUserDir = regexp(handles.userDir,'\','split');
+figBatchRM = figure;
+set(figBatchRM,'Name',splitHandlesUserDir{end})
+for iCluster = 1:numClusters
+    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+    meanRate = analyses.meanRate(spikes, handles.posAve);
+    if ~isfield(map,'peakRate')
+        map.peakRate = 0;
     end
-    saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));
-else        % scale to peak
-    %% find previous data
-    userDir = uigetdir('E:\HM3_CA3','Choose directory for previous session');
-    if userDir == 0; return; end;
-    cd(userDir);
-    figBatchRM = figure;
-    splitUserDir = regexp(userDir,'\','split');
-    splitHandlesUserDir = regexp(handles.userDir,'\','split');
-    set(figBatchRM,'Name',sprintf('%s scaled to %s',splitHandlesUserDir{end},splitUserDir{end}),'Color','w')
-    
-    %% load previous data and store for comparisons
-    writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
-    data.loadSessions(handles.inputFileID);
-    cellMatrix = data.getCells;
-    numClusters = size(cellMatrix,1);
-    clear posAve;
-    posAve = data.getPositions('speedFilter',[2 0]);
-    spikes = data.getSpikeTimes([]);
-    if isempty(spikes); warndlg('No spikes found in previous session.'); return; end;
-    t = posAve(:,1);
-    x = posAve(:,2);
-    y = posAve(:,3);
-    prevMax = zeros(1,numClusters);
-    for iCluster = 1:numClusters
-        spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        prevMax(iCluster) = nanmax(nanmax(map.z));
-    end
-    %% reload current data
-    userDir = handles.userDir;
-    if userDir == 0; return; end;
-    cd(userDir);             % make that directory the current one
-    writeInputBNT(handles.inputFileID,userDir,handles.arena,handles.clusterFormat)
-    data.loadSessions(handles.inputFileID);
-    cellMatrix = data.getCells;
-    numClusters = size(cellMatrix,1);
-    %% plot scaled maps
-    for iCluster = 1:numClusters
-        spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        meanRate = analyses.meanRate(spikes, handles.posAve);
-        if ~isfield(map,'peakRate')
-            map.peakRate = 0;
-        end
-        currentMin = nanmin(nanmin(map.z));
-        figure(figBatchRM);
-        plotSize = ceil(sqrt(numClusters));
-        subplot(plotSize,plotSize,iCluster)
-        % make sure previous max and current min are not in conflict
-        if prevMax(iCluster) == 0; prevMax(iCluster) = 0.0001; end;   % make sure prevMax isn't zero
-        if currentMin > prevMax(iCluster)   % if min is bigger than max, set min to zero
-            colorMapBRK(map.z,'bar','on','pubQual',pubQual,'cutoffs',[0,prevMax(iCluster)]);
-        else
-            colorMapBRK(map.z,'bar','on','pubQual',pubQual,'cutoffs',[currentMin,prevMax(iCluster)]);
-        end
-        title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
-        hold on
-    end
-    saveas(figBatchRM,sprintf('rateMaps_%s_scaledto_%s.pdf',splitHandlesUserDir{end},splitUserDir{end}));
+    figure(figBatchRM);
+    plotSize = ceil(sqrt(numClusters));
+    subplot(plotSize,plotSize,iCluster)
+    colorMapBRK(map.z,'bar','on');
+    title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+    hold on
 end
+saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));
 
 % --- Executes on button press in butt_findFields.
 function butt_findFields_Callback(hObject, eventdata, handles)
@@ -619,7 +485,47 @@ function butt_findFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+[fieldMap,fields] = analyses.placefield(handles.map,'minBins',handles.dMinBins);
+if isempty(fields); warndlg('No fields found'); return; end;
+for iFieldNum = 1:size(fields,2)
+    peakRates(iFieldNum) = fields(1,iFieldNum).peak;
+end
+mainField = find(peakRates == max(peakRates));
+
+%% recolor fieldMap in order of field peak rate
+[~,ind] = sort(peakRates,'descend');
+for iFieldNum = 1:size(fields,2)
+   fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum); 
+end
+
+colorMapBRK(fieldMap,'bar','off');
+hold on
+h = plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'m.','MarkerSize',45);
+set(h,'hittest','off')
+hold off
+axis on
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+
+% --- Executes on button press in butt_batchFindFields.
+function butt_batchFindFields_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_batchFindFields (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+cellMatrix = data.getCells;
+numClusters = size(cellMatrix,1);
+
 %% prompt for settings
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
+name='Settings';
+numlines=1;
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+smooth = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minTime = str2double(Answers{3});
+
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
@@ -631,23 +537,134 @@ binWidth = str2double(Answers{2});
 minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
 
+
 %% calculate and plot
-[fieldMap,fields] = analyses.placefield(handles.map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
-if isempty(fields); warndlg('No fields found'); return; end;
-for iFieldNum = 1:size(fields,2)
-    fieldSizes(iFieldNum) = fields(1,iFieldNum).size;
-end
-biggestField = find(fieldSizes == max(fieldSizes));
-figFields = figure;
-set(figFields,'Name',sprintf('T%d C%d',handles.tetrode,handles.cluster),'Color','w')
-colorMapBRK(fieldMap);
+splitHandlesUserDir = regexp(handles.userDir,'\','split');
+figBatchFF = figure;
 hold on
-plot(fields(1,biggestField).x,fields(1,biggestField).y,'r*','MarkerSize',10)
-hold off
+set(figBatchFF,'Name',splitHandlesUserDir{end})
+plotSize = ceil(sqrt(numClusters));
+for iCluster = 1:numClusters
+    subplot(plotSize,plotSize,iCluster)
+    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+    [fieldMap,fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
+    if isempty(fields)
+        colorMapBRK(zeros(30));
+        title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
+        axis off
+        continue
+    end
+    clear peakRates
+    for iFieldNum = 1:size(fields,2)
+        peakRates(iFieldNum) = fields(1,iFieldNum).peak;
+    end
+    mainField = find(peakRates == max(peakRates));
+    
+    % recolor fieldMap in order of field peak rate
+    [~,ind] = sort(peakRates,'descend');
+    for iFieldNum = 1:size(fields,2)
+        fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum);
+    end
+    
+    colorMapBRK(fieldMap);
+    hold on
+    plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'m.','MarkerSize',30)
+    hold off
+    title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
+    
+end
+saveas(figBatchFF,sprintf('findFields_%s.pdf',splitHandlesUserDir{end}));
 
 % --- Executes on button press in butt_timeDivRM.
-function butt_timeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
+function butt_timeDivRM_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_timeDivRM (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% get cell list and all timestamps
+cellMatrix = data.getCells;
+numClusters = size(cellMatrix,1);
+posAve = data.getPositions('speedFilter',[2 0]);
+times = posAve(:,1);
+numTimeStamps = length(times);
+
+%% prompt for settings
+prompt={'Number of time blocks','Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
+name='Settings';
+numlines=1;
+defaultanswer={'2','2',num2str(handles.dBinWidth),'0','n'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+numBlocks = str2double(Answers{1});
+smooth = str2double(Answers{2});
+binWidth = str2double(Answers{3});
+minTime = str2double(Answers{4});
+
+%% make rate maps for each time block
+blockLength = floor(numTimeStamps/numBlocks);
+field_names = {'s','tMins','t','x','y'};
+empty_cells = repmat(cell(1),1,numel(field_names));
+entries = {field_names{:} ; empty_cells{:}};
+spikesStruct = struct(entries{:});
+nameTag = sprintf('T%d C%d',handles.tetrode,handles.cluster);
+figTimeDivRM = figure('name',nameTag);
+
+%% get spike times
+spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
+for iBlock = 1:numBlocks
+    if iBlock == 1   %% first time block
+        spikesStruct(iBlock).s = spikes(spikes <= times(blockLength));    % spike times
+        spikesStruct(iBlock).tMins = [0,floor(blockLength/1920)];         % time in mins (1920 b/c sampling at 32 Hz)
+        spikesStruct(iBlock).t = posAve(1:blockLength,1);                 % position times
+        spikesStruct(iBlock).x = posAve(1:blockLength,2);                 % x-coordinate times
+        spikesStruct(iBlock).y = posAve(1:blockLength,3);                 % y-coordinate times
+    elseif iBlock == numBlocks      %% last time block
+        spikesStruct(iBlock).s = spikes(times((numBlocks-1)*blockLength) < spikes);
+        spikesStruct(iBlock).tMins = [floor((numTimeStamps-blockLength)/1920),floor(numTimeStamps/1920)];
+        spikesStruct(iBlock).t = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),1);
+        spikesStruct(iBlock).x = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),2);
+        spikesStruct(iBlock).y = posAve((numBlocks-1)*blockLength:(numBlocks-1)*blockLength+(blockLength-1),3);
+    else    %% middle time blocks
+        spikesStruct(iBlock).s = spikes(spikes <= times(iBlock*blockLength));
+        spikesStruct(iBlock).s = spikes(spikesStruct(iBlock).s > times((iBlock-1)*blockLength));
+        spikesStruct(iBlock).tMins = [floor(((iBlock-1)*blockLength)/1920),floor((iBlock*blockLength)/1920)];
+        spikesStruct(iBlock).t = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,1);
+        spikesStruct(iBlock).x = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,2);
+        spikesStruct(iBlock).y = posAve((iBlock-1)*blockLength+1:iBlock*blockLength,3);
+    end
+end
+%% make rate maps
+for iBlock = 1:numBlocks
+    map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+    mapMat{1,iBlock} = map.z;
+    meanRateMat(1,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
+    subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
+    colorMapBRK(map.z,'bar','on');
+    title(sprintf('%.2f',meanRateMat(1,iBlock)))
+    hold on
+end
+figure;
+numMaps = 1:1:numBlocks;
+combo = nchoosek(numMaps,2);
+text(1,1,nameTag,'horizontalalignment','center')
+for iComp = 1:size(combo,1)
+    compTag = sprintf('%d vs %d',combo(iComp,1),combo(iComp,2));
+    text((iComp+1),0,compTag,'horizontalalignment','center')
+    cc = analyses.spatialCrossCorrelation(mapMat{1,combo(iComp,1)},mapMat{1,combo(iComp,2)});
+    ccTag = sprintf('%.2f',cc);
+    h = text((iComp+1),1,ccTag,'horizontalalignment','center');
+    if cc >= 0.5
+        set(h,'fontweight','bold','color','b')
+    end
+end
+axis([0.5 (iComp+1.5) -0.5 1.5])
+set(gca,'ydir','reverse')
+axis off
+
+% --- Executes on button press in butt_batchTimeDivRM.
+function butt_batchTimeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
+% hObject    handle to butt_batchTimeDivRM (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -757,7 +774,6 @@ tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',6);
 tcStat = analyses.tcStatistics(tc,6,20);
 figure;
 circularTurningBRK(tc(:,2))
-set(gcf,'color','w')
 title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,tcStat.mean));
 
 % --- Executes on button press in butt_batchHD.
@@ -870,7 +886,7 @@ if gridScore >= 0.5
 else
     title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontsize',14)
 end
-set(ACfig, 'Name', handles.userDir, 'Color', 'w')
+set(ACfig, 'Name', handles.userDir)
 axis off
 
 % --- Executes on button press in butt_batchGrid.
@@ -901,7 +917,7 @@ end
 %% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchAC = figure;
-set(figBatchAC,'Name',splitHandlesUserDir{end},'Color','w')
+set(figBatchAC,'Name',splitHandlesUserDir{end})
 for iCluster = 1:numClusters
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
@@ -957,7 +973,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'0.1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -1010,7 +1026,7 @@ if border >= 0.5
 else
     title(sprintf('T%d C%d\nborder = %.4f',handles.tetrode,handles.cluster,border))
 end
-set(figBorder,'Name',handles.userDir,'Color','w');
+set(figBorder,'Name',handles.userDir);
 
 guidata(hObject,handles);
 
@@ -1054,7 +1070,7 @@ minPeak = str2double(Answers4{4});
 %% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchBorder = figure;
-set(figBatchBorder,'Name',splitHandlesUserDir{end},'Color','w')
+set(figBatchBorder,'Name',splitHandlesUserDir{end})
 for iCluster = 1:numClusters
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
@@ -1123,7 +1139,7 @@ ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
 
 %% create figure
 figWaves = figure;
-set(figWaves,'Name',sprintf('T%d C%d',handles.tetrode,handles.cluster),'Color','w','position',get(0,'screensize'))
+set(figWaves,'Name',sprintf('T%d C%d',handles.tetrode,handles.cluster),'position',get(0,'screensize'))
 numWaves = numSpikes;
 try
     load cutterColorsBRK
@@ -1239,6 +1255,26 @@ end
 % --- Executes on button press in butt_autocorr.
 function butt_autocorr_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_autocorr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+figure('name',sprintf('T%dC%d',handles.tetrode,handles.cluster));
+spikes = handles.spikes;
+if length(spikes) >= 100
+    [counts,centers,thetaInd] = thetaIndex(spikes);
+    bar(centers,counts,'facecolor','k');
+    xlabel('msec');
+    ylabel('Count');
+    if thetaInd >= 5
+        title(sprintf('theta = %.2f',thetaInd),'color','b');
+    else
+        title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
+    end
+end
+
+% --- Executes on button press in butt_batchAutocorr.
+function butt_batchAutocorr_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_batchAutocorr (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -1388,7 +1424,7 @@ for iCluster = 1:numClusters
         subplot(321)
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         spikePos = data.getSpikePositions(spikes,handles.posAve);
-        pathTrialBRK('color',[.7 .7 .7])
+        pathTrialBRK('color',[.3 .3 .3])
         hold on
         plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
         axis off;
@@ -1448,7 +1484,7 @@ for iCluster = 1:numClusters
         title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
         
         %% spatial info
-        [Info,spars,sel] = analyses.mapStatsPDF(map);
+        Info = analyses.mapStatsPDF(map);
         
         %% border
         [fieldsMap, fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
@@ -1458,16 +1494,16 @@ for iCluster = 1:numClusters
         subplot(321)
         title(sprintf('info = %.4f\nborder = %.4f',Info.content,borderScore),'fontweight','normal','fontsize',10)
         subplot(326)
-        if gridScore >= 0.3608
+        if gridScore >= 0.4052
             text(0.5,1,'GRID','fontweight','bold','fontsize',10)
         end
-        if borderScore >= 0.4416 && Info.content >= 0.6421
+        if borderScore >= 0.4680 && Info.content >= 0.6367
             text(0.5,0.75,'BORDER','fontweight','bold','fontsize',10)
         end
-        if tcStat.r >= 0.2246
+        if tcStat.r >= 0.1844
             text(0.5,0.5,'HD','fontweight','bold','fontsize',10)
         end
-        if gridScore < 0.3608 && borderScore < 0.4416 && Info.content > 0.6421
+        if gridScore < 0.4052 && borderScore < 0.4680 && Info.content > 0.6367
             text(0.5,0.25,'SPATIAL','fontweight','bold','fontsize',10)
         end
         if thetaInd >= 5
@@ -1477,13 +1513,316 @@ for iCluster = 1:numClusters
     end
 end
 
+% --- Executes on button press in butt_objects.
+function butt_objects_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_objects (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% get rate map, occupancy map, and object map
+try
+    load objectLocations
+catch
+    warndlg('No object map found')
+    return
+end
+
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
+name='Settings';
+numlines=1;
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+smooth = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minTime = str2double(Answers{3});
+map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime,'limits',handles.mapLimits);
+rateMap = map.z;
+occupancyMap = map.time;
+
+%% object responses using rate maps
+% bins occupied by objects
+nBinsObj1 = sum(sum(objectLocations == 1));
+nBinsObj2 = sum(sum(objectLocations == 2));
+nBinsObjAll = nBinsObj1 + nBinsObj2;
+logicObjAll = objectLocations > 0;
+% rate in each object zone
+rateObj1 = rateMap(objectLocations == 1);
+rateObj2 = rateMap(objectLocations == 2);
+rateObjAll = rateMap(logicObjAll);
+% rate outside of object zones
+rateNoObj = rateMap;
+rateNoObj(logicObjAll) = NaN;
+logicNoObj = rateNoObj > 0;
+nBinsNoObj = sum(sum(logicNoObj));
+rateNoObj = rateNoObj(rateNoObj > 0);
+% test for object responses
+objResponsesRateIncrease = nan(2,500);
+objResponsesRatePval = nan(3,500);
+if nBinsNoObj >= nBinsObjAll;
+    for iTest = 1:500
+        randInds = randi(nBinsNoObj,1,nBinsNoObj);
+        compObj1 = rateNoObj(randInds(1:nBinsObj1));
+        compObj2 = rateNoObj(randInds(1:nBinsObj2));
+        compObjAll = rateNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+        objResponsesRateIncrease(1,iTest) = nanmean(rateObj1)/nanmean(compObj1);
+        objResponsesRateIncrease(2,iTest) = nanmean(rateObj2)/nanmean(compObj2);
+        [~,objResponsesRatePval(1,iTest)] = ttest2(compObj1,rateObj1);
+        [~,objResponsesRatePval(2,iTest)] = ttest2(compObj2,rateObj2);
+        [~,objResponsesRatePval(3,iTest)] = ttest2(compObjAll,rateObjAll);
+    end
+end
+
+figure('name',sprintf('T%dC%d',handles.tetrode,handles.cluster));
+subplot(221)
+colorMapBRK(rateMap,'bar','on');
+subplot(223)
+axis off
+text(0,1,'Rate ratio object 1:')
+text(0,0.75,'Rate ratio object 2:')
+text(0,0.5,'P val object 1:')
+text(0,0.25,'P val object 2:')
+text(0,0,'P val all objects:')
+values = [nanmean(objResponsesRateIncrease(1,:)) ...
+    nanmean(objResponsesRateIncrease(2,:)) ...
+    nanmean(objResponsesRatePval(1,:)) ...
+    nanmean(objResponsesRatePval(2,:)) ...
+    nanmean(objResponsesRatePval(3,:))];
+yLocs = 1:-0.25:0;
+for iVal = 1:5
+    if iVal < 3
+        text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+    else
+        if values(iVal) < 0.05
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)),'color','b','fontweight','bold')
+        else
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+        end
+    end
+end
+
+%% object responses using occupancy maps
+% bins occupied by objects
+nBinsObj1 = sum(sum(objectLocations == 1));
+nBinsObj2 = sum(sum(objectLocations == 2));
+nBinsObjAll = nBinsObj1 + nBinsObj2;
+logicObjAll = objectLocations > 0;
+% time in each object zone
+timeObj1 = occupancyMap(objectLocations == 1);
+timeObj2 = occupancyMap(objectLocations == 2);
+timeObjAll = occupancyMap(logicObjAll);
+% time outside of object zones
+timeNoObj = map.time;
+timeNoObj(logicObjAll) = NaN;
+logicNoObj = timeNoObj > 0;
+nBinsNoObj = sum(sum(logicNoObj));
+timeNoObj = timeNoObj(timeNoObj > 0);
+% test for object responses
+objResponsesTimeIncrease = nan(2,500);
+objResponsesTimePval = nan(3,500);
+if nBinsNoObj >= nBinsObjAll;
+    for iTest = 1:500
+        randInds = randi(nBinsNoObj,1,nBinsNoObj);
+        compObj1 = timeNoObj(randInds(1:nBinsObj1));
+        compObj2 = timeNoObj(randInds(1:nBinsObj2));
+        compObjAll = timeNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+        objResponsesTimeIncrease(1,iTest) = nanmean(timeObj1)/nanmean(compObj1);
+        objResponsesTimeIncrease(2,iTest) = nanmean(timeObj2)/nanmean(compObj2);
+        [~,objResponsesTimePval(1,iTest)] = ttest2(compObj1,timeObj1);
+        [~,objResponsesTimePval(2,iTest)] = ttest2(compObj2,timeObj2);
+        [~,objResponsesTimePval(3,iTest)] = ttest2(compObjAll,timeObjAll);
+    end
+end
+
+subplot(222)
+colorMapBRK(occupancyMap,'bar','on');
+subplot(224)
+axis off
+text(0,1,'Time ratio object 1:')
+text(0,0.75,'Time ratio object 2:')
+text(0,0.5,'P val object 1:')
+text(0,0.25,'P val object 2:')
+text(0,0,'P val all objects:')
+values = [nanmean(objResponsesTimeIncrease(1,:)) ...
+    nanmean(objResponsesTimeIncrease(2,:)) ...
+    nanmean(objResponsesTimePval(1,:)) ...
+    nanmean(objResponsesTimePval(2,:)) ...
+    nanmean(objResponsesTimePval(3,:))];
+yLocs = 1:-0.25:0;
+for iVal = 1:5
+    if iVal < 3
+        text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+    else
+        if values(iVal) < 0.05
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)),'color','b','fontweight','bold')
+        else
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+        end
+    end
+end
+
+% --- Executes on button press in butt_batchObjects.
+function butt_batchObjects_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_batchObjects (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% get rate map, occupancy map, and object map
+try
+    load objectLocations
+catch
+    warndlg('No object map found')
+    return
+end
+
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
+name='Settings';
+numlines=1;
+defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer);
+if isempty(Answers); return; end;
+smooth = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minTime = str2double(Answers{3});
+
+cellMatrix = data.getCells;
+numClusters = size(cellMatrix,1);
+
+for iCluster = 1:numClusters
+    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+    rateMap = map.z;
+    occupancyMap = map.time;
+    
+    %% object responses using rate maps
+    % bins occupied by objects
+    nBinsObj1 = sum(sum(objectLocations == 1));
+    nBinsObj2 = sum(sum(objectLocations == 2));
+    nBinsObjAll = nBinsObj1 + nBinsObj2;
+    logicObjAll = objectLocations > 0;
+    % rate in each object zone
+    rateObj1 = rateMap(objectLocations == 1);
+    rateObj2 = rateMap(objectLocations == 2);
+    rateObjAll = rateMap(logicObjAll);
+    % rate outside of object zones
+    rateNoObj = rateMap;
+    rateNoObj(logicObjAll) = NaN;
+    logicNoObj = rateNoObj > 0;
+    nBinsNoObj = sum(sum(logicNoObj));
+    rateNoObj = rateNoObj(rateNoObj > 0);
+    % test for object responses
+    objResponsesRateIncrease = nan(2,500);
+    objResponsesRatePval = nan(3,500);
+    if nBinsNoObj >= nBinsObjAll;
+        for iTest = 1:500
+            randInds = randi(nBinsNoObj,1,nBinsNoObj);
+            compObj1 = rateNoObj(randInds(1:nBinsObj1));
+            compObj2 = rateNoObj(randInds(1:nBinsObj2));
+            compObjAll = rateNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+            objResponsesRateIncrease(1,iTest) = nanmean(rateObj1)/nanmean(compObj1);
+            objResponsesRateIncrease(2,iTest) = nanmean(rateObj2)/nanmean(compObj2);
+            [~,objResponsesRatePval(1,iTest)] = ttest2(compObj1,rateObj1);
+            [~,objResponsesRatePval(2,iTest)] = ttest2(compObj2,rateObj2);
+            [~,objResponsesRatePval(3,iTest)] = ttest2(compObjAll,rateObjAll);
+        end
+    end
+    
+    figure('name',sprintf('T%dC%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)));
+    subplot(211)
+    colorMapBRK(rateMap,'bar','on');
+    subplot(212)
+    axis off
+    text(0,1,'Rate ratio object 1:')
+    text(0,0.75,'Rate ratio object 2:')
+    text(0,0.5,'P val object 1:')
+    text(0,0.25,'P val object 2:')
+    text(0,0,'P val all objects:')
+    values = [nanmean(objResponsesRateIncrease(1,:)) ...
+        nanmean(objResponsesRateIncrease(2,:)) ...
+        nanmean(objResponsesRatePval(1,:)) ...
+        nanmean(objResponsesRatePval(2,:)) ...
+        nanmean(objResponsesRatePval(3,:))];
+    yLocs = 1:-0.25:0;
+    for iVal = 1:5
+        if iVal < 3
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+        else
+            if values(iVal) < 0.05
+                text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)),'color','b','fontweight','bold')
+            else
+                text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+            end
+        end
+    end
+    
+end
+
+%% object responses using occupancy maps
+% bins occupied by objects
+nBinsObj1 = sum(sum(objectLocations == 1));
+nBinsObj2 = sum(sum(objectLocations == 2));
+nBinsObjAll = nBinsObj1 + nBinsObj2;
+logicObjAll = objectLocations > 0;
+% time in each object zone
+timeObj1 = occupancyMap(objectLocations == 1);
+timeObj2 = occupancyMap(objectLocations == 2);
+timeObjAll = occupancyMap(logicObjAll);
+% time outside of object zones
+timeNoObj = map.time;
+timeNoObj(logicObjAll) = NaN;
+logicNoObj = timeNoObj > 0;
+nBinsNoObj = sum(sum(logicNoObj));
+timeNoObj = timeNoObj(timeNoObj > 0);
+% test for object responses
+objResponsesTimeIncrease = nan(2,500);
+objResponsesTimePval = nan(3,500);
+if nBinsNoObj >= nBinsObjAll;
+    for iTest = 1:500
+        randInds = randi(nBinsNoObj,1,nBinsNoObj);
+        compObj1 = timeNoObj(randInds(1:nBinsObj1));
+        compObj2 = timeNoObj(randInds(1:nBinsObj2));
+        compObjAll = timeNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+        objResponsesTimeIncrease(1,iTest) = nanmean(timeObj1)/nanmean(compObj1);
+        objResponsesTimeIncrease(2,iTest) = nanmean(timeObj2)/nanmean(compObj2);
+        [~,objResponsesTimePval(1,iTest)] = ttest2(compObj1,timeObj1);
+        [~,objResponsesTimePval(2,iTest)] = ttest2(compObj2,timeObj2);
+        [~,objResponsesTimePval(3,iTest)] = ttest2(compObjAll,timeObjAll);
+    end
+end
+
+figure('name',handles.userDir);
+subplot(211)
+colorMapBRK(occupancyMap,'bar','on');
+subplot(212)
+axis off
+text(0,1,'Time ratio object 1:')
+text(0,0.75,'Time ratio object 2:')
+text(0,0.5,'P val object 1:')
+text(0,0.25,'P val object 2:')
+text(0,0,'P val all objects:')
+values = [nanmean(objResponsesTimeIncrease(1,:)) ...
+    nanmean(objResponsesTimeIncrease(2,:)) ...
+    nanmean(objResponsesTimePval(1,:)) ...
+    nanmean(objResponsesTimePval(2,:)) ...
+    nanmean(objResponsesTimePval(3,:))];
+yLocs = 1:-0.25:0;
+for iVal = 1:5
+    if iVal < 3
+        text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+    else
+        if values(iVal) < 0.05
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)),'color','b','fontweight','bold')
+        else
+            text(0.75,yLocs(iVal),sprintf('%.2f',values(iVal)))
+        end
+    end
+end
+
 % --- Executes on button press in butt_emperor.
 function butt_emperor_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_emperor (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-%% external script for batching, can be used as standalone
 
 emperorPenguin
 
@@ -1527,7 +1866,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
 % --- Executes during object creation, after setting all properties.
 function axes1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to axes1 (see GCBO)
@@ -1536,7 +1874,46 @@ function axes1_CreateFcn(hObject, eventdata, handles)
 
 % Hint: place code in OpeningFcn to populate axes1
 
-axis off
+axis on
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+
+% --- Executes during object creation, after setting all properties.
+function edit_markersize_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_markersize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes on mouse press over axes background.
+function axes1_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to axes1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% replot in new figure
+handles = guidata(hObject);
+oldKids = get(gca,'Children');
+figure;
+h = axes;
+copyobj(oldKids,h);
+
+%% make visually pleasing
+set(gca,'ydir','reverse')
+axis equal, axis off
+set(gcf,'name',sprintf('T%dC%d',handles.tetrode,handles.cluster))
+if strcmpi(class(oldKids),'matlab.graphics.primitive.Image')
+    colorbar
+    cmap = colormap;
+    if ~isequal(cmap(1, :), [1 1 1])
+        colormap(gca, [1 1 1; cmap]);
+    end
+    title(sprintf('mean = %.4f Hz\npeak = %.4f Hz\n',handles.meanRate,handles.peakRate),'fontweight','normal','fontsize',10)
+end
 
 % --- Executes during object creation, after setting all properties.
 function text_meanRate_CreateFcn(hObject, eventdata, handles)
@@ -1564,20 +1941,6 @@ function text_cluster_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_cluster (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_markersize_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_markersize (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
 
 % --- Executes during object creation, after setting all properties.
 function text_totalSpikes_CreateFcn(hObject, eventdata, handles)
@@ -1632,3 +1995,24 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes when selected object is changed in uipanel11.
+function uipanel11_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uipanel11 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when selected object is changed in uipanel13.
+function uipanel13_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uipanel13 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when selected object is changed in uibuttongroup2.
+function uibuttongroup2_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in uibuttongroup2 
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
