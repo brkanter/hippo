@@ -165,7 +165,7 @@ end
 %% plot animal path
 if handles.gotPos
     axes(handles.axes1);
-    pathTrialBRK('color',[.3 .3 .3])
+    pathTrialBRK('color',[.5 .5 .5])
     set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
     axis equal
 end
@@ -280,7 +280,7 @@ set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
-pathTrialBRK('color',[.3 .3 .3])
+pathTrialBRK('color',[.5 .5 .5])
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
@@ -344,7 +344,7 @@ set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
-pathTrialBRK('color',[.3 .3 .3])
+pathTrialBRK('color',[.5 .5 .5])
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
@@ -356,7 +356,7 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pathTrialBRK('color',[.3 .3 .3])
+pathTrialBRK('color',[.5 .5 .5])
 axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
@@ -375,7 +375,7 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 %% change marker size for spike overlay
 handles.Marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
-pathTrialBRK('color',[.3 .3 .3])
+pathTrialBRK('color',[.5 .5 .5])
 axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
@@ -415,7 +415,7 @@ for iCluster = 1:numClusters
     figure(figBatchSPP);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
-    pathTrialBRK('color',[.3 .3 .3])
+    pathTrialBRK('color',[.5 .5 .5])
     hold on
     %% overlay spikes
     plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',Marker)
@@ -487,6 +487,7 @@ function butt_findFields_Callback(hObject, eventdata, handles)
 
 [fieldMap,fields] = analyses.placefield(handles.map,'minBins',handles.dMinBins);
 if isempty(fields); warndlg('No fields found'); return; end;
+fieldMap(isnan(handles.map)) = nan;
 for iFieldNum = 1:size(fields,2)
     peakRates(iFieldNum) = fields(1,iFieldNum).peak;
 end
@@ -498,13 +499,28 @@ for iFieldNum = 1:size(fields,2)
    fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum); 
 end
 
-colorMapBRK(fieldMap,'bar','off');
+colorMapBRK(fieldMap);
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+cmap = [get(gca,'color'); ...   % background
+    0 0 0.6; ...                % dark blue
+    0.6 0 0; ...                % dark red
+    1 0.5 0; ...                % orange
+    1 1 0; ...                  % yellow
+    0 0.6 0; ...                % grass green
+    0 1 1; ...                  % cyan
+    0 0.5 1; ...                % light blue
+    0.4 0 0.8];                 % purple
+if ~sum(sum(fieldMap == 0))
+   cmap(2,:) = get(gca,'color');
+end
+colormap(gca,cmap)
+caxis([-1 8])
+
 hold on
-h = plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'m.','MarkerSize',45);
+h = plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',15);
 set(h,'hittest','off')
 hold off
 axis on
-set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 
 % --- Executes on button press in butt_batchFindFields.
 function butt_batchFindFields_Callback(hObject, eventdata, handles)
@@ -549,8 +565,10 @@ for iCluster = 1:numClusters
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     [fieldMap,fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
+    fieldMap(isnan(map.z)) = nan;
     if isempty(fields)
         colorMapBRK(zeros(30));
+        colormap(gca,[1 1 1])
         title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
         axis off
         continue
@@ -568,8 +586,22 @@ for iCluster = 1:numClusters
     end
     
     colorMapBRK(fieldMap);
+    cmap = [1 1 1; ...              % background
+        0 0 0.6; ...                % dark blue
+        0.6 0 0; ...                % dark red
+        1 0.5 0; ...                % orange
+        1 1 0; ...                  % yellow
+        0 0.6 0; ...                % grass green
+        0 1 1; ...                  % cyan
+        0 0.5 1; ...                % light blue
+        0.4 0 0.8];                 % purple
+    if ~sum(sum(fieldMap == 0))
+        cmap(2,:) = [1 1 1];
+    end
+    colormap(gca,cmap)
+    caxis([-1 8])
     hold on
-    plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'m.','MarkerSize',30)
+    plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',10);
     hold off
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
     
@@ -1424,7 +1456,7 @@ for iCluster = 1:numClusters
         subplot(321)
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         spikePos = data.getSpikePositions(spikes,handles.posAve);
-        pathTrialBRK('color',[.3 .3 .3])
+        pathTrialBRK('color',[.5 .5 .5])
         hold on
         plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
         axis off;
@@ -1913,6 +1945,23 @@ if strcmpi(class(oldKids),'matlab.graphics.primitive.Image')
         colormap(gca, [1 1 1; cmap]);
     end
     title(sprintf('mean = %.4f Hz\npeak = %.4f Hz\n',handles.meanRate,handles.peakRate),'fontweight','normal','fontsize',10)
+elseif strcmpi(class(oldKids),'matlab.graphics.primitive.Data')
+    cmap = [get(gca,'color'); ...   % background
+        0 0 0.6; ...                % dark blue
+        0.6 0 0; ...                % dark red
+        1 0.5 0; ...                % orange
+        1 1 0; ...                  % yellow
+        0 0.6 0; ...                % grass green
+        0 1 1; ...                  % cyan
+        0 0.5 1; ...                % light blue
+        0.4 0 0.8];                 % purple
+    fieldMap = analyses.placefield(handles.map,'minBins',handles.dMinBins);
+    fieldMap(isnan(handles.map)) = nan;
+    if ~sum(sum(fieldMap == 0))
+        cmap(2,:) = get(gca,'color');
+    end
+    colormap(gca,cmap)
+    caxis([-1 8])
 end
 
 % --- Executes during object creation, after setting all properties.

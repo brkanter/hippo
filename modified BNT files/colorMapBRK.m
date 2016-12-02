@@ -146,7 +146,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     end
 
     a = gca;
-    colormap(a,jet);
+    colormap(a,jet(64));
 
     %%% BRK  
     if pubQual
@@ -172,8 +172,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
             m = m - ((M - m)/length(x)); % length(x) is just arbitary
             % the goal is to set NaN to be less than minimum.
             data(isnan(data)) = m;
-            
-            cmap = colormap(a);
+
+            cmap = colormap(gca);
             colormap(a, [get(a,'color'); cmap]);
         end
         p = imagesc(x, y, data, [m M]);
