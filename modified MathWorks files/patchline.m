@@ -94,12 +94,28 @@ if rem(numel(PVs),2) ~= 0
     error('patchline: Parameter-Values must be entered in valid pairs')
 end
 
+%% handle matrices as inputs
 % Facecolor = 'k' is (essentially) ignored here, but syntactically necessary
-if isempty(zs)
-    p = patch([xs(:);NaN],[ys(:);NaN],'k');
-else
-    p = patch([xs(:);NaN],[ys(:);NaN],[zs(:);NaN],'k');
+%Make x-vector the same size as y-matrix (assuming data is in columns) 
+if size(ys,2)>1 && size(xs,2)==1 
+xs = repmat(xs,1,size(ys,2)); 
+end 
+%Add NaNs onto bottom row (so it doesn't plot an area?) 
+xs = [xs; NaN(1, size(xs,2))]; 
+ys = [ys; NaN(1, size(ys,2))]; 
+% Plot the "patches" (actually lines) 
+if isempty(zs) 
+p = patch(xs, ys, 'w'); 
+else 
+p = patch(xs, ys, zs, 'w'); 
 end
+
+% if isempty(zs)
+%     p = patch([xs(:);NaN],[ys(:);NaN],'k');
+% else
+%     p = patch([xs(:);NaN],[ys(:);NaN],[zs(:);NaN],'k');
+% end
+%%
 
 % Apply PV pairs
 for ii = 1:2:numel(PVs)

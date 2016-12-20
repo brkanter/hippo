@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 01-Dec-2016 13:08:44
+% Last Modified by GUIDE v2.5 02-Dec-2016 14:52:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -496,7 +496,7 @@ mainField = find(peakRates == max(peakRates));
 %% recolor fieldMap in order of field peak rate
 [~,ind] = sort(peakRates,'descend');
 for iFieldNum = 1:size(fields,2)
-   fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum); 
+    fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum);
 end
 
 colorMapBRK(fieldMap);
@@ -511,7 +511,7 @@ cmap = [get(gca,'color'); ...   % background
     0 0.5 1; ...                % light blue
     0.4 0 0.8];                 % purple
 if ~sum(sum(fieldMap == 0))
-   cmap(2,:) = get(gca,'color');
+    cmap(2,:) = get(gca,'color');
 end
 colormap(gca,cmap)
 caxis([-1 8])
@@ -1132,14 +1132,13 @@ function butt_waves_Callback(hObject, eventdata, handles)
 
 % h = msgbox('Loading waves...');
 %% find field settings
-prompt={'Do you want to align all the peaks?','Maximum number of waves to plot'};
+prompt={'Do you want to align all the peaks?'};
 name='Alignment';
 numlines=1;
-defaultanswer={'n','2000'};
+defaultanswer={'n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 align = Answers{1};
-waveLimit = str2double(Answers{2});
 
 %% get all data points for cluster
 nttFiles = dir('*.ntt');
@@ -1157,14 +1156,9 @@ if isempty(handles.trodeTS{handles.tetrode})
 else
     trodeTS = handles.trodeTS{handles.tetrode};
 end
-trodeTS_sec = trodeTS/1000000;
-clusterTS = (handles.spikes)';
-numSpikes = handles.totalSpikes;
-clusterInds = zeros(1,numSpikes);
-for iSpike = 1:(numSpikes)
-    [~,ind] = min(abs(trodeTS_sec - clusterTS(iSpike)));
-    clusterInds(1,iSpike) = ind;
-end
+trodeTS_sec = (trodeTS/1000000)';
+clusterTS = handles.spikes;
+clusterInds = knnsearch(trodeTS_sec,clusterTS);
 [DataPoints,NlxHeader] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],1,3,clusterInds);
 ymin = (str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end)))*(-1);      % gets input range from header
 ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
@@ -1172,7 +1166,7 @@ ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
 %% create figure
 figWaves = figure;
 set(figWaves,'Name',sprintf('T%d C%d',handles.tetrode,handles.cluster),'position',get(0,'screensize'))
-numWaves = numSpikes;
+numWaves = numel(handles.spikes);
 try
     load cutterColorsBRK
     clusterColor = cutterColorsBRK(handles.cluster+2,:);
@@ -1188,68 +1182,40 @@ end
 
 %% plot waves
 subLocWaves = [1 2 6 7];
-DataPointsAligned = nan(32,4,numWaves);
+% DataPointsAligned = nan(32,4,numWaves);
 for iChannel = 1:4         % for each electrode
     subplot(2,5,subLocWaves(iChannel))
-    if numWaves <= waveLimit
+    if ~strcmpi(align,'n')
+        %% peak alignment
+        voltages = squeeze(DataPoints(:,iChannel,:));
+        % trick to find max for each wave in matrix
+        idx = find(voltages==repmat(max(voltages,[],1),32,1));
+        [r,c] = ind2sub(size(voltages),idx);
+        peakInds = accumarray(c,r,[],@min);
+        shiftAmount = 8 - peakInds;
+        % trick for circshift using different shift amounts for each wave
+        [r,c] = size(voltages);
+        temp = mod(bsxfun(@plus,(0:r-1).',-shiftAmount(:).' ),r)+1;
+        temp = bsxfun(@plus,temp,(0:c-1)*r);
+        alignedVoltages = voltages(temp);
+        % cutoff tail (can we vectorize this??)
         for iWave = 1:numWaves
-            voltages = squeeze(DataPoints(:,iChannel,iWave));
-            if ~strcmpi(align,'n')
-                %% peak alignment
-                peakInd = find(voltages==max(voltages),1);
-                shiftAmount = 8 - peakInd;
-                alignedVoltages = circshift(voltages,shiftAmount);
-                %% cutoff tail
-                if shiftAmount < 0
-                    alignedVoltages(end-abs(shiftAmount):end) = nan;
-                end
-                DataPointsAligned(1:32,iChannel,iWave) = alignedVoltages;
-                patchline(1:32,alignedVoltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
-            else
-                patchline(1:32,voltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
-            end
-            hold on
-        end
-        if ~strcmpi(align,'n')
-            %% peak-align mean waves as well
-            for iTimepoint = 1:32
-                meanWave(iTimepoint,iChannel) = nanmean(DataPointsAligned(iTimepoint,iChannel,:));
+            v = alignedVoltages(:,iWave);
+            if shiftAmount(iWave) < 0
+                v(end-abs(shiftAmount(iWave)):end) = nan;
+                alignedVoltages(:,iWave) = v;
             end
         end
-        %% plot mean wave and bring to front
-        hMean = animatedline(1:32,meanWave(:,iChannel));
-        set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
-    else        % limit number of waves plotted
-        waveCounter = 1;
-        for iWave = 1:(numWaves/waveLimit):numWaves
-            voltages = squeeze(DataPoints(:,iChannel,round(iWave)));
-            if ~strcmpi(align,'n')
-                %% peak alignment
-                peakInd = find(voltages==max(voltages),1);
-                shiftAmount = 8 - peakInd;
-                alignedVoltages = circshift(voltages,shiftAmount);
-                %% cutoff tail
-                if shiftAmount < 0
-                    alignedVoltages(end-abs(shiftAmount):end) = nan;
-                end
-                DataPointsAligned(1:32,iChannel,waveCounter) = alignedVoltages;
-                patchline(1:32,alignedVoltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
-            else
-                patchline(1:32,voltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
-            end
-            hold on
-            waveCounter = waveCounter + 1;
-        end
-        if ~strcmpi(align,'n')
-            %% peak-align mean waves as well
-            for iTimepoint = 1:32
-                meanWave(iTimepoint,iChannel) = nanmean(DataPointsAligned(iTimepoint,iChannel,:));
-            end
-        end
-        %% plot mean wave and bring to front
-        hMean = animatedline(1:32,meanWave(:,iChannel));
-        set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
+        % plot
+        patchline(meshgrid(1:32,1:numWaves)',alignedVoltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
+        %% peak-align mean waves as well
+        meanWave(:,iChannel) = nanmean(alignedVoltages,2);
+    else
+        patchline(meshgrid(1:32,1:numWaves)',squeeze(DataPoints(:,iChannel,:)),'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
     end
+    %% plot mean wave and bring to front
+    hMean = animatedline(1:32,meanWave(:,iChannel));
+    set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
     axis([1,32,ymin*100,ymax*100]);
     axis square
     ylabel('Voltage (uV)')
@@ -2046,22 +2012,3 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
-% --- Executes when selected object is changed in uipanel11.
-function uipanel11_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uipanel11 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes when selected object is changed in uipanel13.
-function uipanel13_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uipanel13 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes when selected object is changed in uibuttongroup2.
-function uibuttongroup2_SelectionChangedFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in uibuttongroup2 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)

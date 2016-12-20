@@ -27,14 +27,9 @@ for iTrode = 1:length(nttFiles)
 end
 spikeFile = [userDir,'\',nttFiles(ind).name];
 [trodeTS] = Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
-trodeTS_sec = trodeTS/1000000;
-clusterTS = (spikes)';
-numSpikes = length(clusterTS);
-clusterInds = zeros(1,numSpikes);
-for iSpike = 1:(numSpikes)
-    [~,ind] = min(abs(trodeTS_sec - clusterTS(iSpike)));
-    clusterInds(1,iSpike) = ind;
-end
+trodeTS_sec = (trodeTS/1000000)';
+clusterTS = spikes;
+clusterInds = knnsearch(trodeTS_sec,clusterTS);
 [DataPoints] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,3,clusterInds);
 DataPoints = DataPoints/100;        % convert to microvolts
 
