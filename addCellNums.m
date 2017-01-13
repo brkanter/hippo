@@ -46,11 +46,11 @@ else    % need to extract sessions
     labels{end+1} = 'Session';
     raw(1,1:end+1) = labels;
     for iRow = 2:size(raw,1)
-        %         splits = regexp(raw{iRow,strcmpi('folder',labels)},'\','split');
-        %         raw{iRow,strcmpi('session',labels)} = splits{end}(1);
-        %         if iRow == 2
-        %             firstSessionName = splits{end}(1);
-        %         end
+%         splits = regexp(raw{iRow,strcmpi('folder',labels)},'\','split');
+%         raw{iRow,strcmpi('session',labels)} = splits{end}(1);
+%         if iRow == 2
+%             firstSessionName = splits{end}(1);
+%         end
         ind = strfind(raw{iRow,strcmpi('folder',labels)},'BL2');
         if isempty(ind)
             ind2 = strfind(raw{iRow,strcmpi('folder',labels)},'CNO');

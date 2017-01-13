@@ -21,18 +21,22 @@ raw = temp;
 %% remove cells that are never good quality
 clusterNums = unique(getCol(raw,labels,'cell num'),'stable');
 numClusters = length(clusterNums);
+toRemove = cell(numClusters,1);
 for iCluster = 1:numClusters
     quality = getColComp(raw,labels,'quality','cell num',clusterNums{iCluster});
-    if (sum(strcmpi(quality,offQ)) + sum(strcmpi(quality,badQ))) == length(quality)
-        raw = deleteRowsComp(raw,labels,'cell num',clusterNums{iCluster});
+    flag = sum(strcmpi(quality,offQ)) == length(quality);
+    if flag
+        toRemove{iCluster} = clusterNums{iCluster};
     end
 end
-
+toRemove = toRemove(~isempty(toRemove));
+raw = selectRows(raw,labels,'remove','cell num',toRemove);
+    
 %% remove bad quality in first session
 toRemove = getColComp(raw,labels,'cell num','session',sessions{1},'quality',badQ);
 if ~iscell(toRemove)
     toRemove = {toRemove};
 end
-for iCluster = 1:length(toRemove)
-    raw = deleteRowsComp(raw,labels,'cell num',toRemove{iCluster});
-end
+% if ~isempty(toRemove{1})
+    raw = selectRows(raw,labels,'remove','cell num',toRemove);
+% end
