@@ -11,7 +11,7 @@
 %       spikeWidth     width at half max
 %
 %   SEE ALSO
-%       penguin emperorPenguin emperorPenguinSelect
+%       penguin emperorPenguin emperorPenguinUpdate
 %
 % Written by BRK 2014
 

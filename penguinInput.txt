@@ -1,5 +1,0 @@
-Name: general; Version: 1.0
-Sessions E:\HM3_CA3\Refined boundaries\2014-07-16_09-35-16_BK111_BL2
-Units 1 ; 2   1   2   3   4   5   6   8   9  11  13  14  15  16  17  18  20 ; 3 ; 4
-Room room146
-Shape cylinder 60 60

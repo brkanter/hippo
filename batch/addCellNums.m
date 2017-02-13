@@ -7,7 +7,7 @@
 %       addCellNums
 %
 %   SEE ALSO
-%       emperorPenguin kingPenguinSelect
+%       emperorPenguin kingPenguin
 %
 % Written by BRK 2015
 

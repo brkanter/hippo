@@ -35,6 +35,7 @@ cd(filePath0)
 myDir = dir(cd);
 names = extractfield(myDir,'name');
 
+%% find all session names and show 10 most recent
 numSesh = 0;
 for iFolder = 1:length(names)
     ind = strfind(names{iFolder},correctMouseID);
@@ -43,7 +44,6 @@ for iFolder = 1:length(names)
         nameStore{numSesh} = names{iFolder};
     end
 end
-
 if numSesh > 10
     nameStore = nameStore(end-9:end);
     numSesh = 10;
@@ -66,9 +66,16 @@ for iCSC = 1:4
         % get data and clean up
         fileEnding = sprintf('CSC%d.ncs',iCSC);
         filename = fullfile(splits{1:end-1},nameStore{iSession},fileEnding);
-        [SampleFrequency,Samples] = Nlx2MatCSC(filename,[0 0 1 0 1],0,1);
+        [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
         squeezedSamples = reshape(Samples,512*size(Samples,2),1);
-        squeezedSamples = squeezedSamples * 0.0024;
+        for iRow = 1:length(Header)
+            if ~isempty(strfind(Header{iRow},'ADBitVolts'))
+                idx = iRow;
+            end
+        end
+        [~,str] =strtok(Header{idx});
+        scale = 1000000*str2num(str);
+        squeezedSamples = squeezedSamples * scale;
         srate0 = SampleFrequency(1);
         rsrate = 500;
         resampled = resample(squeezedSamples,rsrate,srate0);
@@ -83,7 +90,8 @@ for iCSC = 1:4
         tempPower = general.smooth(tempPower,10);
         power(iSession,:) = tempPower;
     end
-    % plot
+    
+    %% heat maps for each recording session for each LFP channel
     figure(h1)
     subplot(2,2,iCSC)
     colormap jet
@@ -91,6 +99,8 @@ for iCSC = 1:4
     xlabel('Frequency'), ylabel('Session')
     title(fileEnding(1:end-4))
     
+    %% line graphs for each recording session for each LFP channel
+    % N.B. most recent session plotted on top
     figure(h2);
     subplot(2,2,iCSC)
     cmap = colormap('jet');
@@ -103,8 +113,6 @@ for iCSC = 1:4
 
 end
 
-
-%
 % powerInds = dsearchn(hz',[4 8 16]');
 % powerOther = mean([power(powerInds(1)),power(powerInds(3))]);
 % powerTheta = power(powerInds(2));

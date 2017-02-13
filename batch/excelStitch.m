@@ -6,7 +6,7 @@
 %       excelStitch
 %
 %   SEE ALSO
-%       emperorPenguin emperorPenguinSelect kingPenguinSelect addCellNums
+%       emperorPenguin kingPenguin addCellNums
 %
 % Written by BRK 2016
 
