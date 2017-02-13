@@ -21,7 +21,7 @@ function [counts,centers,thetaInd] = thetaIndex(spikes)
 numBins = 101; % 10 msec
 range = 500;   % +/- 500 msec
 
-%% normalize spike times
+%% normalize spike times (start at 0, and sec to msec)
 normSpikes = ((spikes - min(spikes))*1000)';
 if length(normSpikes) > 4000
     normSpikes = normSpikes(1:4000);
@@ -29,10 +29,9 @@ end
 numSpikes = length(normSpikes);
 
 %% find spike times within desired range
-triMat = ones(numSpikes,1)*normSpikes - normSpikes'*ones(1,numSpikes);          % make triangular matrix
-triMatSqueeze = triMat(:);                                                      % collapse into single column
-withinRange = triMatSqueeze(triMatSqueeze >= -range & triMatSqueeze <= range);  % find values within range
-withinRange(withinRange==0) = [];                                               % remove zeros
+triMat = ones(numSpikes,1)*normSpikes - normSpikes'*ones(1,numSpikes);                                  % make triangular matrix
+triMatSqueeze = triMat(:);                                                                              % collapse into single column
+withinRange = triMatSqueeze(triMatSqueeze >= -range & triMatSqueeze <= range & triMatSqueeze ~= 0);     % find values within range that aren't zero
 
 %% histogram
 [counts centers] = hist(withinRange,numBins);

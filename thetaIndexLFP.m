@@ -19,9 +19,17 @@ function thetaInd = thetaIndexLFP(folder,tetrode)
 
 %% get data
 filename = [folder '\' sprintf('CSC%s.ncs',num2str(tetrode))];
-[Timestamp, ChanNum, SampleFrequency, NumValSamples, Samples, Header] = Nlx2MatCSC(filename,[1 1 1 1 1],1,1);
+cd(folder)
+[SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);
-squeezedSamples = squeezedSamples * 0.0024;
+for iRow = 1:length(Header)
+    if ~isempty(strfind(Header{iRow},'ADBitVolts'))
+        idx = iRow;
+    end
+end
+[~,str] =strtok(Header{idx});
+scale = 1000000*str2num(str);
+squeezedSamples = squeezedSamples * scale;
 
 %% resample and detrend
 srate0 = SampleFrequency(1);

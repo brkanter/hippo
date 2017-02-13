@@ -36,7 +36,7 @@ residY = y - yfit;
 SSresid = sum(residY.^2);
 SStotal = (length(y)-1) * var(y);
 R2 = 1 - SSresid/SStotal;
-AR2 = R2 * ((length(y)-1) / (length(y)-degree-1));
+AR2 = 1 - (SSresid/SStotal) * ((length(y)-1) / (length(y)-degree-1));
 
 %% display results
 % display(R2)

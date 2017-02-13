@@ -13,6 +13,13 @@
 %   OUTPUT
 %       array          filtered array
 %
+%   NOTES
+%       varargin strings are case insensitive for columns headers, but are case
+%       sensitive for strings appearing in array
+%
+%       varargin string values can be cell arrays of string
+%       (e.g. 'session',{'BL','CNO'})
+%
 %   SEE ALSO
 %       selectCols
 %
