@@ -1,4 +1,18 @@
-function dataOutput = rescaleData(dataInput,newMin,newMax)
+
+% Scale data to have new min and max values.
+%
+%   USAGE
+%       scaledData = rescaleData(dataInput,newMin,newMax)
+%       dataInput          numeric data array to scale
+%       newMin             desired minimum
+%       newMax             desired maximum 
+%
+%   OUTPUT
+%       scaledData         rescaled data
+%
+% Written by BRK 2017
+
+function scaledData = rescaleData(dataInput,newMin,newMax)
 
 %% scale from 0 to 1 by default
 if nargin == 1
@@ -14,6 +28,7 @@ if numel(oldMin) == 1
 else
     flag = true;
 end
+% keep going through all dimensions
 while flag
     oldMin = nanmin(oldMin);
     oldMax = nanmax(oldMax);
@@ -27,4 +42,4 @@ newRange = newMax - newMin;
 oldRange = oldMax - oldMin;
 
 %% rescale
-dataOutput = ((newRange * (dataInput - oldMin)) ./ oldRange) + newMin;
+scaledData = ((newRange * (dataInput - oldMin)) ./ oldRange) + newMin;

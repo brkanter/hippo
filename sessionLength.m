@@ -4,7 +4,7 @@
 %   USAGE
 %       sessionLength
 %
-% Written by BRK 2015
+% Written by BRK 2016
 
 function sessionLength
 

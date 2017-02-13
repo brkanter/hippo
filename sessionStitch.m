@@ -1,4 +1,11 @@
 
+% Merge data from 2 recording sessions and save in a new location (i.e. keeps originals).
+%
+%   USAGE
+%       sessionStitch
+%
+% Written by BRK 2016
+
 function sessionStitch
 
 %% overwrite warning

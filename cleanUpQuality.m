@@ -1,6 +1,21 @@
 
+% Correct cluster quality judgments and remove data that is not informative.
+%
+%   USAGE
+%       cleaned = cleanUpQuality(raw,labels,sessions,numSesh,badQ,offQ)
+%       raw            cell array of data
+%       labels         cell array of strings containing column headers
+%       sessions       cell array of string containing session names
+%       numSesh        number of sessions
+%       badQ           string representing clusters with bad quality
+%       offQ           string representing clusters that are 'off'
+%
+%   OUTPUT
+%       cleaned        filtered array
+%
+% Written by BRK 2016
 
-function raw = cleanUpQuality(raw,labels,sessions,numSesh,badQ,offQ)
+function cleaned = cleanUpQuality(raw,labels,sessions,numSesh,badQ,offQ)
 
 %% switch erroneous offQ to badQ
 temp = {};
@@ -37,6 +52,4 @@ toRemove = selectCols(raw,labels,'cell num','session',sessions{1},'quality',badQ
 if ~iscell(toRemove)
     toRemove = {toRemove};
 end
-% if ~isempty(toRemove{1})
-    raw = selectRows(raw,labels,'remove','cell num',toRemove);
-% end
+cleaned = selectRows(raw,labels,'remove','cell num',toRemove);
