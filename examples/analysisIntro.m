@@ -1,11 +1,11 @@
 
-% function analysisIntro
+function analysisIntro
 % NB: uncomment the previous line (remove %) to run this script as a function, which means all variables will only
 %     be available locally (during execution of the function). this prevents your workspace from being cluttered
 %     with variables that you probably don't need/want stored in memory.
 
 %% load the mat file which is output from kingPenguin
-display('Loading full dataset...')
+display('Loading data...')
 tic
 load('N:\benjamka\masterMatDose.mat')
 elapsed = toc;
@@ -147,7 +147,7 @@ rdHighAbs = abs(rdHigh);
 
 
 %% plot results as bar graph
-figure
+hFig_bar = figure;
 xVals = 1:3;
 medianVals = [nanmedian(rdConAbs),nanmedian(rdLowAbs),nanmedian(rdHighAbs)];
 
@@ -181,11 +181,11 @@ pVals(3) = ranksum(rdHighAbs,rdLowAbs,'tail','right');
 % display results
 display(sprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4f',pVals(1)))
 display(sprintf('15 mg/kg vs. 0 mg/kg:   p = %.4f',pVals(2)))
-display(sprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4f',pVals(3)))
+display(sprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4f\n',pVals(3)))
 
 
 %% plot results as beehive to see distribution of data points
-figure
+hFig_beehive = figure;
 plotSpread({rdConAbs rdLowAbs rdHighAbs})
 
 ax = gca;
@@ -212,4 +212,28 @@ end
 hold on
 plot(xVals,medianVals,'gd','markerfacecolor','g','markersize',15)
 hold off
+drawnow
+
+%% save figures
+% choose directory to save in
+saveDir = uigetdir('','Select output folder');
+
+% create filenames (sets file type as well)
+dt = datestr(clock,30);   % get current time to have unique file name every time you save
+barName = [saveDir '\exampleBar_' dt '.jpg'];
+beehiveName = [saveDir '\exampleBeehive_' dt '.pdf'];
+
+saveas(hFig_bar,barName)
+saveas(hFig_beehive,beehiveName)
+
+display(sprintf('Saved bar plot as:      %s',barName))
+display(sprintf('Saved beehive plot as:  %s',beehiveName))
+
+
+%% save results
+dataName = [saveDir '\exampleResults_ ' dt '.mat'];
+save(dataName,'medianVals','pVals')
+
+display(sprintf('Saved results as:      %s',dataName))
+
 
