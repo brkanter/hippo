@@ -252,3 +252,6 @@ end
 
 %% save everything without positions and spike times
 save(matFile,'dataOutput','labels');
+
+load handel
+sound(y(1:7000),Fs)

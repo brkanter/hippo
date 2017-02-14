@@ -63,11 +63,12 @@ include_speed = 0;
 include_theta = 0;
 include_CC = 0;
 include_DS = 0;
+include_obj = 0;
 
 %% choose what to calculate
 [selections, OK] = listdlg('PromptString','Select what to calculate', ...
-    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Theta indices','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)'}, ...
-    'InitialValue',1:7, ...
+    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Theta indices','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)','Objects'}, ...
+    'InitialValue',1:8, ...
     'ListSize',[400, 250]);
 if OK == 0; return; end;
 if ismember(1,selections); include_3Ss = 1; end
@@ -79,6 +80,7 @@ if ismember(6,selections); include_speed = 1; end
 if ismember(7,selections); include_theta = 1; end
 if ismember(8,selections); include_CC = 1; end
 if ismember(9,selections); include_DS = 1; end
+if ismember(10,selections); include_obj = 1; end
 
 %% get experiment details for spatial correlations
 if include_CC || include_DS
@@ -131,6 +133,12 @@ if include_grid
     end
 end
 
+%% object settings
+if include_obj
+    [file,path] = uigetfile('*.mat','Choose object locations');
+    load(fullfile(path,file))
+end
+
 %% excel column headers
 colHeaders = {'Folder','Tetrode','Cluster','Cell num','Mean rate','Peak rate','Total spikes','Spike width (usec)','Quality','L_Ratio','Isolation distance'};
 if include_3Ss 
@@ -153,6 +161,19 @@ if include_speed
 end
 if include_theta
     colHeaders = [colHeaders,'Theta index spikes','Theta index LFP'];
+end
+if include_obj
+    colHeaders = [colHeaders, ...
+        'Rate ratio O1', ...
+        'Rate ratio O2', ...
+        'P val rate O1', ...
+        'P val rate O2', ...
+        'P val rate all objs', ...
+        'Time ratio O1', ...
+        'Time ratio O2', ...
+        'P val time O1', ...
+        'P val time O2', ...
+        'P val time all objs'];
 end
 
 %% compute stats for each folder
@@ -394,6 +415,84 @@ for iFolder = 1:length(uniqueFolders)
                 thetaIndLFP = nan;
             end
         end
+        if include_obj
+            rateMap = map.z;
+            occupancyMap = map.time;                
+            %% object responses using rate maps
+            % bins occupied by objects
+            nBinsObj1 = sum(sum(objectLocations == 1));
+            nBinsObj2 = sum(sum(objectLocations == 2));
+            nBinsObjAll = nBinsObj1 + nBinsObj2;
+            logicObjAll = objectLocations > 0;
+            % rate in each object zone
+            rateObj1 = rateMap(objectLocations == 1);
+            rateObj2 = rateMap(objectLocations == 2);
+            rateObjAll = rateMap(logicObjAll);
+            % rate outside of object zones
+            rateNoObj = rateMap;
+            rateNoObj(logicObjAll) = NaN;
+            logicNoObj = rateNoObj > 0;
+            nBinsNoObj = sum(sum(logicNoObj));
+            rateNoObj = rateNoObj(rateNoObj > 0);
+            % test for object responses
+            objResponsesRateIncrease = nan(2,500);
+            objResponsesRatePval = nan(3,500);
+            if nBinsNoObj >= nBinsObjAll;
+                for iTest = 1:500
+                    randInds = randi(nBinsNoObj,1,nBinsNoObj);
+                    compObj1 = rateNoObj(randInds(1:nBinsObj1));
+                    compObj2 = rateNoObj(randInds(1:nBinsObj2));
+                    compObjAll = rateNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+                    objResponsesRateIncrease(1,iTest) = nanmean(rateObj1)/nanmean(compObj1);
+                    objResponsesRateIncrease(2,iTest) = nanmean(rateObj2)/nanmean(compObj2);
+                    [~,objResponsesRatePval(1,iTest)] = ttest2(compObj1,rateObj1);
+                    [~,objResponsesRatePval(2,iTest)] = ttest2(compObj2,rateObj2);
+                    [~,objResponsesRatePval(3,iTest)] = ttest2(compObjAll,rateObjAll);
+                end
+            end
+            objRate = [nanmean(objResponsesRateIncrease(1,:)) ...
+                nanmean(objResponsesRateIncrease(2,:)) ...
+                nanmean(objResponsesRatePval(1,:)) ...
+                nanmean(objResponsesRatePval(2,:)) ...
+                nanmean(objResponsesRatePval(3,:))];
+            %% object responses using occupancy maps
+            % bins occupied by objects
+            nBinsObj1 = sum(sum(objectLocations == 1));
+            nBinsObj2 = sum(sum(objectLocations == 2));
+            nBinsObjAll = nBinsObj1 + nBinsObj2;
+            logicObjAll = objectLocations > 0;
+            % time in each object zone
+            timeObj1 = occupancyMap(objectLocations == 1);
+            timeObj2 = occupancyMap(objectLocations == 2);
+            timeObjAll = occupancyMap(logicObjAll);
+            % time outside of object zones
+            timeNoObj = map.time;
+            timeNoObj(logicObjAll) = NaN;
+            logicNoObj = timeNoObj > 0;
+            nBinsNoObj = sum(sum(logicNoObj));
+            timeNoObj = timeNoObj(timeNoObj > 0);
+            % test for object responses
+            objResponsesTimeIncrease = nan(2,500);
+            objResponsesTimePval = nan(3,500);
+            if nBinsNoObj >= nBinsObjAll;
+                for iTest = 1:500
+                    randInds = randi(nBinsNoObj,1,nBinsNoObj);
+                    compObj1 = timeNoObj(randInds(1:nBinsObj1));
+                    compObj2 = timeNoObj(randInds(1:nBinsObj2));
+                    compObjAll = timeNoObj(randInds(1:(nBinsObj1+nBinsObj2)));
+                    objResponsesTimeIncrease(1,iTest) = nanmean(timeObj1)/nanmean(compObj1);
+                    objResponsesTimeIncrease(2,iTest) = nanmean(timeObj2)/nanmean(compObj2);
+                    [~,objResponsesTimePval(1,iTest)] = ttest2(compObj1,timeObj1);
+                    [~,objResponsesTimePval(2,iTest)] = ttest2(compObj2,timeObj2);
+                    [~,objResponsesTimePval(3,iTest)] = ttest2(compObjAll,timeObjAll);
+                end
+            end
+            objTime = [nanmean(objResponsesTimeIncrease(1,:)) ...
+                nanmean(objResponsesTimeIncrease(2,:)) ...
+                nanmean(objResponsesTimePval(1,:)) ...
+                nanmean(objResponsesTimePval(2,:)) ...
+                nanmean(objResponsesTimePval(3,:))];
+        end
         
         %% store info from this folder in matrices
         Mfolder{iCluster,iFolder} = uniqueFolders{1,iFolder}; %#ok<*AGROW>
@@ -450,9 +549,21 @@ for iFolder = 1:length(uniqueFolders)
             MthetaSpikes(iCluster,iFolder) = thetaIndSpikes;
             MthetaLFP(iCluster,iFolder) = thetaIndLFP;
         end
+        if include_obj
+            Mobj1(iCluster,iFolder) = objRate(1);
+            Mobj2(iCluster,iFolder) = objRate(2);
+            Mobj3(iCluster,iFolder) = objRate(3);
+            Mobj4(iCluster,iFolder) = objRate(4);
+            Mobj5(iCluster,iFolder) = objRate(5);
+            Mobj6(iCluster,iFolder) = objTime(1);
+            Mobj7(iCluster,iFolder) = objTime(2);
+            Mobj8(iCluster,iFolder) = objTime(3);
+            Mobj9(iCluster,iFolder) = objTime(4);
+            Mobj10(iCluster,iFolder) = objTime(5);
+        end
     end
+    totalClusters(iFolder) = numClusters;
 end
-
 
 %% compute cross correlations
 if include_CC     
@@ -466,13 +577,6 @@ if include_CC
     CCoutput = [];
     upCount = 0;    
     for iExp = 1:(length(uniqueFolders)/seshPerExp)    % all experiments        
-        %% find true number of cells for current experiment
-%         cellCount = 0;       % initialize counter
-%         for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
-%             if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
-%                 cellCount = cellCount + 1;          % increase counter
-%             end
-%         end
         cellCount = totalClusters(iExp*seshPerExp-(seshPerExp-1)); % get number of cells in first session of experiment   
         %% calculate all correlations
         for iCluster = 1:cellCount    % all cells            
@@ -513,13 +617,6 @@ if include_DS
     DSpeakOutput = [];
     upCount = 0;    
     for iExp = 1:(length(uniqueFolders)/seshPerExp)    % all experiments        
-        %% find true number of cells for current experiment
-%         cellCount = 0;       % initialize counter
-%         for iCluster = 1:size(MrateMap,1)     % loop thru all rows of 1st folder for current experiment
-%             if ~isempty(MrateMap{iCluster,1+upCount})      % if there is a rate map there
-%                 cellCount = cellCount + 1;          % increase counter
-%             end
-%         end
         cellCount = totalClusters(iExp*seshPerExp-(seshPerExp-1)); % get number of cells in first session of experiment      
         %% calculate all diff scores
         for iCluster = 1:cellCount    % all cells            
@@ -595,6 +692,18 @@ if include_theta
     emperor(:,size(emperor,2)+1) = num2cell(MthetaSpikes(:));
     emperor(:,size(emperor,2)+1) = num2cell(MthetaLFP(:));
 end
+if include_obj
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj1(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj2(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj3(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj4(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj5(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj6(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj7(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj8(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj9(:));
+    emperor(:,size(emperor,2)+1) = num2cell(Mobj10(:));
+end
 if include_CC 
     emperor(any(cellfun(@isempty,emperor)'),:) = [];      % remove rows with empties   
     emperor(:,(end+1):(end+1)+size(CCoutput,2)-1) = num2cell(CCoutput);     % add CC values to main sheet
@@ -656,6 +765,7 @@ settingsNames = {'Cluster format', ...
     'Theta', ...
     'Spatial correlations', ...
     'Rate difference scores', ...
+    'Objects', ...
     '', ...
     'Num sessions', ...
     '', ...
@@ -700,6 +810,7 @@ settingsValues = {clusterFormat, ...
     include_theta, ...
     include_CC, ...
     include_DS, ...
+    include_obj, ...
     '', ...
     seshPerExp, ...
     '', ...
@@ -728,4 +839,5 @@ end
 
 toc
 
-
+load handel
+sound(y(1:7000),Fs)

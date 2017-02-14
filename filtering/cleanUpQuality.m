@@ -44,7 +44,7 @@ for iCluster = 1:numClusters
         toRemove{iCluster} = clusterNums{iCluster};
     end
 end
-toRemove = toRemove(~isempty(toRemove));
+toRemove = toRemove(~cellfun(@isempty,toRemove));
 raw = selectRows(raw,labels,'remove','cell num',toRemove);
     
 %% remove bad quality in first session
