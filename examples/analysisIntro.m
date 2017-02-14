@@ -171,6 +171,14 @@ xlabel 'CNO dose (mg/kg)'
 ylabel 'Absolute rate difference score'
 title 'Rate changes by dose in CA1 place cells'
 
+% add N for each bar
+nCounts = [sum(~isnan(rdConAbs)), ...
+    sum(~isnan(rdLowAbs)), ...
+    sum(~isnan(rdHighAbs))];
+textYlocs = medianVals / 2;   % halfway up the bars
+for iGroup = 1:numel(medianVals)
+    text(xVals(iGroup),textYlocs(iGroup),['n = ' num2str(nCounts(iGroup))],'horizontalalignment','center')
+end
 
 %% run stats (nonparametric tests b/c absolute rate change will not be normally distributed)
 pVals = [];
@@ -213,6 +221,7 @@ hold on
 plot(xVals,medianVals,'gd','markerfacecolor','g','markersize',15)
 hold off
 drawnow
+
 
 %% save figures
 % choose directory to save in
