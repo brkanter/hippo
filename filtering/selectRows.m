@@ -75,6 +75,14 @@ for iComp = 1:2:length(modVarargin)
     end
 end
 
+%% remove missing values
+for iComp = 1:size(sComps,1)
+    if sum(cellfun(@isempty,array(:,ismember(lower(labels),lower(sComps{iComp,1})))))
+        emptyInds = cellfun(@isempty,array(:,ismember(lower(labels),lower(sComps{iComp,1}))));
+        array = array(~emptyInds,:);
+    end
+end
+    
 %% select rows
 if strcmpi(type,'keep')
     for iComp = 1:size(dComps,1)
