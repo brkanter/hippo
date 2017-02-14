@@ -1,4 +1,24 @@
 
+% This tutorial will show you how to take the output from kingPenguin and extract meaningful information.
+% The main goals are to learn how to do the following:
+%
+%   1. Load data.
+%   2. Extract information about the experimental design (e.g. number of sessions).
+%   3. Filter the data to only include those cells which meet certain criteria (e.g. good quality CA1 place cells).
+%   4. Extract/calculate a measure for each of these cells (e.g. mean firing rate).
+%   5. Compare results between experimental groups (e.g. different CNO doses).
+%   6. Plot results in informative ways (e.g. bar plot vs beehive plot) that are visually pleasing.
+%   7. Run statistical tests to compare results between groups.
+%   8. Save figures and numerical results for later use.
+%
+%   USAGE
+%       analysisIntro
+%
+%   SEE ALSO
+%       kingPenguin emperorPenguin
+%
+% Written by BRK 2017
+
 % function analysisIntro
 % NB: uncomment the previous line (remove %) to run this script as a function, which means all variables will only
 %     be available locally (during execution of the function). this prevents your workspace from being cluttered
