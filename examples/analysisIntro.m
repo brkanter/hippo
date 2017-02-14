@@ -1,5 +1,5 @@
 
-function analysisIntro
+% function analysisIntro
 % NB: uncomment the previous line (remove %) to run this script as a function, which means all variables will only
 %     be available locally (during execution of the function). this prevents your workspace from being cluttered
 %     with variables that you probably don't need/want stored in memory.
