@@ -8,8 +8,17 @@
 %   4. Extract/calculate a measure for each of these cells (e.g. mean firing rate).
 %   5. Compare results between experimental groups (e.g. different CNO doses).
 %   6. Plot results in informative ways (e.g. bar plot vs beehive plot) that are visually pleasing.
-%   7. Run statistical tests to compare results between groups.
+%   7. Check data for normality and run statistical tests to compare results between groups.
 %   8. Save figures and numerical results for later use.
+%
+% There are many other little things throughout that should be useful in the future. Some examples are:
+% 
+%   - Displaying text in the command window or in a figure with the help of sprintf.
+%   - Using combinations of numel, sum, unique, all, and isnan to count your data.
+%   - Padding arrays with nans and later removing these unused rows/columns.
+%   - Nested for loops. Which levels (e.g. dose, session) do you need, and which order should they be in?
+%   - Managing n-dimensional arrays with the help of squeeze and arrayfun.
+%   - Accessing figure objects with findobj and changing their properties
 %
 %   USAGE
 %       analysisIntro
@@ -19,6 +28,7 @@
 %
 % Written by BRK 2017
 
+
 % function analysisIntro
 % NB: uncomment the previous line (remove %) to run this script as a function, which means all variables will only
 %     be available locally (during execution of the function). this prevents your workspace from being cluttered
@@ -26,10 +36,9 @@
 
 %% load the mat file which is output from kingPenguin
 display('Loading data...')
-tic
+tic   % start a stopwatch
 load('N:\benjamka\masterMatDose.mat')
-elapsed = toc;
-display(sprintf('Loaded data in %.2f sec.\n',elapsed))
+display(sprintf('Loaded data in %.2f sec.\n',toc))   % toc displays the elapsed time from the stopwatch
 
 
 %% extract some information about your experiments
@@ -46,10 +55,11 @@ sessions = unique(sessions,'stable');
 numSesh = numel(sessions);
 
 % we can display the information extracted as we go
-display(sprintf('We have the following sessions: %s\n',strjoin(sessions)))
+display(sprintf('We have %d sessions: %s\n',numSesh,strjoin(sessions)))
 
 
 %% filter to include only cells with good cluster quality
+
 % you need to specify here which quality judgments mean 'bad' and 'off'
 badQ = '3';
 offQ = '4';
@@ -79,6 +89,7 @@ display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d CA1 cells
     numOut))
 
 %% filter for putative excitatory cells (i.e. mean rate under 7 Hz in first session)
+
 % first extract the cell numbers that meet this criteria, then include ALL data from these cells
 cellsToKeep = selectCols(CA1subset,labels,'cell num','session',sessions{1},'mean rate','<',7);
 CA1exc = selectRows(CA1subset,labels,'keep','cell num',cellsToKeep);
@@ -143,13 +154,14 @@ for iDose = 1:numDoses   % loop through each CNO dose
 end   % dose
 
 
-%% separate the data by dose
+%% clean up the data a bit
+
+% separate the data by dose
 con = squeeze(dataStore(:,1,:));
 low = squeeze(dataStore(:,2,:));
 high = squeeze(dataStore(:,3,:));
 
-
-%% remove rows at the bottom that are all nans
+% remove rows at the bottom that are all nans
 con(all(arrayfun(@isnan,con)'),:) = [];
 low(all(arrayfun(@isnan,low)'),:) = [];
 high(all(arrayfun(@isnan,high)'),:) = [];
@@ -200,17 +212,6 @@ for iGroup = 1:numel(medianVals)
     text(xVals(iGroup),textYlocs(iGroup),['n = ' num2str(nCounts(iGroup))],'horizontalalignment','center')
 end
 
-%% run stats (nonparametric tests b/c absolute rate change will not be normally distributed)
-pVals = [];
-pVals(1) = ranksum(rdLowAbs,rdConAbs,'tail','right');
-pVals(2) = ranksum(rdHighAbs,rdConAbs,'tail','right');
-pVals(3) = ranksum(rdHighAbs,rdLowAbs,'tail','right');
-
-% display results
-display(sprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4f',pVals(1)))
-display(sprintf('15 mg/kg vs. 0 mg/kg:   p = %.4f',pVals(2)))
-display(sprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4f\n',pVals(3)))
-
 
 %% plot results as beehive to see distribution of data points
 hFig_beehive = figure;
@@ -230,7 +231,7 @@ hMarkers = findobj(gca,'type','line');   % find all line objects (3 groups of do
 hMarkers = flipud(hMarkers);   % flip the order of the handles (by default they are in order of most recently plotted)
 set(hMarkers,'markersize',15)
 
-% change marker color (for no reason other than to show how)
+% set unique marker color for each group
 markerColors = {'k','b','r'};
 for iGroup = 1:numel(hMarkers)
     set(hMarkers(iGroup),'color',markerColors{iGroup})
@@ -243,7 +244,40 @@ hold off
 drawnow
 
 
+%% run stats
+
+% test normality of each distribution using the Lilliefors test
+normTest = [];
+normTest(1) = lillietest(rdConAbs);
+normTest(2) = lillietest(rdLowAbs);
+normTest(3) = lillietest(rdHighAbs);
+
+pVals = [];
+if sum(normTest)   % this is true if any of the null hypotheses were rejected
+    display('Failed normality test, using nonparametric statistics...')
+    pVals(1) = ranksum(rdLowAbs,rdConAbs,'tail','right');
+    pVals(2) = ranksum(rdHighAbs,rdConAbs,'tail','right');
+    pVals(3) = ranksum(rdHighAbs,rdLowAbs,'tail','right');
+    % NB:  these are one-sided tests (see ranksum doc) b/c we only want to know if more CNO means
+    %      more rate change. remove last 2 arguments to run a two-sided test (default).
+    %      also note that these are independent tests, use signrank for paired tests.
+else
+    display('Passed normality test, using parametric statistics...')
+    [~,pVals(1)] = ttest2(rdLowAbs,rdConAbs,'tail','right');
+    [~,pVals(2)] = ttest2(rdHighAbs,rdConAbs,'tail','right');
+    [~,pVals(3)] = ttest2(rdHighAbs,rdLowAbs,'tail','right');
+    % NB:  these are one-sided tests (see ttest2 doc) b/c we only want to know if more CNO means
+    %      more rate change. remove last 2 arguments to run a two-sided test (default).
+    %      also note that these are independent tests, use ttest for paired tests.
+end
+
+display(sprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4e',pVals(1)))
+display(sprintf('15 mg/kg vs. 0 mg/kg:   p = %.4e',pVals(2)))
+display(sprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4e\n',pVals(3)))
+
+
 %% save figures
+
 % choose directory to save in
 saveDir = uigetdir('','Select output folder');
 
@@ -263,6 +297,6 @@ display(sprintf('Saved beehive plot as:  %s',beehiveName))
 dataName = [saveDir '\exampleResults_ ' dt '.mat'];
 save(dataName,'medianVals','pVals')
 
-display(sprintf('Saved results as:      %s',dataName))
+display(sprintf('Saved results as:       %s',dataName))
 
 
