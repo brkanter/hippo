@@ -127,7 +127,7 @@ for iFolder = 1:length(uniqueFolders)
     %% get positions, spikes, map, and rates
     pos = data.getPositions('average','off','speedFilter',[2 0]);
     posAve = data.getPositions('speedFilter',[2 0]);
-    save('posCleanScaled.mat','pos','posAve');
+    save(fullfile(uniqueFolders{1,iFolder},'posCleanScaled.mat'),'pos','posAve');
     posT = posAve(:,1);
     posX = posAve(:,2);
     posY = posAve(:,3);
