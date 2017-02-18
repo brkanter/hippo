@@ -17,6 +17,11 @@
 
 function cleaned = cleanUpQuality(raw,labels,sessions,numSesh,badQ,offQ)
 
+%% check inputs
+if (iscell(raw) + iscell(labels) + iscell(sessions) + helpers.isiscalar(numSesh) + helpers.isstring(badQ) + helpers.isstring(offQ)) < 6
+    error('Incorrect input format (type ''help <a href="matlab:help cleanUpQuality">cleanUpQuality</a>'' for details).');
+end
+
 %% switch erroneous offQ to badQ
 temp = {};
 for iSession = 1:numSesh

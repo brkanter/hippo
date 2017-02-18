@@ -49,8 +49,6 @@ for iLabel = 1:size(raw,2)
 end
 allFolders = raw(2:end,1)';
 uniqueFolders = unique(allFolders);
-% load uniqueFoldersHP;
-% load uniqueFoldersMEC;
 dataInput = raw(2:end,:);
 
 %% initialize options
@@ -67,7 +65,10 @@ include_obj = 0;
 
 %% choose what to calculate
 [selections, OK] = listdlg('PromptString','Select what to calculate', ...
-    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOWEST)','Coherence','Field info and border scores', 'Grid stats','Head directions','Speed score','Theta indices','Spatial cross correlations','Rate difference scores (CHRISTY ONLY)','Objects'}, ...
+    'ListString',{'Spat. info. content, selectivity, and sparsity (SLOW)', ...
+    'Coherence','Field info and border scores', 'Grid stats','Head directions', ...
+    'Speed score (SLOW)','Theta indices', ...
+    'Spatial cross correlations','Rate difference scores (CHRISTY ONLY)','Objects'}, ...
     'InitialValue',1:8, ...
     'ListSize',[400, 250]);
 if OK == 0; return; end;
@@ -248,13 +249,19 @@ for iFolder = 1:length(uniqueFolders)
     posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);
     posX = posAve(:,2);
-    posY = posAve(:,3);
-    if include_HD 
+    posY = posAve(:,3);   
+    %% extract necessary measures that don't rely on clusters to save time
+    if include_HD
         pos = data.getPositions('average','off','speedFilter',[2 0]);
+        allHD = analyses.calcHeadDirection(pos);
     end
+    if include_speed
+        Speed = general.speed(posAve);
+    end
+    %% loop through all cells    
     cellMatrix = data.getCells;
     numClusters = size(cellMatrix,1);
-    for iCluster = 1:numClusters     % loop through all cells    
+    for iCluster = 1:numClusters     
         display(sprintf('Cluster %d of %d',iCluster,numClusters))
         %% cluster quality: set PP nums for Norwegian scheme
         if cellMatrix(iCluster,1) == 1
@@ -381,9 +388,8 @@ for iFolder = 1:length(uniqueFolders)
         end
         %% head direction
         if include_HD
-            [~,spkInd] = data.getSpikePositions(spikes,posAve);
+            [spikePos,spkInd] = data.getSpikePositions(spikes,posAve);
             try
-                allHD = analyses.calcHeadDirection(pos);
                 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
                 tc = analyses.turningCurve(spkHDdeg,allHD,data.sampleTime,'binWidth',6);
                 tcStat = analyses.tcStatistics(tc,6,20);
@@ -396,8 +402,14 @@ for iFolder = 1:length(uniqueFolders)
         end
         %% speed
         if include_speed
-            speedScore = analyses.speedScore(posAve,spikes);
-        end    
+            if ~exist('spikePos','var')
+                spikePos = data.getSpikePositions(spikes,posAve);
+            end
+            instRate = analyses.instantRate(spikePos(:,1),posAve);
+            kernel = (1 / helpers.sampleTimeFromData(posAve)) / 0.4;   % smoothing kernel = 0.4 sec
+            scores = analyses.speedScore(Speed,instRate,kernel);
+            speedScore = scores(2);
+        end  
         %% theta
         if include_theta
             try
@@ -640,10 +652,8 @@ if include_DS
     end        
 end
 
-%% excel output
-msgExcel = msgbox('Creating Excel output...');
-
 %% collapse arrays into single columns and store everything in one cell array
+msgExcel = msgbox('Creating Excel output...');
 emperor(:,1) = Mfolder(:);             
 emperor(:,size(emperor,2)+1) = num2cell(Mtetrode(:));
 emperor(:,size(emperor,2)+1) = num2cell(Mcluster(:));
@@ -745,7 +755,16 @@ if include_DS
             DS_colHeaders{12} = 'DS Peak 2 vs 3 ';
     end    
     colHeaders = [colHeaders,DS_colHeaders];    
-end  
+end
+
+%% remove 999999 placeholders
+ind = false(1,numel(emperor));
+for iCell = 1:numel(emperor)
+    if isnumeric(emperor{iCell})
+        ind(iCell) = (emperor{iCell} == 999999);
+    end
+end
+emperor(ind) = {nan};
 
 %% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];

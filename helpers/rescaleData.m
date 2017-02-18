@@ -4,8 +4,8 @@
 %   USAGE
 %       scaledData = rescaleData(dataInput,newMin,newMax)
 %       dataInput          numeric data array to scale
-%       newMin             desired minimum
-%       newMax             desired maximum 
+%       newMin             (optional) desired minimum (default = 0)
+%       newMax             (optional) desired maximum (default = 1)
 %
 %   OUTPUT
 %       scaledData         rescaled data
@@ -14,9 +14,11 @@
 
 function scaledData = rescaleData(dataInput,newMin,newMax)
 
-%% scale from 0 to 1 by default
+%% check inputs
 if nargin == 1
     newMin = 0;
+    newMax = 1;
+elseif nargin == 2
     newMax = 1;
 end
 

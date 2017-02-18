@@ -13,9 +13,17 @@
 %   NOTES
 %       Will not work well for small number of spikes (i.e. < 100).
 %
+%   SEE ALSO
+%       thetaIndex
+%
 % Written by BRK 2016
 
 function [counts,centers,thetaInd] = thetaIndex(spikes)
+
+%% check input
+if helpers.isdvector(spikes) < 1
+    error('Input should be a vector of spike times');
+end
 
 %% binning
 numBins = 101; % 10 msec

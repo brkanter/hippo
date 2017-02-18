@@ -9,12 +9,14 @@
 
 function getQuality
 
+%% choose directory and find saved mat files
 folder = uigetdir();
 cd(folder)
 matFiles = dir('*.mat');
 matFiles = struct2cell(matFiles)';
 ind = find(~cellfun(@isempty,strfind(matFiles(:,1),'Quality')));
 
+%% plot quality judgments as text
 figure('name',folder);
 set(gca,'ydir','reverse')
 axis off

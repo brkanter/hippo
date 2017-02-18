@@ -15,7 +15,12 @@
 %
 % Written by BRK 2014
 
-function spikeWidth = halfMaxWidth(userDir, tetrode, spikes)
+function spikeWidth = halfMaxWidth(userDir,tetrode,spikes)
+
+%% check inputs
+if (helpers.isstring(userDir) + helpers.isiscalar(tetrode) + helpers.isdvector(spikes)) < 3
+    error('Incorrect input format (type ''help <a href="matlab:help halfMaxWidth">halfMaxWidth</a>'' for details).');
+end
 
 %% load data
 nttFiles = dir('*.ntt');

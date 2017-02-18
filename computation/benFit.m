@@ -2,11 +2,17 @@
 % Fit data with polynomial of your choice and return coefficient of determination.
 %
 %   USAGE
-%       [R2,AR2,yfit] = benFit(x,y,degree,showLine)
+%       [R2,AR2,yfit] = benFit(x,y,<options>)
 %       x           vector of x values (independent variable)
 %       y           vector of y values (dependent variable)
-%       degree      degree of polynomial fit
-%       showLine    anything other than 0 will plot fit
+%       <options>   optional list of property-value pairs (see table below)
+%
+%   ============================================================================
+%    Properties           Values
+%   ----------------------------------------------------------------------------
+%       degree      degree of polynomial fit (default = 1)
+%       showLine    1 plots fit line, 0 does not (default) 
+%   ============================================================================
 %
 %   OUTPUTS
 %       R2          R squared
@@ -15,11 +21,23 @@
 %
 % Written by BRK 2015
 
-function [R2,AR2,yfit] = benFit(x,y,degree,showLine)
+function [R2,AR2,yfit] = benFit(x,y,varargin)
 
-if ~exist('showLine','var')
-    showLine = 0;
-end
+%% parse inputs
+check{1} = @(x) helpers.isdvector(x);
+check{2} = @(x) helpers.isdvector(x);
+check{3} = @(x) helpers.isiscalar(x,'>=0');
+check{4} = @(x) helpers.isiscalar(x,'>=0','<=1');
+
+inp = inputParser;
+addRequired(inp,'x');
+addRequired(inp,'y');
+addParameter(inp,'degree',1,check{3});
+addParameter(inp,'showLine',0,check{4});
+parse(inp,x,y,varargin{:});
+
+degree = inp.Results.degree;
+showLine = inp.Results.showLine;
 
 %% remove nans
 xnan = isnan(x);

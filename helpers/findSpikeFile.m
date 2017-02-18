@@ -15,6 +15,11 @@
 
 function spikes = findSpikeFile(raw,labels,clusterNum,session)
 
+%% check inputs
+if (iscell(raw) + iscell(labels) + helpers.isstring(clusterNum) + helpers.isstring(session)) < 4
+    error('Incorrect input format (type ''help <a href="matlab:help findSpikeFile">findSpikeFile</a>'' for details).');
+end
+
 %% search in correct directory
 folder = selectCols(raw,labels,'folder','cell num',clusterNum,'session',session);
 splits = regexp(folder,'\','split');

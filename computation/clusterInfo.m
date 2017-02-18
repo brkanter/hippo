@@ -15,13 +15,16 @@
 
 function [L_ratio IsoD] = clusterInfo(folder,tNum,cNum)
 
-%% parse inputs
+%% check inputs
 global clusterFormat
 if ~strcmpi(clusterFormat,'MClust')
-    display('This function currently only works for MClust clusters.')
-    return
+    error('This function currently only works for MClust clusters')
+end
+if (helpers.isstring(folder) + helpers.isstring(tNum) + helpers.isstring(cNum)) < 3
+    error('Inputs must be strings')
 end
 
+%% get filename
 cd(folder)
 clusterList = dir('*.t');  
 if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust

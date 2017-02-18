@@ -40,8 +40,6 @@ for iLabel = 1:size(raw,2)
 end
 allFolders = raw(2:end,1)';
 uniqueFolders = unique(allFolders);
-% load uniqueFoldersMEC;
-% load uniqueFoldersHP;
 dataInput = raw(2:end,:);  
 
 %% rate map settings

@@ -2,20 +2,24 @@
 % Compute theta index from LFP.
 %
 %   USAGE
-%       [counts,centers,thetaInd] = thetaIndex(spikes)
-%       spikes          vector of spike timestamps
+%       thetaInd = thetaIndexLFP(folder,tetrode)
+%       folder         directory of recording session
+%       tetrode        tetrode number
 %       
 %   OUTPUT
-%       counts          bin counts from histogram of autocorrelation
-%       centers         bin centers from histogram of autocorrelation
 %       thetaInd        ratio of theta-band (5-11 Hz) power to broadband (0-50 Hz) power
 %
-%   NOTES
-%       Will not work well for small number of spikes (i.e. < 100).
+%   SEE ALSO
+%       thetaIndex
 %
 % Written by BRK 2016
 
 function thetaInd = thetaIndexLFP(folder,tetrode)
+
+%% check inputs
+if (helpers.isstring(folder) + helpers.isiscalar(tetrode)) < 2
+    error('Incorrect input format (type ''help <a href="matlab:help thetaIndexLFP">thetaIndexLFP</a>'' for details).');
+end
 
 %% get data
 filename = [folder '\' sprintf('CSC%s.ncs',num2str(tetrode))];

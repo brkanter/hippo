@@ -146,7 +146,7 @@ function pvCorr = pvCorrBRK(stack1, stack2, varargin)
 
             case returnFormats.D2
                 
-                %% BRK
+                %% BRK: replace nans with zeros before correlating
                 nanL = isnan(reshapedLeft);
                 nanR = isnan(reshapedRight);
                 reshapedLeft(nanL | nanR) = 0;

@@ -1,7 +1,9 @@
-%%% BRK modifications to plot.pathTrial
+%% BRK modifications to plot.pathTrial
+
 % flip ydir to compensate for camera
 % apply speed filter for position samples
-%%%
+
+%%
 
 % Plot animal's run path for a specified trial
 %
@@ -26,18 +28,18 @@ function pathTrialBRK(trialNum, varargin)
     oldTrial = data.getCurrentTrialNum();
     data.setTrial(trialNum);
 
-    %%%
+    %% BRK
     pos = data.getPositions('speedFilter',[2 0]);
-    %%%
+    %%
     
     holded = ishold();
     for i = 1:data.getNumSessions()
         [startPos, endPos] = data.getRunIndices(i);
         h = plot(pos(startPos:endPos, 2), pos(startPos:endPos, 3), varargin{:});
-        %%%
+        %% BRK
         set(h,'hittest','off')
         set(gca,'ydir','reverse')
-        %%%
+        %%
         if i == 1
             hold on;
         end

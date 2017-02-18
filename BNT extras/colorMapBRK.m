@@ -1,8 +1,10 @@
-%%% BRK modifications to plot.colorMap
+%% BRK modifications to plot.colorMap
+
 % flip ydir to compensate for camera
 % add option for publication quality figures
 % set aspect ratio
-%%%
+
+%%
 
 % Plot a color map
 %
@@ -67,7 +69,6 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     hSurf = 0;
     pubQual = 0;
     inputMap = data;
-    %%%
     
     if nargin < 1,
         error('Incorrect number of parameters (type ''help <a href="matlab:help plot.colorMap">plot.colorMap</a>'' for details).');
@@ -121,10 +122,10 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
                 if ~helpers.isstring(ydir,'normal','reverse')
                     error('Incorrect value for property ''ydir'' (type ''help <a href="matlab:help plot.colorMap">plot.colorMap</a>'' for details).');
                 end
-            %%% BRK    
+            %% BRK    
             case 'pubqual',
                 pubQual = lower(varargin{i+1});
-            %%%
+            %%
             
             otherwise,
                 error(['Unknown property ''' num2str(varargin{i}) ''' (type ''help <a href="matlab:help plot.colorMap">plot.colorMap</a>'' for details).']);
@@ -148,20 +149,20 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     a = gca;
     colormap(a,jet(64));
 
-    %%% BRK  
+    %% BRK  
     if pubQual
         numBinsX = size(inputMap,1);
         numBinsY = size(inputMap,2);
-        data2 = inpaint_nans(inputMap);                      %guess at what nans would have been
-        [xi, yi] = meshgrid(1:0.1:numBinsX,1:0.1:numBinsY);       %make a finer grid
-        z = interp2(inputMap,xi,yi,'nearest');                 %track nans to be filled back in
-        z2 = interp2(data2,xi,yi,'bicubic');                  %interpolate image onto finer grid
-        mask = isnan(z);                                        %fill nans back into image
+        data2 = inpaint_nans(inputMap);                      % guess at what nans would have been
+        [xi, yi] = meshgrid(1:0.1:numBinsX,1:0.1:numBinsY);  % make a finer grid
+        z = interp2(inputMap,xi,yi,'nearest');               % track nans to be filled back in
+        z2 = interp2(data2,xi,yi,'bicubic');                 % interpolate image onto finer grid
+        mask = isnan(z);                                     % fill nans back into image
         z2(mask) = NaN;
         hSurf = surface(z2);
         shading flat;
         lighting phong;
-        %%% scale fig to include only visited pixels
+        % scale fig to include only visited pixels
         xmin = find(any(z2,1),1,'first');
         xmax = find(any(z2,1),1,'last');
         ymin = find(any(z2,2),1,'first');
@@ -169,8 +170,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         axis([xmin xmax ymin ymax])
     else
         if ~isempty(find(isnan(data), 1))
-            m = m - ((M - m)/length(x)); % length(x) is just arbitary
-            % the goal is to set NaN to be less than minimum.
+            m = m - ((M - m)/length(x)); % length(x) is just arbitary. the goal is to set NaN to be less than minimum.
             data(isnan(data)) = m;
 
             cmap = colormap(gca);
@@ -183,7 +183,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
             alpha(p, 1 ./ (1 + threshold./(dimm+eps)));
         end
     end
-    %%%
+    %%
     
     set(a, 'ydir', ydir, 'tickdir', 'out', 'box', 'off');
 
@@ -193,9 +193,9 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         axes(a);
     end
     
-    %%% BRK
+    %% BRK
     set(gca,'DataAspectRatio',[1 1 1])
     axis off
-    %%%
+    %%
     
 end

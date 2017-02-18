@@ -27,25 +27,10 @@
 
 function array = selectRows(array,labels,type,varargin)
 
-%% check for correct argin
-if ~strcmpi(type,'keep') && ~strcmpi(type,'remove')
-    error('Third argument ''type'' must be ''keep'' or ''remove''')
+%% check inputs
+if (iscell(array) + iscell(labels) + helpers.isstring(type,'keep','remove')) < 3
+    error('Incorrect input format (type ''help <a href="matlab:help selectRows">selectRows</a>'' for details).');
 end
-% for iArg = 1:length(varargin)
-%     if iscell(varargin{iArg})
-%         try
-%             if isempty(varargin{iArg}{1})
-%                 display('Empty input argument')
-%                 return
-%             end
-%         catch
-%             if isempty(varargin{iArg})
-%                 display('Empty input argument')
-%                 return
-%             end
-%         end
-%     end
-% end
 
 %% double comparisons
 dStartInds = find(cellfun(@isnumeric,varargin)) - 2;
