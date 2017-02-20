@@ -35,16 +35,16 @@ end
 scale = 1000000*str2num(str);
 squeezedSamples = squeezedSamples * scale;
 
-%% resample and detrend
+%% resample
 srate0 = SampleFrequency(1);
 rsrate = 500;
 resampled = resample(squeezedSamples,rsrate,srate0);
-ds = detrend(resampled);
+% ds = detrend(resampled);
 
 %% FFT
 nData = 2000000;
 nHz = floor(nData/2)+1;
-sineX = fft(ds,nData)/nData;
+sineX = fft(resampled,nData)/nData;
 hz = linspace(0.1,rsrate/2,nHz);
 tb = dsearchn(hz',[5 11]');
 bb = dsearchn(hz',[0 50]');

@@ -25,12 +25,20 @@ end
 
 %% prepare figure and colors
 figure('position',[9 583 1900 494],'name',path)
+
+% allow quick switching between x limits
+butt_xlim = uicontrol(gcf,'style','togglebutton', ...
+    'string','<html>Change x range<br>to 2 sec', ...
+    'units','normalized','position',[0.925 0.01 0.07 0.2], ...
+    'enable','inactive', ...
+    'buttondownfcn',@updateXlim);
+
 hold on
 xlabel 'Time (sec)'
 ylabel 'Voltage (uV)'
 cmap = colormap('parula');
 cmap = cmap(round(linspace(1,50,numTraces)),:);
-    
+
 %% load trace(s)
 for iTrace = 1:numTraces
     
@@ -86,3 +94,16 @@ set(findobj(icons,'type','line'),'linew',3)
 
 display('Done.')
 keyboardnavigate   % this lets you scroll with the arrow keys (when not in zoom/pan/edit modes)
+
+
+%% nested function for updating x axis limits
+function updateXlim(hObject,eventData)
+
+if strcmpi(eventData.Source.String,'<html>Change x range<br>to full session')
+    xlim auto
+    eventData.Source.String = '<html>Change x range<br>to 2 sec';
+else
+    xlim([0 2])
+    eventData.Source.String = '<html>Change x range<br>to full session';
+end
+
