@@ -62,7 +62,6 @@ for iFolder = 1:length(uniqueFolders)
     unit(1:1000)={struct('unit', trode)};
     folder=struct('trode',unit);
     folder(1000).trode(1000).unit(1000) = 0;
-    cd(uniqueFolders{1,iFolder});            
     %% find all tetrode and cluster numbers
     % NB: this extracts T and C nums from excel sheet, so cluster format
     % not important until loadSessions
@@ -83,7 +82,7 @@ for iFolder = 1:length(uniqueFolders)
         end
     end
     %% create cut list for input file
-    clusterList = dir('*.t');
+    clusterList = dir(fullfile(uniqueFolders{1,iFolder},'*.t'));
     cutList = [];
     if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
         for iTrode = 1:4

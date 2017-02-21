@@ -31,8 +31,7 @@ if isempty(ind)
 else
     correctMouseID = filePath(ind:ind+4);
 end
-cd(filePath0)
-myDir = dir(cd);
+myDir = dir(filePath0);
 names = extractfield(myDir,'name');
 
 %% find all session names and show 10 most recent

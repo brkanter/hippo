@@ -186,7 +186,6 @@ for iFolder = 1:length(uniqueFolders)
     unit(1:1000)={struct('unit', trode)};
     folder=struct('trode',unit);
     folder(1000).trode(1000).unit(1000) = 0;
-    cd(uniqueFolders{1,iFolder});             % set current folder
     
     %% find all tetrode and cluster numbers
     folderInds = find(strcmpi(dataInput(:,1),uniqueFolders(iFolder)));
@@ -275,10 +274,10 @@ for iFolder = 1:length(uniqueFolders)
         end
         % qualitative cluster quality
         try
-            load(sprintf('TT%d_%d-Quality.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2))) % oregon
+            load(fullfile(allFolders{1,iFolder},sprintf('TT%d_%d-Quality.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))) % oregon
         catch
             try
-                load(sprintf('PP%d_TT%d_%d-Quality.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % norway
+                load(fullfile(allFolders{1,iFolder},sprintf('PP%d_TT%d_%d-Quality.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2))))  % norway
             catch
                 quality = 999999;
             end
@@ -287,29 +286,29 @@ for iFolder = 1:length(uniqueFolders)
         try    % MClust 4.3
             if cellMatrix(iCluster,2) < 10 
                 try
-                    load(sprintf('TT%d_0%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % oregon
+                    load(fullfile(allFolders{1,iFolder},sprintf('TT%d_0%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2))))  % oregon
                 catch
                     try
-                        load(sprintf('PP%d_TT%d_0%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % norway
+                        load(fullfile(allFolders{1,iFolder},sprintf('PP%d_TT%d_0%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2))))  % norway
                     end
                 end
             else
                 try
-                    load(sprintf('TT%d_%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % oregon
+                    load(fullfile(allFolders{1,iFolder},sprintf('TT%d_%d-CluQual.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2))))  % oregon
                 catch
-                    load(sprintf('PP%d_TT%d_%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2)))  % norway
+                    load(fullfile(allFolders{1,iFolder},sprintf('PP%d_TT%d_%d-CluQual.mat',PP,cellMatrix(iCluster,1),cellMatrix(iCluster,2))))  % norway
                 end
             end
             L_ratio = CluSep.L_Ratio.Lratio;
             isolationDist = CluSep.IsolationDistance;
         catch    % MClust 3.5
             try
-                load(sprintf('TT%d_%d-CluQual_MC35.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
+                load(fullfile(allFolders{1,iFolder},sprintf('TT%d_%d-CluQual_MC35.mat',cellMatrix(iCluster,1),cellMatrix(iCluster,2))))
             catch
                 L_ratio = 999999;
                 isolationDist = 999999;
             end
-        end        
+        end          
         %% general calculations
         spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);
         map = analyses.map([posT posX posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', mapLimits);     

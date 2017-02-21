@@ -25,8 +25,7 @@ if (helpers.isstring(folder) + helpers.isstring(tNum) + helpers.isstring(cNum)) 
 end
 
 %% get filename
-cd(folder)
-clusterList = dir('*.t');  
+clusterList = dir(fullfile(folder,'*.t'));  
 if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1).name,'SS')) % norway MClust
     switch tNum
         case 1

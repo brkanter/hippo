@@ -23,9 +23,9 @@ folder=struct('trode',unit);
 folder(200).trode(8).unit(50) = 0;
 
 %% find all tetrode and cluster numbers
+clusterList = dir(fullfile(userDir,'*.t'));
 switch clusterFormat
     case 'MClust'
-        clusterList = dir('*.t');            
         for iCluster = 1:length(clusterList)
             splits = regexp(clusterList(iCluster).name,'_','split');
             if length(clusterList(iCluster).name) <= 9      % oregon
@@ -40,7 +40,6 @@ switch clusterFormat
             folder(1).trode(t_num).unit(c_num) = c_num;   
         end
     case 'SS_t'
-        clusterList = dir('*.t');            
         for iCluster = 1:length(clusterList)
             splits = regexp(clusterList(iCluster).name,'_','split');
             c_num = cellfun(@str2double,strtok(splits(end),'.')); 

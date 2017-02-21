@@ -11,8 +11,7 @@ function getQuality
 
 %% choose directory and find saved mat files
 folder = uigetdir();
-cd(folder)
-matFiles = dir('*.mat');
+matFiles = dir(fullfile(folder,'*.mat'));
 matFiles = struct2cell(matFiles)';
 ind = find(~cellfun(@isempty,strfind(matFiles(:,1),'Quality')));
 

@@ -22,8 +22,17 @@ if (helpers.isstring(folder) + helpers.isiscalar(tetrode)) < 2
 end
 
 %% get data
-filename = [folder '\' sprintf('CSC%s.ncs',num2str(tetrode))];
-cd(folder)
+CSCfiles = dir(fullfile(folder,'*.ncs'));
+if length(CSCfiles) == 0
+    thetaInd = nan;
+    return
+elseif length(CSCfiles) == 4
+    CSCind = tetrode;
+else
+    CSCind = tetrode * 4 - 3;
+end
+filename = fullfile(folder,CSCfiles(CSCind).name);
+               
 [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);
 for iRow = 1:length(Header)
@@ -39,7 +48,6 @@ squeezedSamples = squeezedSamples * scale;
 srate0 = SampleFrequency(1);
 rsrate = 500;
 resampled = resample(squeezedSamples,rsrate,srate0);
-% ds = detrend(resampled);
 
 %% FFT
 nData = 2000000;
@@ -48,7 +56,7 @@ sineX = fft(resampled,nData)/nData;
 hz = linspace(0.1,rsrate/2,nHz);
 tb = dsearchn(hz',[5 11]');
 bb = dsearchn(hz',[0 50]');
-db = dsearchn(hz',[1 4]');
+% db = dsearchn(hz',[1 4]');
 Power = 2*abs(sineX(1:length(hz)));
 % plot(hz,Power)
 % xlim([0 20])
@@ -59,7 +67,7 @@ peakTheta = nanmax(Power(tb(1):tb(2)));
 length1Hz = round(nHz/(rsrate/2));
 thetaPower = nanmean(Power(peakThetaInd-length1Hz:peakThetaInd+length1Hz));
 bbPower = nanmean(Power(bb(1):bb(2)));
-dbPower = nanmean(Power(db(1):db(2)));
+% dbPower = nanmean(Power(db(1):db(2)));
 thetaInd = thetaPower/bbPower;
-thetaDelta = thetaPower/dbPower;
+% thetaDelta = thetaPower/dbPower;
 

@@ -16,7 +16,6 @@ global penguinInput arena clusterFormat
 
 %% choose recording session and load the data
 folder = uigetdir();
-cd(folder)
 writeInputBNT(penguinInput,folder,arena,clusterFormat)
 data.loadSessions(penguinInput)
 

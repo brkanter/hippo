@@ -22,14 +22,12 @@ folder2 = uigetdir('E:\','Choose folder for SECOND recording session');
 folder3 = uigetdir('E:\','Choose EMPTY folder for NEWLY STITCHED recording session');
 
 %% CSC files (LFP)
-cd(folder1)
-fileEndings1 = dir('*.ncs');
+fileEndings1 = dir(fullfile(folder1,'*.ncs'));
 numCSCs = length(fileEndings1);
 for iFile = 1:numCSCs
     filenames1{iFile} = fullfile(folder1, fileEndings1(iFile).name);
 end
-cd(folder2)
-fileEndings2 = dir('*.ncs');
+fileEndings2 = dir(fullfile(folder2,'*.ncs'));
 for iFile = 1:numCSCs
     filenames2{iFile} = fullfile(folder2, fileEndings2(iFile).name);
 end
@@ -50,13 +48,11 @@ for iFile = 1:numCSCs
 end
 
 %% NTT files (spikes)
-cd(folder1)
-fileEndings1 = dir('*.ntt');
+fileEndings1 = dir(fullfile(folder1,'*.ntt'));
 for iFile = 1:4
     filenames1{iFile} = fullfile(folder1, fileEndings1(iFile).name);
 end
-cd(folder2)
-fileEndings2 = dir('*.ntt');
+fileEndings2 = dir(fullfile(folder2,'*.ntt'));
 for iFile = 1:4
     filenames2{iFile} = fullfile(folder2, fileEndings2(iFile).name);
 end
@@ -76,11 +72,9 @@ for iFile = 1:4
 end
 
 %% NVT files (video)
-cd(folder1)
-fileEndings1 = dir('*.nvt');
+fileEndings1 = dir(fullfile(folder1,'*.nvt'));
 filenames1 = fullfile(folder1, fileEndings1.name);
-cd(folder2)
-fileEndings2 = dir('*.nvt');
+fileEndings2 = dir(fullfile(folder2,'*.nvt'));
 filenames2 = fullfile(folder2, fileEndings2.name);
 filenames3 = fullfile(folder3, fileEndings1.name);
 [TimeStamps{1,1}, ExtractedX{1,1}, ExtractedY{1,1}, ExtractedAngle{1,1}, Targets{1,1}, Points{1,1}, Header{1,1}] = Nlx2MatVT( filenames1, [1 1 1 1 1 1], 1, 1);
