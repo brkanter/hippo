@@ -7,32 +7,36 @@
 %
 %   NOTES
 %       This function only works if the directory naming scheme matches one
-%       of the following two forms:
+%       of the following three forms:
 %
 %       1) 2016-10-10_15-57-47_BK178
 %       2) 2016-10-10_15-57-47_CML106
+%       3) 2016-10-10_15-57-47_KA1
 %
 % Written by BRK 2015
 
 function powerSpectrum
 
-%% find relevant data
+%% find directory names
 filePath = uigetdir('','Select any recording session from the animal of your choice');
 splits = regexp(filePath,'\','split');
 filePath0 = fullfile(splits{1:end-1});
-ind = strfind(filePath,'BK');
-if isempty(ind)
-    ind2 = strfind(filePath,'CML');
-    if isempty(ind2)
-        return
-    else
-        correctMouseID = filePath(ind2:ind2+5);
-    end
-else
-    correctMouseID = filePath(ind:ind+4);
-end
 myDir = dir(filePath0);
 names = extractfield(myDir,'name');
+
+%% check mouse names
+if ~isempty(strfind(filePath,'BK'))
+    ind = strfind(filePath,'BK');
+    correctMouseID = filePath(ind:ind+4);
+elseif ~isempty(strfind(filePath,'CML'))
+    ind = strfind(filePath,'CML');
+    correctMouseID = filePath(ind:ind+5);
+elseif ~isempty(strfind(filePath,'KA'))
+    ind = strfind(filePath,'KA');
+    correctMouseID = filePath(ind:ind+2);
+else
+    error('Did not recognize mouse naming scheme. Must contain ''BK'', ''CML'', or ''KA''.')
+end
 
 %% find all session names and show 10 most recent
 numSesh = 0;

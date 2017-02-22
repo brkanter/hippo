@@ -44,7 +44,7 @@ numClusters = length(clusterNums);
 toRemove = cell(numClusters,1);
 for iCluster = 1:numClusters
     quality = selectCols(raw,labels,'quality','cell num',clusterNums{iCluster});
-    flag = sum(strcmpi(quality,offQ)) == length(quality);
+    flag = (sum(strcmpi(quality,offQ)) + sum(strcmpi(quality,badQ))) == length(quality);
     if flag
         toRemove{iCluster} = clusterNums{iCluster};
     end
