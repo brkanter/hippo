@@ -6,12 +6,9 @@
 %       powerSpectrum
 %
 %   NOTES
-%       This function only works if the directory naming scheme matches one
-%       of the following three forms:
-%
-%       1) 2016-10-10_15-57-47_BK178
-%       2) 2016-10-10_15-57-47_CML106
-%       3) 2016-10-10_15-57-47_KA1
+%       This function works by searching directories for your mouse ID and may fail
+%       if the directory structure or naming scheme is not as expected. See section
+%       'check mouse names' below for more info.
 %
 % Written by BRK 2015
 
@@ -27,21 +24,30 @@ names = extractfield(myDir,'name');
 %% check mouse names
 if ~isempty(strfind(filePath,'BK'))
     ind = strfind(filePath,'BK');
-    correctMouseID = filePath(ind:ind+4);
+    if length(ind) > 1; ind = ind(end); end;
+    mouseName = filePath(ind:ind+4);
 elseif ~isempty(strfind(filePath,'CML'))
     ind = strfind(filePath,'CML');
-    correctMouseID = filePath(ind:ind+5);
+    if length(ind) > 1; ind = ind(end); end;
+    mouseName = filePath(ind:ind+5);
 elseif ~isempty(strfind(filePath,'KA'))
     ind = strfind(filePath,'KA');
-    correctMouseID = filePath(ind:ind+2);
+    if length(ind) > 1; ind = ind(end); end;
+    mouseName = filePath(ind:ind+2);
 else
-    error('Did not recognize mouse naming scheme. Must contain ''BK'', ''CML'', or ''KA''.')
+    prompt={'Mouse name'};
+    name='Did not recognize mouse naming scheme';
+    numlines=1;
+    defaultanswer={'BK'};
+    mouseName = inputdlg(prompt,name,numlines,defaultanswer,'on');
+    if isempty(mouseName); return; end;
+    mouseName = mouseName{1};
 end
 
 %% find all session names and show 10 most recent
 numSesh = 0;
 for iFolder = 1:length(names)
-    ind = strfind(names{iFolder},correctMouseID);
+    ind = strfind(names{iFolder},mouseName);
     if ~isempty(ind)
         numSesh = numSesh + 1;
         nameStore{numSesh} = names{iFolder};
@@ -58,9 +64,9 @@ nData = 2000000;
 nHz = floor(nData/2)+1;
 nPower = 1000001;
 h1 = figure;
-set(gcf,'name',correctMouseID)
+set(gcf,'name',mouseName)
 h2 = figure;
-set(gcf,'name',correctMouseID)
+set(gcf,'name',mouseName)
 
 %% do it
 for iCSC = 1:4

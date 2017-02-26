@@ -23,7 +23,7 @@ if (helpers.isstring(userDir) + helpers.isiscalar(tetrode) + helpers.isdvector(s
 end
 
 %% load data
-nttFiles = dir('*.ntt');
+nttFiles = dir(fullfile(userDir,'*.ntt'));
 for iTrode = 1:length(nttFiles)
     found = regexp(nttFiles(iTrode).name,sprintf('TT%d',tetrode),'once');
     if ~isempty(found)
