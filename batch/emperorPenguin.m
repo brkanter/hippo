@@ -21,9 +21,7 @@ if isempty(penguinInput)
 end
 
 %% select folders to analyze
-% folders = uipickfilesBRK();
-load matlab.mat
-folders = allFolders;
+folders = uipickfilesBRK();
 if ~iscell(folders); return; end;
 
 %% choose what to calculate
