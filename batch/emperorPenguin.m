@@ -2,35 +2,16 @@
 % Create Excel worksheet containing all selected measures for a given experiment.
 %
 %   USAGE
-%       emperorPenguin(update)
-%       update      (optional) 'update' will call emperorPenguinUpdate to update spreadsheet
-%                   with new values, while any other input (or lack thereof) will start from scratch
-%
-%   NOTES
-%       Common error is 'Subscripted assignment dimension mismatch' when
-%       computing spatial correlations. This is because there is not the
-%       same number of clusters in all recording sessions for this
-%       experiment. For clusters of only a few spikes, they are sometimes
-%       discarded and you will need to add more spikes.
+%       emperorPenguin
 %
 %   SEE ALSO
-%       emperorPenguinUpdate addCellNums kingPenguin
+%       addCellNums kingPenguin
 %
 % Written by BRK 2014
 
-function emperorPenguin(update)
+function emperorPenguin
 
 tic
-
-%% check input
-if nargin
-    if strcmpi(update,'update')
-        emperorPenguinUpdate
-    else
-        error('Optional input argument not recognized')
-    end
-    return
-end
 
 %% get globals
 global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
@@ -40,7 +21,6 @@ end
 
 %% select folders to analyze
 allFolders = uipickfilesBRK();
-% load matlab.mat
 if ~iscell(allFolders); return; end;
 
 %% choose what to calculate
@@ -141,7 +121,6 @@ fullName = [excelFolder ending];
 
 %% excel column headers
 colHeaders = {'Folder','Tetrode','Cluster','Mean rate','Peak rate','Total spikes','Quality','L_Ratio','Isolation distance'};
-
 if include.spikeWidth
     colHeaders = [colHeaders,'Spike width (usec)'];
 end
@@ -191,7 +170,7 @@ end
 for iFolder = 1:length(allFolders)
     display(sprintf('Folder %d of %d',iFolder,length(allFolders)))
     
-    %% check all session in experiment for clusters in case some are only present in certain sessions
+    %% check all sessions in experiment for clusters in case some are only present in certain sessions
     expNum = ceil(iFolder/seshPerExp);
     if mod(iFolder,seshPerExp) == 1
         cellMatrix = [];
@@ -231,8 +210,8 @@ for iFolder = 1:length(allFolders)
         clusterData(iCluster,iFolder,expNum).cluster = cellMatrix(iCluster,2);
         %% general calculations
         spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);       
-        if isempty(spikes)   % cluster is missing in this session, clear everything out and continue
-            clusterData = clearClusterData(clusterData,iCluster,iFolder,expNum,include);
+        if isempty(spikes)   % cluster is missing in this session, fill array with nans
+            clusterData = missingClusterData(clusterData,iCluster,iFolder,expNum,include);
             
         else   % we have spikes, continue as usual
             map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',mapLimits);

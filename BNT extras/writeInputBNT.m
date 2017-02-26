@@ -17,9 +17,9 @@
 function writeInputBNT(penguinInput,userDir,arena,clusterFormat)
 
 %% initialize structure 'folder' for data storage
-trode(1:8)={zeros(1,50)};
-unit(1:50)={struct('unit', trode)};
-folder=struct('trode',unit);   
+trode(1:8) = {zeros(1,50)};
+unit(1:50) = {struct('unit', trode)};
+folder = struct('trode',unit);   
 folder(200).trode(8).unit(50) = 0;
 
 %% find all tetrode and cluster numbers
@@ -111,3 +111,4 @@ end
 %% write BNT input file
 fileID = fopen(penguinInput,'w');
 fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',userDir,cutList,unitList,arena);
+fclose(fileID);

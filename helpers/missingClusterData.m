@@ -1,4 +1,4 @@
-function clusterData = clearClusterData(clusterData,iCluster,iFolder,iExp,include)
+function clusterData = missingClusterData(clusterData,iCluster,iFolder,iExp,include)
 
 clusterData(iCluster,iFolder,iExp).folder = {};
 clusterData(iCluster,iFolder,iExp).rateMap = nan;
