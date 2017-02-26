@@ -1,3 +1,20 @@
+
+% Add each measure calculated in emperorPenguin into a single cell array.
+%
+%   USAGE
+%       emperor = createEmperorArray(clusterData,numExp,include)
+%       clusterData     structure for storing all data
+%       numExp          double indicating total number of experiments
+%       include         structure indicating which measures to calculate
+%
+%   OUTPUT
+%       emperor         cell array with all data
+%
+%   SEE ALSO
+%       emperorPenguin
+%
+% Written by BRK 2017
+
 function emperor = createEmperorArray(clusterData,numExp,include)
 
 %% extract names of measures

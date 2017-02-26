@@ -5,7 +5,8 @@
 %       emperorPenguin
 %
 %   SEE ALSO
-%       addCellNums kingPenguin
+%       emperorSettings emperorHeadings createEmperorArray missingClusterData
+%       excelStitch addCellNums kingPenguin
 %
 % Written by BRK 2014
 
@@ -20,50 +21,23 @@ if isempty(penguinInput)
 end
 
 %% select folders to analyze
-allFolders = uipickfilesBRK();
-if ~iscell(allFolders); return; end;
+% folders = uipickfilesBRK();
+load matlab.mat
+folders = allFolders;
+if ~iscell(folders); return; end;
 
 %% choose what to calculate
-include.spikeWidth = 0;
-include.sss = 0;
-include.coherence = 0;
-include.fields = 0;
-include.grid = 0;
-include.HD = 0;
-include.speed = 0;
-include.theta = 0;
-include.CC = 0;
-include.obj = 0;
-
-[selections, OK] = listdlg('PromptString','Select what to calculate', ...
-    'ListString',{'Spike width (SLOW)', ...
-    'Spat. info. content, selectivity, and sparsity (SLOW)', ...
-    'Coherence','Field info and border scores', 'Grid stats','Head direction', ...
-    'Speed score (SLOW)','Theta indices (SLOW)', ...
-    'Spatial cross correlations','Objects'}, ...
-    'InitialValue',1:9, ...
-    'ListSize',[400, 250]);
-
+[include,OK] = emperorSettings();
 if OK == 0; return; end;
-if ismember(1,selections); include.spikeWidth = 1; end
-if ismember(2,selections); include.sss = 1; end
-if ismember(3,selections); include.coherence = 1; end
-if ismember(4,selections); include.fields = 1; end
-if ismember(5,selections); include.grid = 1; end
-if ismember(6,selections); include.HD = 1; end
-if ismember(7,selections); include.speed = 1; end
-if ismember(8,selections); include.theta = 1; end
-if ismember(9,selections); include.CC = 1; end
-if ismember(10,selections); include.obj = 1; end
 
 %% get experiment details
 prompt={'How many sessions per experiment?'};
 name='Sessions/experiment';
 numlines=1;
 defaultanswer={'3'};
-Answers2 = inputdlg(prompt,name,numlines,defaultanswer,'on');
-if isempty(Answers2); return; end;
-seshPerExp = str2double(Answers2{1});
+Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+if isempty(Answers); return; end;
+seshPerExp = str2double(Answers{1});
 ccComps = nchoosek(1:seshPerExp,2);
 
 %% rate map settings
@@ -71,24 +45,23 @@ prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy'};
 name='Map settings';
 numlines=1;
 defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0'};
-Answers3 = inputdlg(prompt,name,numlines,defaultanswer,'on');
-if isempty(Answers3); return; end;
-smooth = str2double(Answers3{1});
-binWidth = str2double(Answers3{2});
-minTime = str2double(Answers3{3});
+Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+if isempty(Answers); return; end;
+smooth = str2double(Answers{1});
+binWidth = str2double(Answers{2});
+minTime = str2double(Answers{3});
 
 %% find field settings
 if include.fields
-    prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Spatial bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
+    prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
     name='Find field settings';
     numlines=1;
-    defaultanswer={'0.2',num2str(dBinWidth),num2str(dMinBins),'1'};
-    Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
-    if isempty(Answers4); return; end;
-    fieldThresh = str2double(Answers4{1});
-    binWidth = str2double(Answers4{2});
-    minBins = str2double(Answers4{3});
-    minPeak = str2double(Answers4{4});
+    defaultanswer={'0.2',num2str(dMinBins),'1'};
+    Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+    if isempty(Answers); return; end;
+    fieldThresh = str2double(Answers{1});
+    minBins = str2double(Answers{2});
+    minPeak = str2double(Answers{3});
 end
 
 %% grid stats settings
@@ -97,9 +70,9 @@ if include.grid
     name='Grid stats settings';
     numlines=1;
     defaultanswer={'0.2'};
-    Answers5 = inputdlg(prompt,name,numlines,defaultanswer,'on');
-    if isempty(Answers5); return; end;
-    gridThresh = str2double(Answers5{1});
+    Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+    if isempty(Answers); return; end;
+    gridThresh = str2double(Answers{1});
     if gridThresh < 0 || gridThresh > 1
         gridThresh = 0.2;
         display('Grid threshold value out of range, using default 0.2.')
@@ -119,63 +92,19 @@ dt = datestr(clock,30);
 ending = ['\emperor' sprintf('%s.xlsx',dt)];
 fullName = [excelFolder ending];
 
-%% excel column headers
-colHeaders = {'Folder','Tetrode','Cluster','Mean rate','Peak rate','Total spikes','Quality','L_Ratio','Isolation distance'};
-if include.spikeWidth
-    colHeaders = [colHeaders,'Spike width (usec)'];
-end
-if include.sss
-    colHeaders = [colHeaders,'Spatial info','Selectivity','Sparsity'];
-end
-if include.coherence
-    colHeaders = [colHeaders,'Coherence'];
-end
-if include.fields
-    colHeaders = [colHeaders,'Number of fields','Mean field size (cm2)','Max field size (cm2)','COM x','COM y','Border score'];
-end
-if include.grid
-    colHeaders = [colHeaders,'Grid score','Grid spacing','Orientation 1','Orientation 2','Orientation 3'];
-end
-if include.HD
-    colHeaders = [colHeaders,'Mean vector length','Mean angle'];
-end
-if include.speed
-    colHeaders = [colHeaders,'Speed score'];
-end
-if include.theta
-    colHeaders = [colHeaders,'Theta index spikes','Theta index LFP'];
-end
-if include.obj
-    colHeaders = [colHeaders, ...
-        'Rate ratio O1', ...
-        'Rate ratio O2', ...
-        'P val rate O1', ...
-        'P val rate O2', ...
-        'P val rate all objs', ...
-        'Time ratio O1', ...
-        'Time ratio O2', ...
-        'P val time O1', ...
-        'P val time O2', ...
-        'P val time all objs'];
-end
-if include.CC
-    CC_colHeaders = cell(1,size(ccComps,1));  % make column headers
-    for iCorr = 1:size(ccComps,1)
-        CC_colHeaders{iCorr} = ['CC ',num2str(ccComps(iCorr,1)),' vs ',num2str(ccComps(iCorr,2))];
-    end
-    colHeaders = [colHeaders,CC_colHeaders];   % add CC column headers
-end
+%% column headers
+colHeaders = emperorHeadings(include,ccComps);
 
 %% compute stats for each folder
-for iFolder = 1:length(allFolders)
-    display(sprintf('Folder %d of %d',iFolder,length(allFolders)))
+for iFolder = 1:length(folders)
+    display(sprintf('Folder %d of %d',iFolder,length(folders)))
     
     %% check all sessions in experiment for clusters in case some are only present in certain sessions
     expNum = ceil(iFolder/seshPerExp);
     if mod(iFolder,seshPerExp) == 1
         cellMatrix = [];
         for jFolder = iFolder:(iFolder+(seshPerExp-1))
-            writeInputBNT(penguinInput,allFolders{1,jFolder},arena,clusterFormat)
+            writeInputBNT(penguinInput,folders{1,jFolder},arena,clusterFormat)
             data.loadSessions(penguinInput);
             cellMatrix = [cellMatrix; data.getCells];
         end
@@ -185,7 +114,7 @@ for iFolder = 1:length(allFolders)
     end
     
     %% get positions, spikes, map, and rates
-    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
+    writeInputBNT(penguinInput,folders{1,iFolder},arena,clusterFormat)
     data.loadSessions(penguinInput);
     posAve = data.getPositions('speedFilter',[2 0]);
     posT = posAve(:,1);
@@ -205,7 +134,7 @@ for iFolder = 1:length(allFolders)
     for iCluster = 1:numClusters
         display(sprintf('Cluster %d of %d',iCluster,numClusters))
         
-        clusterData(iCluster,iFolder,expNum).folder = allFolders{1,iFolder};
+        clusterData(iCluster,iFolder,expNum).folder = folders{1,iFolder};
         clusterData(iCluster,iFolder,expNum).tetrode = cellMatrix(iCluster,1);
         clusterData(iCluster,iFolder,expNum).cluster = cellMatrix(iCluster,2);
         %% general calculations
@@ -228,14 +157,14 @@ for iFolder = 1:length(allFolders)
             totalSpikes = length(spikes);
             clusterData(iCluster,iFolder,expNum).totalSpikes = totalSpikes;
             %% cluster quality
-            [quality,L_ratio,isoDist] = loadQualityInfo(allFolders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2));
+            [quality,L_ratio,isoDist] = loadQualityInfo(folders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2));
             clusterData(iCluster,iFolder,expNum).quality = quality;
             clusterData(iCluster,iFolder,expNum).L_ratio = L_ratio;
             clusterData(iCluster,iFolder,expNum).isoDist = isoDist;
             %% spike width
             if include.spikeWidth
                 try
-                    spikeWidth = halfMaxWidth(allFolders{1,iFolder},cellMatrix(iCluster,1),spikes);
+                    spikeWidth = halfMaxWidth(folders{1,iFolder},cellMatrix(iCluster,1),spikes);
                 catch
                     spikeWidth = nan;
                 end
@@ -362,7 +291,7 @@ for iFolder = 1:length(allFolders)
                     thetaIndSpikes = nan;
                 end
                 try
-                    thetaIndLFP = thetaIndexLFP(allFolders{1,iFolder},cellMatrix(iCluster,1));
+                    thetaIndLFP = thetaIndexLFP(folders{1,iFolder},cellMatrix(iCluster,1));
                 catch
                     thetaIndLFP = nan;
                 end
@@ -406,7 +335,7 @@ for iFolder = 1:length(allFolders)
 end
 
 %% store everything in one cell array
-emperor = createEmperorArray(clusterData,length(allFolders)/seshPerExp,include);
+emperor = createEmperorArray(clusterData,length(folders)/seshPerExp,include);
 
 %% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];
@@ -487,8 +416,8 @@ settingsValues = {clusterFormat, ...
     gridThresh, ...
     '', ...
     fullName};
-emperorSettings = horzcat(settingsNames',settingsValues');
-xlswrite(fullName,emperorSettings,'Settings','A1');
+Settings = horzcat(settingsNames',settingsValues');
+xlswrite(fullName,Settings,'Settings','A1');
 
 toc
 

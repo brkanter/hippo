@@ -1,5 +1,23 @@
 
-function [quality,L_ratio,isolationDist] = loadQualityInfo(folder,tetrode,cluster)
+% Load previously saved information about cluster quality.
+%
+%   USAGE
+%       [quality,L_ratio,isoDist] = loadQualityInfo(folder,tetrode,cluster)
+%       folder          string indicating folder name
+%       tetrode         double indicating tetrode number
+%       cluster         double indicating cluster number
+%
+%   OUTPUT
+%       quality         structure for storing all data
+%       L_ratio         double indicating total number of experiments
+%       isoDist         structure indicating which measures to calculate
+%
+%   SEE ALSO
+%       emperorPenguin
+%
+% Written by BRK 2017
+
+function [quality,L_ratio,isolationDistance] = loadQualityInfo(folder,tetrode,cluster)
 
 %% set PP nums for Norwegian scheme
 if tetrode == 1
@@ -31,22 +49,30 @@ try    % MClust 4.3
         catch
             try
                 load(fullfile(folder,sprintf('PP%d_TT%d_0%d-CluQual.mat',PP,tetrode,cluster)))  % norway
+            catch
+                L_ratio = nan;
+                isolationDistance = nan;
             end
         end
     else
         try
             load(fullfile(folder,sprintf('TT%d_%d-CluQual.mat',tetrode,cluster)))  % oregon
         catch
-            load(fullfile(folder,sprintf('PP%d_TT%d_%d-CluQual.mat',PP,tetrode,cluster)))  % norway
+            try
+                load(fullfile(folder,sprintf('PP%d_TT%d_%d-CluQual.mat',PP,tetrode,cluster)))  % norway
+            catch
+                L_ratio = nan;
+                isolationDistance = nan;
+            end
         end
     end
     L_ratio = CluSep.L_Ratio.Lratio;
-    isolationDist = CluSep.IsolationDistance;
+    isolationDistance = CluSep.IsolationDistance;
 catch    % MClust 3.5
     try
         load(fullfile(folder,sprintf('TT%d_%d-CluQual_MC35.mat',tetrode,cluster)))
     catch
         L_ratio = nan;
-        isolationDist = nan;
+        isolationDistance = nan;
     end
 end

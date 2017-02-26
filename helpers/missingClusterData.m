@@ -1,10 +1,27 @@
+
+% When running emperorPenguin, there may be a cluster missing (or containing 0 spikes).
+% This function fills in the data structure for that cluster with appropriate placeholders.
+%
+%   USAGE
+%       clusterData = missingClusterData(clusterData,iCluster,iFolder,iExp,include)
+%       clusterData     structure for storing all data
+%       iCluster        double indicating the cluster
+%       iFolder         double indicating the session
+%       iExp            double indicating the experiment
+%       include         structure indicating which measures to calculate
+%
+%   OUTPUT
+%       clusterData     structure for storing all data
+%
+%   SEE ALSO
+%       emperorPenguin
+%
+% Written by BRK 2017
+
 function clusterData = missingClusterData(clusterData,iCluster,iFolder,iExp,include)
 
-clusterData(iCluster,iFolder,iExp).folder = {};
 clusterData(iCluster,iFolder,iExp).rateMap = nan;
 clusterData(iCluster,iFolder,iExp).countMap = nan;
-clusterData(iCluster,iFolder,iExp).tetrode = nan;
-clusterData(iCluster,iFolder,iExp).cluster = nan;
 clusterData(iCluster,iFolder,iExp).meanRate = 0;
 clusterData(iCluster,iFolder,iExp).peakRate = 0;
 clusterData(iCluster,iFolder,iExp).totalSpikes = 0;
