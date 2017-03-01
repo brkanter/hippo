@@ -128,7 +128,9 @@ end
 display('Done.')
 keyboardnavigate   % this lets you scroll with the arrow keys (when not in zoom/pan/edit modes)
 
-guidata(gcf,handles)
+try
+    guidata(gcf,handles)
+end
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%      END OF MAIN FUNCTION       %%%%%%%%%%%%%%%%%%%%%%%%% %%
 
@@ -148,6 +150,7 @@ end
 function identifyRipples(hObject,eventData,filt_ripple,rsrate,thresh)
 
 handles = guidata(hObject);
+mainFig = gcf;
 
 filt_ripple_abs = abs(filt_ripple);
 MEAN = nanmean(filt_ripple_abs);
@@ -218,7 +221,7 @@ if numRipples
     % zoom in and plot all ripples
     xlim([ripp_ints(1,1) - 1, ripp_ints(1,1) + 1])
     for iRipp = 1:numRipples
-        plot([ripp_ints(iRipp,1), ripp_ints(iRipp,2)],[MEAN+(STD*50), MEAN+(STD*50)],'r-','linew',3)
+        plot([ripp_ints(iRipp,1), ripp_ints(iRipp,2)],[MEAN+(STD*50), MEAN+(STD*50)],'r-','linew',3)      
     end
     initialStr = sprintf('%d of %d',1,numRipples);
     handles.slide_ripp = slide_ripp;

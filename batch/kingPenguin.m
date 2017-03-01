@@ -76,6 +76,8 @@ for iFolder = 1:length(folders)
     numClusters = length(folderInds);
     for iCluster = 1:numClusters
         
+        display(sprintf('Cluster %d of %d',iCluster,numClusters))
+        
         %% calculate maps
         tetrode = cell2mat(dataInput(folderInds(iCluster),strcmpi('tetrode',labels)));
         cluster = cell2mat(dataInput(folderInds(iCluster),strcmpi('cluster',labels)));
@@ -135,8 +137,7 @@ while flag
         folderList(:,2) = num2cell(numList);
         temp_data = dataOutput;
         for iFolder = 1:size(temp_data,1)
-            folderIdx = find(strcmpi(temp_data{iFolder,1},folderList(:,1)));
-            temp_data(iFolder,strcmpi('exp num',labels)) = folderList(folderIdx,2);
+            temp_data(iFolder,strcmpi('exp num',labels)) = folderList(strcmpi(temp_data{iFolder,1},folderList(:,1)),2);
         end
         dataOutput = temp_data;
         flag = 0;
