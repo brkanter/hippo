@@ -88,9 +88,6 @@ function butt_video_Callback(hObject, eventdata, handles) %#ok<*INUSL,*DEFNU>
 
 %% initiliaze
 global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
-if isempty(penguinInput)
-    startup
-end
 handles.inputFileID = penguinInput;
 handles.clusterFormat = clusterFormat;
 handles.arena = arena;
@@ -102,7 +99,6 @@ handles.dMinBins = dMinBins;
 %% choose directory of behavioral session
 handles.userDir = '';
 handles.userDir = uigetdir('E:\HM3_CA3\Screening','Choose directory');
-cd(handles.userDir);             % make that directory the current one
 h = msgbox('Loading...');
 set(handles.text_video, 'String', handles.userDir);
 if handles.userDir == 0; close(h); return; end;
@@ -425,7 +421,7 @@ for iCluster = 1:numClusters
     hold off
 end
 
-saveas(figBatchSPP,sprintf('SPPs_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchSPP,fullfile(handles.userDir,sprintf('SPPs_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_ratemap.
 function butt_ratemap_Callback(hObject, eventdata, handles)
@@ -477,7 +473,7 @@ for iCluster = 1:numClusters
     title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
     hold on
 end
-saveas(figBatchRM,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchRM,fullfile(handles.userDir,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_findFields.
 function butt_findFields_Callback(hObject, eventdata, handles)
@@ -606,7 +602,7 @@ for iCluster = 1:numClusters
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
     
 end
-saveas(figBatchFF,sprintf('findFields_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchFF,fullfile(handles.userDir,sprintf('findFields_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_timeDivRM.
 function butt_timeDivRM_Callback(hObject, eventdata, handles)
@@ -838,7 +834,7 @@ for iCluster = 1:numClusters
     title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,tcStat.mean));
     title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),tcStat.r,tcStat.mean));
 end
-saveas(figBatchHD,sprintf('HDplots_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchHD,fullfile(handles.userDir,sprintf('HDplots_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_grid.
 function butt_grid_Callback(hObject, eventdata, handles)
@@ -977,7 +973,7 @@ for iCluster = 1:numClusters
     axis equal
     hold on
 end
-saveas(figBatchAC,sprintf('autoCorrs_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchAC,fullfile(handles.userDir,sprintf('autoCorrs_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_border.
 function butt_border_Callback(hObject, eventdata, handles)
@@ -1120,7 +1116,7 @@ for iCluster = 1:numClusters
     hold on
 end
 
-saveas(figBatchBorder,sprintf('borders_%s.pdf',splitHandlesUserDir{end}));
+saveas(figBatchBorder,fullfile(handles.userDir,sprintf('borders_%s.pdf',splitHandlesUserDir{end})));
 
 guidata(hObject,handles);
 
@@ -1302,7 +1298,7 @@ for iCluster = 1:numClusters
     end
 end
 
-saveas(figAutocorr,sprintf('autocorrelations_%s.pdf',splitHandlesUserDir{end}));
+saveas(figAutocorr,fullfile(handles.userDir,sprintf('autocorrelations_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_cellStats.
 function butt_cellStats_Callback(hObject, eventdata, handles)

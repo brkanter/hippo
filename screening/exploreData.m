@@ -13,6 +13,9 @@ function exploreData
 
 %% get globals
 global penguinInput arena clusterFormat
+if isempty(penguinInput)
+    startup
+end
 
 %% choose recording session and load the data
 folder = uigetdir();

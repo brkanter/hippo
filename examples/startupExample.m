@@ -19,6 +19,7 @@ penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\penguinIn
 
 clusterFormat = 'MClust';
 % clusterFormat = 'SS_t';
+% clusterFormat = 'Tint';
 
 dSmoothing = 2;
 
