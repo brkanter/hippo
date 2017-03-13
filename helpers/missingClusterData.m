@@ -44,8 +44,8 @@ if include.fields
     clusterData(iCluster,iFolder,iExp).fieldNum = nan;
     clusterData(iCluster,iFolder,iExp).fieldMean = nan;
     clusterData(iCluster,iFolder,iExp).fieldMax = nan;
-    clusterData(iCluster,iFolder,iExp).fieldCOMx = nan;
-    clusterData(iCluster,iFolder,iExp).fieldCOMy = nan;
+    clusterData(iCluster,iFolder,iExp).COMx = nan;
+    clusterData(iCluster,iFolder,iExp).COMy = nan;
     clusterData(iCluster,iFolder,iExp).border = nan;
 end  
 if include.grid
