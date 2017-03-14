@@ -6,7 +6,7 @@
 %       writeInputBNT(penguinInput,folder,arena,clusterFormat)
 %       penguinInput        string specifying where to write the input file
 %       folder              directory of recording session
-%       arena               string with shape and size of recording arena
+%       arena               string with shape and size of recording arena (e.g. 'cylinder 60 60' or 'box 100 100')
 %       clusterFormat       string describing spike timestamp files (e.g. 'MClust' or 'Tint')
 %
 %   SEE ALSO
@@ -32,11 +32,15 @@ elseif strcmpi(clusterFormat,'Tint')
     date_trial = Answer{1};
     cutList = dir([fullfile(folder,date_trial),'*.cut']);
     
+else
+    
+    error('Cluster format not recognized.')
+    
 end
 
 %% find all tetrode and cluster numbers
 if ~isempty(cutList)
-    cellMatrix = nan(200,2);
+    cellMatrix = nan(500,2);
     if strcmpi(clusterFormat,'MClust')
         
         for iCluster = 1:length(cutList)
@@ -96,11 +100,12 @@ if ~isempty(cutList)
         clusters = cellMatrix(cellMatrix(:,1) == tetrodes(iTetrode),2);
         unitList = [unitList, num2str(tetrodes(iTetrode)), '  ', num2str(clusters'), '; '];
     end
+    
 end
 
 %% create cut list for input file
 cutsForBNT = [];
-if isempty(cutList) && strcmpi(clusterFormat,'MClust')   % make fake .t file
+if isempty(cutList) && strcmpi(clusterFormat,'MClust')   % make fake .t file to use BNT without cutting anything
     
     '';
     cellTS = 1;
@@ -109,53 +114,56 @@ if isempty(cutList) && strcmpi(clusterFormat,'MClust')   % make fake .t file
     cutsForBNT = [cutsForBNT,'PP4_TT%u_%u; '];
     
 elseif isempty(cutList)
+
     error('Did not find any clusters.')
-end
+
+else
     
-if strcmpi(clusterFormat,'Tint')   % Tint
-    
-    for iTetrode = 1:length(cutList)
-        cutsForBNT = [cutsForBNT, fullfile(folder,cutList(iTetrode).name), '; '];
+    if strcmpi(clusterFormat,'Tint')   % Tint
+        
+        for iTetrode = 1:length(cutList)
+            cutsForBNT = [cutsForBNT, fullfile(folder,cutList(iTetrode).name), '; '];
+        end
+        
+    elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % norway MClust
+        
+        if sum(find(tetrodes == 1))
+            cutsForBNT = [cutsForBNT,'PP4_TT%u_%u; '];
+        end
+        if sum(find(tetrodes == 2))
+            cutsForBNT = [cutsForBNT,'PP6_TT%u_%u; '];
+        end
+        if sum(find(tetrodes == 3))
+            cutsForBNT = [cutsForBNT,'PP7_TT%u_%u; '];
+        end
+        if sum(find(tetrodes == 4))
+            cutsForBNT = [cutsForBNT,'PP3_TT%u_%u; '];
+        end
+        
+    elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % norway SS
+        
+        if sum(find(tetrodes == 1))
+            cutsForBNT = [cutsForBNT,'PP4_TT%u_SS_%02u; '];
+        end
+        if sum(find(tetrodes == 2))
+            cutsForBNT = [cutsForBNT,'PP6_TT%u_SS_%02u; '];
+        end
+        if sum(find(tetrodes == 3))
+            cutsForBNT = [cutsForBNT,'PP7_TT%u_SS_%02u; '];
+        end
+        if sum(find(tetrodes == 4))
+            cutsForBNT = [cutsForBNT,'PP3_TT%u_SS_%02u; '];
+        end
+        
+    elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % oregon MClust
+        
+        cutsForBNT = 'TT; ';
+        
+    elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % oregon SS
+        
+        cutsForBNT = 'TT%u_SS_%02u; ';
+        
     end
-    
-elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % norway MClust
-    
-    if sum(find(tetrodes == 1))
-        cutsForBNT = [cutsForBNT,'PP4_TT%u_%u; '];
-    end
-    if sum(find(tetrodes == 2))
-        cutsForBNT = [cutsForBNT,'PP6_TT%u_%u; '];
-    end
-    if sum(find(tetrodes == 3))
-        cutsForBNT = [cutsForBNT,'PP7_TT%u_%u; '];
-    end
-    if sum(find(tetrodes == 4))
-        cutsForBNT = [cutsForBNT,'PP3_TT%u_%u; '];
-    end
-    
-elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % norway SS
-    
-    if sum(find(tetrodes == 1))
-        cutsForBNT = [cutsForBNT,'PP4_TT%u_SS_%02u; '];
-    end
-    if sum(find(tetrodes == 2))
-        cutsForBNT = [cutsForBNT,'PP6_TT%u_SS_%02u; '];
-    end
-    if sum(find(tetrodes == 3))
-        cutsForBNT = [cutsForBNT,'PP7_TT%u_SS_%02u; '];
-    end
-    if sum(find(tetrodes == 4))
-        cutsForBNT = [cutsForBNT,'PP3_TT%u_SS_%02u; '];
-    end
-    
-elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % oregon MClust
-    
-    cutsForBNT = 'TT; ';
-    
-elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % oregon SS
-    
-    cutsForBNT = 'TT%u_SS_%02u; ';
-       
 end
 
 %% write BNT input file

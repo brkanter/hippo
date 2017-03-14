@@ -470,7 +470,7 @@ for iCluster = 1:numClusters
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
     colorMapBRK(map.z,'bar','on');
-    title(sprintf('T%d C%d\nmean = %.4f Hz\npeak = %.4f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+    title(sprintf('T%d C%d\nmean = %.2f Hz\npeak = %.2f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
     hold on
 end
 saveas(figBatchRM,fullfile(handles.userDir,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end})));
@@ -912,7 +912,7 @@ if gridScore >= 0.5
     % if gridScore >= cutoff
     title(sprintf('SCORE = %.3f\nSPACING = %.3f', gridScore, gridSpacing),'fontweight','bold','fontsize',14)
 else
-    title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontsize',14)
+    title(sprintf('Score = %.2f\nSpacing = %.2f', gridScore, gridSpacing),'fontsize',14)
 end
 set(ACfig, 'Name', handles.userDir)
 axis off
@@ -967,7 +967,7 @@ for iCluster = 1:numClusters
     if gridScore >= 0.5
         title(sprintf('SCORE = %.3f\nSPACING = %.3f', gridScore, gridSpacing),'fontweight','bold')
     else
-        title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing))
+        title(sprintf('Score = %.2f\nSpacing = %.2f', gridScore, gridSpacing))
     end
     axis off
     axis equal
@@ -1050,9 +1050,9 @@ end
 figBorder = figure;
 colorMapBRK(map.z,'bar','on','pubQual',pubQual);
 if border >= 0.5
-    title(sprintf('T%d C%d\nBORDER = %.4f',handles.tetrode,handles.cluster,border),'fontweight','bold')
+    title(sprintf('T%d C%d\nBORDER = %.2f',handles.tetrode,handles.cluster,border),'fontweight','bold')
 else
-    title(sprintf('T%d C%d\nborder = %.4f',handles.tetrode,handles.cluster,border))
+    title(sprintf('T%d C%d\nborder = %.2f',handles.tetrode,handles.cluster,border))
 end
 set(figBorder,'Name',handles.userDir);
 
@@ -1111,7 +1111,7 @@ for iCluster = 1:numClusters
     if border >= 0.5
         title(sprintf('T%d C%d\nBORDER = %.3f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),border),'fontweight','bold')
     else
-        title(sprintf('T%d C%d\nborder = %.4f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),border))
+        title(sprintf('T%d C%d\nborder = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),border))
     end
     hold on
 end
@@ -1137,7 +1137,7 @@ if isempty(Answers); return; end;
 align = Answers{1};
 
 %% get all data points for cluster
-nttFiles = dir('*.ntt');
+nttFiles = dir(fullfile(handles.userDir,'*.ntt'));
 for iTrode = 1:length(nttFiles)
     found = regexp(nttFiles(iTrode).name,sprintf('TT%d',handles.tetrode),'once');
     if ~isempty(found)
@@ -1433,7 +1433,7 @@ for iCluster = 1:numClusters
             map.peakRate = 0;
         end
         colorMapBRK(map.z,'bar','on');
-        title(sprintf('mean = %.4f Hz\npeak = %.4f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+        title(sprintf('mean = %.2f Hz\npeak = %.2f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
         hold on
         
         %% HD
@@ -1460,7 +1460,7 @@ for iCluster = 1:numClusters
             gridSpacing = nan;
         end
         colorMapBRK(autoCorr);
-        title(sprintf('Score = %.4f\nSpacing = %.4f', gridScore, gridSpacing),'fontweight','normal','fontsize',10)
+        title(sprintf('Score = %.2f\nSpacing = %.2f', gridScore, gridSpacing),'fontweight','normal','fontsize',10)
         axis off
         axis equal
         hold on
@@ -1486,7 +1486,7 @@ for iCluster = 1:numClusters
         
         %% titles
         subplot(321)
-        title(sprintf('info = %.4f\nborder = %.4f',Info.content,borderScore),'fontweight','normal','fontsize',10)
+        title(sprintf('info = %.2f\nborder = %.2f',Info.content,borderScore),'fontweight','normal','fontsize',10)
         subplot(326)
         if gridScore >= 0.4052
             text(0.5,1,'GRID','fontweight','bold','fontsize',10)
@@ -1906,7 +1906,7 @@ if strcmpi(class(oldKids),'matlab.graphics.primitive.Image')
     if ~isequal(cmap(1, :), [1 1 1])
         colormap(gca, [1 1 1; cmap]);
     end
-    title(sprintf('mean = %.4f Hz\npeak = %.4f Hz\n',handles.meanRate,handles.peakRate),'fontweight','normal','fontsize',10)
+    title(sprintf('mean = %.2f Hz\npeak = %.2f Hz\n',handles.meanRate,handles.peakRate),'fontweight','normal','fontsize',10)
 elseif strcmpi(class(oldKids),'matlab.graphics.primitive.Data')
     cmap = [get(gca,'color'); ...   % background
         0 0 0.6; ...                % dark blue

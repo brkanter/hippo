@@ -132,14 +132,18 @@ for iFolder = 1:length(folders)
     for iCluster = 1:numClusters
         display(sprintf('Cluster %d of %d',iCluster,numClusters))
         
-        clusterData(iCluster,iFolder,expNum).folder = folders{1,iFolder};
-        clusterData(iCluster,iFolder,expNum).tetrode = cellMatrix(iCluster,1);
-        clusterData(iCluster,iFolder,expNum).cluster = cellMatrix(iCluster,2);
+        %% initialize cluster data storage
+        if ~exist('clusterData','var')
+            clusterData = [];
+        end
+        clusterData = initClusterData(clusterData,folders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2), ...
+            iCluster,iFolder,expNum, ...
+            include);
+        
         %% general calculations
-        spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);       
-        if isempty(spikes)   % cluster is missing in this session, fill array with nans
-            clusterData = missingClusterData(clusterData,iCluster,iFolder,expNum,include);
-            
+        spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);     
+        if isempty(spikes)   % cluster is missing in this session, move on
+            continue
         else   % we have spikes, continue as usual
             map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',mapLimits);
             clusterData(iCluster,iFolder,expNum).rateMap = map.z;
@@ -154,11 +158,6 @@ for iFolder = 1:length(folders)
             clusterData(iCluster,iFolder,expNum).peakRate = peakRate;
             totalSpikes = length(spikes);
             clusterData(iCluster,iFolder,expNum).totalSpikes = totalSpikes;
-            %% cluster quality
-            [quality,L_ratio,isoDist] = loadQualityInfo(folders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2));
-            clusterData(iCluster,iFolder,expNum).quality = quality;
-            clusterData(iCluster,iFolder,expNum).L_ratio = L_ratio;
-            clusterData(iCluster,iFolder,expNum).isoDist = isoDist;
             %% spike width
             if include.spikeWidth
                 try
@@ -193,8 +192,8 @@ for iFolder = 1:length(folders)
                     biggestField = find(sizes == nanmax(sizes));
                     fieldMean = nanmean(sizes);
                     fieldMax = nanmax(sizes);
-                    fieldCOMx = fields(1,biggestField).x;
-                    fieldCOMy = fields(1,biggestField).y;
+                    COMx = fields(1,biggestField).x;
+                    COMy = fields(1,biggestField).y;
                     if ~isempty(fieldsMap)
                         border = analyses.borderScore(map.z,fieldsMap,fields);
                     else
@@ -204,15 +203,15 @@ for iFolder = 1:length(folders)
                     fieldNum = 0;
                     fieldMean = nan;
                     fieldMax = nan;
-                    fieldCOMx = nan;
-                    fieldCOMy = nan;
+                    COMx = nan;
+                    COMy = nan;
                     border = nan;
                 end
                 clusterData(iCluster,iFolder,expNum).fieldNum = fieldNum;
                 clusterData(iCluster,iFolder,expNum).fieldMean = fieldMean;
                 clusterData(iCluster,iFolder,expNum).fieldMax = fieldMax;
-                clusterData(iCluster,iFolder,expNum).COMx = fieldCOMx;
-                clusterData(iCluster,iFolder,expNum).COMy = fieldCOMy;
+                clusterData(iCluster,iFolder,expNum).COMx = COMx;
+                clusterData(iCluster,iFolder,expNum).COMy = COMy;
                 clusterData(iCluster,iFolder,expNum).border = border;
             end
             

@@ -111,6 +111,7 @@ display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d excitator
 placeInBL = selectCols(CA1exc,labels,'cell num','session',sessions{1},'mean rate','>=',0.1,'number of fields','>=',1);
 placeInCNO = selectCols(CA1exc,labels,'cell num','session',sessions{2},'mean rate','>=',0.1,'number of fields','>=',1);
 cellsToKeep = unique([placeInBL; placeInCNO]);
+% NB:  how would you change the previous line to include cells which meet the criteria in BOTH sessions?
 CA1place = selectRows(CA1exc,labels,'keep','cell num',cellsToKeep);
 
 numIn = numel(unique(selectCols(CA1exc,labels,'cell num')));
