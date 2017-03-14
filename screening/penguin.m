@@ -492,7 +492,7 @@ mainField = find(peakRates == max(peakRates));
 %% recolor fieldMap in order of field peak rate
 [~,ind] = sort(peakRates,'descend');
 for iFieldNum = 1:size(fields,2)
-    fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum);
+    fieldMap(fields(1,ind(iFieldNum)).PixelIdxList) = iFieldNum;
 end
 
 colorMapBRK(fieldMap);
@@ -538,17 +538,18 @@ smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
 
-prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
+prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)', ...
+    'Minimum bins for a field','Minimum peak rate for a field (Hz?)','Display rates (y/n)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
+defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
-
+displayRates = Answers{5};
 
 %% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
@@ -578,7 +579,7 @@ for iCluster = 1:numClusters
     % recolor fieldMap in order of field peak rate
     [~,ind] = sort(peakRates,'descend');
     for iFieldNum = 1:size(fields,2)
-        fieldMap(fields(1,iFieldNum).PixelIdxList) = ind(iFieldNum);
+        fieldMap(fields(1,ind(iFieldNum)).PixelIdxList) = iFieldNum;
     end
     
     colorMapBRK(fieldMap);
@@ -597,9 +598,17 @@ for iCluster = 1:numClusters
     colormap(gca,cmap)
     caxis([-1 8])
     hold on
-    plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',10);
-    hold off
+    
+    % display peak rates or just main peak
+    if strcmpi(displayRates,'y')
+        for iFieldNum = 1:size(fields,2)
+            text(fields(1,iFieldNum).peakX,fields(1,iFieldNum).peakY,sprintf('%.2f',peakRates(iFieldNum)),'horizontalalignment','center')
+        end
+    else
+        plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',10);
+    end
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
+    hold off
     
 end
 saveas(figBatchFF,fullfile(handles.userDir,sprintf('findFields_%s.pdf',splitHandlesUserDir{end})));
