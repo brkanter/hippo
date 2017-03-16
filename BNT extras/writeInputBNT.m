@@ -49,9 +49,11 @@ if ~isempty(cutList)
     cellMatrix = nan(500,2);
     if strcmpi(clusterFormat,'MClust')
 
+        wrongFiles = false(1, length(cutList));
         for iCluster = 1:length(cutList)
             splits = regexp(cutList(iCluster).name,'_','split');
             if length(splits) == 1
+                wrongFiles(iCluster) = true;
                 continue;
             end
             try
@@ -80,6 +82,7 @@ if ~isempty(cutList)
                 continue;
             end
         end
+        cutList(wrongFiles) = [];
 
     elseif strcmpi(clusterFormat,'SS_t')
 
