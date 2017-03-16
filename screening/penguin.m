@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 02-Dec-2016 14:52:16
+% Last Modified by GUIDE v2.5 15-Mar-2017 09:21:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -124,95 +124,98 @@ if handles.gotPos
     handles.spikePos = [];
 end
 
-%% UPDATE EVERYTHING
-%% update tetrode based on current folder
-clear current_tetCells;
-current_tetCells = data.getCells;
-handles.current_tetCells = current_tetCells;
-trode_nums = num2str(current_tetCells(:,1));
-current_trodes = cellstr(unique(trode_nums));
-handles.current_trodes = current_trodes;
-set(handles.list_tetrode,'String',current_trodes,'Value',1);
-contents = get(handles.list_tetrode,'String');
-selectedText = contents{get(handles.list_tetrode,'Value')};
-handles.tetrode = str2double(selectedText);
-set(handles.text_tetrode, 'String', handles.tetrode);
-
-%% update cluster based on current tetrode
-clust_indices = current_tetCells(:,1)==handles.tetrode;
-current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
-set(handles.list_cluster,'String',current_clusters,'Value',1);
-set(handles.list_cluster,'String',current_clusters,'Value',1);
-contents = get(handles.list_cluster,'String');
-selectedText = contents{get(handles.list_cluster,'Value')};
-handles.cluster = str2double(selectedText);
-set(handles.text_cluster, 'String', handles.cluster);
-
-%% initialize
-handles.meanRate = 0;
-handles.peakRate = 0;
-handles.totalSpikes = 0;
-handles.spikeWidth = 0;
-handles.Marker = 3;
-for iTrode = 1:8
-    handles.trodeTS{iTrode} = '';
-end
-
-%% plot animal path
-if handles.gotPos
-    axes(handles.axes1);
-    pathTrialBRK('color',[.5 .5 .5])
-    set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
-    axis equal
-end
-
-%% get spike info
-handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
-if handles.gotPos
-    handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
-end
-
-if handles.gotPos
-    %% calculate rate map
-    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
-    handles.map = map.z;
-    
-    %% calculate mean rate in Hz
-    handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
-    set(handles.text_meanRate, 'String', handles.meanRate);
-    
-    %% calculate peak rate in Hz
-    if ~isfield(map,'peakRate')
-        handles.peakRate = 0;
-    else
-        handles.peakRate = map.peakRate;
-    end
-    set(handles.text_peakRate, 'String', handles.peakRate);
-end
-
-%% calculate total spikes
-handles.totalSpikes = length(handles.spikes);
-set(handles.text_totalSpikes, 'String', handles.totalSpikes);
-
-%% calculate spike width
-try
-    handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
-    set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
-catch
-    set(handles.text_spikeWidth, 'String', 0);
-end
-
-%% clear map stats
-set(handles.text_spatContent, 'String', '');
-set(handles.text_sparsity, 'String', '');
-set(handles.text_selectivity, 'String', '');
-set(handles.text_coherence, 'String', '');
-set(handles.text_fieldNo, 'String', '');
-set(handles.text_fieldMean, 'String', '');
-set(handles.text_fieldMax, 'String', '');
+handles = loadData(handles);
 
 close(h);
 guidata(hObject,handles);
+
+function handles = loadData(handles)
+    %% UPDATE EVERYTHING
+    %% update tetrode based on current folder
+    current_tetCells = data.getCells;
+    handles.current_tetCells = current_tetCells;
+    trode_nums = num2str(unique(current_tetCells(:, 1)));
+    current_trodes = cellstr(trode_nums);
+    handles.current_trodes = current_trodes;
+    set(handles.list_tetrode,'String',current_trodes,'Value',1);
+    contents = get(handles.list_tetrode,'String');
+    selectedText = contents{get(handles.list_tetrode,'Value')};
+    handles.tetrode = str2double(selectedText);
+    set(handles.text_tetrode, 'String', handles.tetrode);
+
+    %% update cluster based on current tetrode
+    clust_indices = current_tetCells(:,1)==handles.tetrode;
+    current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
+    set(handles.list_cluster,'String',current_clusters,'Value',1);
+    set(handles.list_cluster,'String',current_clusters,'Value',1);
+    contents = get(handles.list_cluster,'String');
+    selectedText = contents{get(handles.list_cluster,'Value')};
+    handles.cluster = str2double(selectedText);
+    set(handles.text_cluster, 'String', handles.cluster);
+
+    %% initialize
+    handles.meanRate = 0;
+    handles.peakRate = 0;
+    handles.totalSpikes = 0;
+    handles.spikeWidth = 0;
+    handles.Marker = 3;
+    for iTrode = 1:8
+        handles.trodeTS{iTrode} = '';
+    end
+
+    %% plot animal path
+    if handles.gotPos
+        axes(handles.axes1);
+        pathTrialBRK('color',[.5 .5 .5])
+        set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+        axis equal
+    end
+
+    %% get spike info
+    handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
+    if handles.gotPos
+        handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
+    end
+
+    if handles.gotPos
+        %% calculate rate map
+        map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
+        handles.map = map.z;
+
+        %% calculate mean rate in Hz
+        handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
+        set(handles.text_meanRate, 'String', handles.meanRate);
+
+        %% calculate peak rate in Hz
+        if ~isfield(map,'peakRate')
+            handles.peakRate = 0;
+        else
+            handles.peakRate = map.peakRate;
+        end
+        set(handles.text_peakRate, 'String', handles.peakRate);
+    end
+
+    %% calculate total spikes
+    handles.totalSpikes = length(handles.spikes);
+    set(handles.text_totalSpikes, 'String', handles.totalSpikes);
+
+    %% calculate spike width
+    try
+        handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
+        set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
+    catch
+        set(handles.text_spikeWidth, 'String', 0);
+    end
+
+    %% clear map stats
+    set(handles.text_spatContent, 'String', '');
+    set(handles.text_sparsity, 'String', '');
+    set(handles.text_selectivity, 'String', '');
+    set(handles.text_coherence, 'String', '');
+    set(handles.text_fieldNo, 'String', '');
+    set(handles.text_fieldMean, 'String', '');
+    set(handles.text_fieldMax, 'String', '');
+
 
 % --- Executes on selection change in list_tetrode.
 function list_tetrode_Callback(hObject, eventdata, handles)
@@ -575,13 +578,13 @@ for iCluster = 1:numClusters
         peakRates(iFieldNum) = fields(1,iFieldNum).peak;
     end
     mainField = find(peakRates == max(peakRates));
-    
+
     % recolor fieldMap in order of field peak rate
     [~,ind] = sort(peakRates,'descend');
     for iFieldNum = 1:size(fields,2)
         fieldMap(fields(1,ind(iFieldNum)).PixelIdxList) = iFieldNum;
     end
-    
+
     colorMapBRK(fieldMap);
     cmap = [1 1 1; ...              % background
         0 0 0.6; ...                % dark blue
@@ -598,7 +601,7 @@ for iCluster = 1:numClusters
     colormap(gca,cmap)
     caxis([-1 8])
     hold on
-    
+
     % display peak rates or just main peak
     if strcmpi(displayRates,'y')
         for iFieldNum = 1:size(fields,2)
@@ -609,7 +612,7 @@ for iCluster = 1:numClusters
     end
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
     hold off
-    
+
 end
 saveas(figBatchFF,fullfile(handles.userDir,sprintf('findFields_%s.pdf',splitHandlesUserDir{end})));
 
@@ -1331,24 +1334,24 @@ msg = msgbox('Calculating...');
 
 %% make smoothed rate map and position PDF, then calculate stats
 if (get(handles.checkSpatInfo, 'Value') == get(handles.checkSpatInfo, 'Max'))   % see if box is checked
-    
+
     map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', 2, 'binWidth', binWidth, 'minTime', 0, 'limits', handles.mapLimits);
     [Info,spars,sel] = analyses.mapStatsPDF(map);
     set(handles.text_spatContent, 'String', Info.content);
     set(handles.text_sparsity, 'String', spars);
     set(handles.text_selectivity, 'String', sel);
-    
+
 end
 
 if (get(handles.checkCoherence, 'Value') == get(handles.checkCoherence, 'Max'))
-    
+
     Coherence = analyses.coherence(handles.map);
     set(handles.text_coherence, 'String', Coherence);
-    
+
 end
 
 if (get(handles.checkFieldNo, 'Value') == get(handles.checkFieldNo, 'Max'))
-    
+
     %% calculate and store
     [~,fields] = analyses.placefield(handles.map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
     fieldNo = length(fields);
@@ -1361,7 +1364,7 @@ if (get(handles.checkFieldNo, 'Value') == get(handles.checkFieldNo, 'Max'))
     fieldMax = nanmax(sizes);
     set(handles.text_fieldMean, 'String', fieldMean);
     set(handles.text_fieldMax, 'String', fieldMax);
-    
+
 end
 
 close(msg);
@@ -1433,7 +1436,7 @@ for iCluster = 1:numClusters
         axis off;
         axis equal;
         hold off
-        
+
         %% rate maps
         subplot(322)
         map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
@@ -1444,7 +1447,7 @@ for iCluster = 1:numClusters
         colorMapBRK(map.z,'bar','on');
         title(sprintf('mean = %.2f Hz\npeak = %.2f Hz',meanRate,map.peakRate),'fontweight','normal','fontsize',10)
         hold on
-        
+
         %% HD
         subplot(323)
         pos = data.getPositions('average','off','speedFilter',[2 0]);
@@ -1456,7 +1459,7 @@ for iCluster = 1:numClusters
         circularTurningBRK(tc(:,2))
         axis equal
         title(sprintf('length = %.2f angle = %.2f',tcStat.r,tcStat.mean),'fontweight','normal','fontsize',10);
-        
+
         %% grid
         subplot(324)
         autoCorr = analyses.autocorrelation(map.z);
@@ -1473,7 +1476,7 @@ for iCluster = 1:numClusters
         axis off
         axis equal
         hold on
-        
+
         %% autocorrelation
         subplot(325)
         if length(spikes) >= 100
@@ -1485,14 +1488,14 @@ for iCluster = 1:numClusters
             thetaInd = nan;
         end
         title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
-        
+
         %% spatial info
         Info = analyses.mapStatsPDF(map);
-        
+
         %% border
         [fieldsMap, fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
         borderScore = analyses.borderScore(map.z, fieldsMap, fields);
-        
+
         %% titles
         subplot(321)
         title(sprintf('info = %.2f\nborder = %.2f',Info.content,borderScore),'fontweight','normal','fontsize',10)
@@ -1696,7 +1699,7 @@ for iCluster = 1:numClusters
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     rateMap = map.z;
     occupancyMap = map.time;
-    
+
     %% object responses using rate maps
     % bins occupied by objects
     nBinsObj1 = sum(sum(objectLocations == 1));
@@ -1729,7 +1732,7 @@ for iCluster = 1:numClusters
             [~,objResponsesRatePval(3,iTest)] = ttest2(compObjAll,rateObjAll);
         end
     end
-    
+
     figure('name',sprintf('T%dC%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)));
     subplot(211)
     colorMapBRK(rateMap,'bar','on');
@@ -1757,7 +1760,7 @@ for iCluster = 1:numClusters
             end
         end
     end
-    
+
 end
 
 %% object responses using occupancy maps
@@ -2017,3 +2020,78 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
+% --- Executes on button press in butt_load_mclust.
+function butt_load_mclust_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_load_mclust (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% initiliaze
+global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
+handles.inputFileID = penguinInput;
+handles.clusterFormat = clusterFormat;
+handles.arena = arena;
+handles.mapLimits = mapLimits;
+handles.dSmoothing = dSmoothing;
+handles.dBinWidth = dBinWidth;
+handles.dMinBins = dMinBins;
+
+isMClustActive = true;
+try
+    clustData = MClust.GetData;
+catch
+    isMClustActive = false;
+end
+
+if ~isMClustActive
+    uiwait(errordlg('MClust is not active', 'Error', 'modal'));
+    return;
+end
+
+% check number of available clusters
+if isempty(clustData.Clusters)
+    uiwait(errordlg('There are no clusters in MClust', 'Error', 'modal'));
+    return;
+end
+
+h = msgbox('Loading...', 'modal');
+TTdn = clustData.TTdn;
+set(handles.text_video, 'String', 'MClust');
+
+% let's dump clusters into a temp directory. This is done in order not to
+% overwrite any of user's clusters
+clusterDir = tempname;
+mkdir(clusterDir);
+clear posAve;
+try
+    clustData.TTdn = clusterDir;
+    clustData.WriteTfiles;
+    writeInputBNT(handles.inputFileID, TTdn, handles.arena, handles.clusterFormat, clusterDir);
+    data.loadSessions(handles.inputFileID);
+
+    posAve = data.getPositions('speedFilter',[2 0]);
+    handles.gotPos = 1;
+    helpers.deleteCache(handles.inputFileID);
+catch
+    rmdir(clusterDir);
+    handles.gotPos = 0;
+    clustData.TTdn = TTdn;
+    close(h);
+    uiwait(errordlg('Failed to load clusters from MClust', 'Error', 'modal'));
+    return;
+end
+rmdir(clusterDir, 's');
+clustData.TTdn = TTdn;
+
+if handles.gotPos
+    handles.posAve = posAve;
+    handles.posT = posAve(:,1);
+    handles.posX = posAve(:,2);
+    handles.posY = posAve(:,3);
+    handles.spikePos = [];
+end
+
+handles = loadData(handles);
+
+close(h);
+guidata(hObject, handles);
