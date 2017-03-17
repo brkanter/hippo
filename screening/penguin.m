@@ -130,6 +130,7 @@ close(h);
 guidata(hObject,handles);
 
 function handles = loadData(handles)
+
     %% UPDATE EVERYTHING
     %% update tetrode based on current folder
     current_tetCells = data.getCells;
@@ -146,7 +147,6 @@ function handles = loadData(handles)
     %% update cluster based on current tetrode
     clust_indices = current_tetCells(:,1)==handles.tetrode;
     current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
-    set(handles.list_cluster,'String',current_clusters,'Value',1);
     set(handles.list_cluster,'String',current_clusters,'Value',1);
     contents = get(handles.list_cluster,'String');
     selectedText = contents{get(handles.list_cluster,'Value')};
@@ -241,6 +241,8 @@ selectedText = contents{get(handles.list_cluster,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
 
+function handles = updateCurrentCluster(handles)
+
 %% get spike info
 handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
 handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
@@ -283,7 +285,6 @@ pathTrialBRK('color',[.5 .5 .5])
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
-guidata(hObject,handles);
 
 % --- Executes on selection change in list_cluster.
 function list_cluster_Callback(hObject, eventdata, handles)
@@ -300,52 +301,7 @@ selectedText = contents{get(hObject,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
 
-%% get spike info
-handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
-handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
-
-%% calculate rate map
-map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
-handles.map = map.z;
-
-%% calculate mean rate in Hz
-handles.meanRate = analyses.meanRate(handles.spikes, handles.posAve);
-set(handles.text_meanRate, 'String', handles.meanRate);
-
-%% calculate peak rate in Hz
-if ~isfield(map,'peakRate')
-    handles.peakRate = 0;
-else
-    handles.peakRate = map.peakRate;
-end
-set(handles.text_peakRate, 'String', handles.peakRate);
-
-%% calculate total spikes
-handles.totalSpikes = length(handles.spikes);
-set(handles.text_totalSpikes, 'String', handles.totalSpikes);
-
-%% calculate spike width
-try
-    handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
-    set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
-catch
-    set(handles.text_spikeWidth, 'String', 0);
-end
-
-
-%% clear map stats
-set(handles.text_spatContent, 'String', '');
-set(handles.text_sparsity, 'String', '');
-set(handles.text_selectivity, 'String', '');
-set(handles.text_coherence, 'String', '');
-set(handles.text_fieldNo, 'String', '');
-set(handles.text_fieldMean, 'String', '');
-set(handles.text_fieldMax, 'String', '');
-
-%% plot animal path
-pathTrialBRK('color',[.5 .5 .5])
-set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
-axis equal
+handles = updateCurrentCluster(handles);
 
 guidata(hObject,handles);
 
@@ -2057,6 +2013,7 @@ end
 h = msgbox('Loading...', 'modal');
 TTdn = clustData.TTdn;
 set(handles.text_video, 'String', 'MClust');
+handles.userDir = TTdn;
 
 % let's dump clusters into a temp directory. This is done in order not to
 % overwrite any of user's clusters
