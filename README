@@ -1,0 +1,130 @@
+Hippo
+
+Written by Benjamin R. Kanter (BRK) (benjamin.kanter@ntnu.no).
+Contains add-ons from Vadim Frolov (VF) (vadim.frolov@ntnu.no).
+______________________________________________________________
+ 
+-- Introduction --
+
+Hippo is a Matlab toolbox which adds functionality to the Behavioural Neurology Toolbox (BNT) (VF). It sits on top of BNT, therefore while BNT can be used without Hippo, Hippo requires installation of BNT. Hippo is updated shortly after BNT is to ensure the two remain compatible.
+
+The main purpose of this toolbox is to improve analysis efficiency at the level of the user. If exploring and analyzing data becomes faster and easier to do, it will be done more often and more exciting results will be uncovered. 
+
+To achieve this goal, the toolbox does the following:
+
+1) automates routine procedures (e.g. BNT input files)
+2) provides graphical user interfaces
+3) performs batch analysis of large datasets
+4) stores data in an easily accessible format
+5) provides intuitive filtering to extract useful information quickly
+ 
+-- Installation --
+
+Hippo is publicly available for download here: https://github.com/brkanter/hippo
+
+Simply click the green button that says 'Clone or download', then click 'Download ZIP.' Extract the files to your preferred directory.
+
+-- Updates --
+
+Hippo is constantly evolving toolbox, partly because of it's dependence on BNT, and partly because of the development of exciting new tools.
+
+The easiest way to keep up-to-date is to use TortoiseGit, which is Windows software that allows you to use Git commands without doing so from the command line. It is available from the Kavli Software Center (Programvarebibliotek) or from their website: https://tortoisegit.org/download/. If you have this installed before cloning the Hippo repository (see installation above), then the directory into which the files are extracted will automatically become a local Git repository.
+
+The first time you download the files, you need to specify where new changes can be accessed. Right-click on the Hippo folder --> TortoiseGit --> Settings. On the left panel, under the heading Git, click Remote. In the URL field, enter: https://github.com/brkanter. Click OK, and it will ask if you want to retrieve the latest changes now, which you do.
+
+From now on, you can simply right-click on the Hippo folder --> TortoiseGit --> Pull --> OK. You are now up-to-date.
+
+If you choose not to use Git at all, you can simply follow the installation steps above and download the files again each time, replacing the old files. This is not recommended.
+ 
+-- Toolbox contents --
+
+The toolbox functions are organized into subfolders, some of which are MATLAB packages (+) to prevent namespace issues:
+
++ calc: specific analyses (e.g. spike width, object responses, theta phase)
++ examples: examples and instructions
++ extract: extracting data of interest
++ meta: analyzing whole experiments, or whole projects
++ minions: various small functions to assist others
+- BNT extras: modifications or additions to BNT functions
+- MathWorks extras: from the MathWorks File Exchange, occasionally with modifications
+- MEX files: sending information between MATLAB and Neuralynx
+ 
+Code examples
+First of all you need to initialize the toolbox:
+ 
+>> InitBNT
+ 
+You need to do this only once after you start the Matlab. But it will not break anything if you run it several times.
+ 
+After this you will need to load the data:
+ 
+>> data.loadSessions(inputFile);
+ 
+The mandatory argument is inputFile, which contains the full path to the input file. If everything is in order you won't see any error messages and the data will be loaded. The data is kept in memory. You can now access the data. For instance, if you need the position samples, do:
+ 
+>> pos = data.getPositions();
+ 
+The input file might specify several sessions. The toolbox names them as trials, because there might be combined sessions. So the trial can be a single or combined session. To get number of loaded trials run:
+ 
+>> data.numTrials()
+ 
+Most of the functions you use to get the data return the data of currently selected trial. Upon initial data loading the current trial is the first one. To select another trial you can:
+ 
+>> data.setNextTrial();
+ 
+or
+ 
+>> data.setTrial(trialNumber);
+ 
+To illustrate it:
+ 
+>> data.loadSessions(); % you've loaded 2 trials
+>> pos1 = data.getPositions(); % you get the positions of 1 (first) trial
+>> data.setNextTrial();
+>> pos2 = data.getPositions(); % you get the positions of 2 (second) trial
+You can also get insight of code workflow if you look inside on of the scripts. headDirectionAnalysis could be such a script.
+ 
+Where to find help
+Main source of help are comments for particular script/function, which are integrated in Matlab. You can read help information in Matlab's Command Window:
+ 
+>> help scripts.averageHeadDirection
+ 
+or via Matlab's help browser by typing:
+ 
+>> doc scripts.averageHeadDirection
+ 
+You can also get help for particular functional category:
+ 
+>> help scripts
+>> help .\data
+>> help analyses 
+ 
+or
+ 
+>> doc scripts
+>> doc .\data
+>> doc analyses
+ 
+Since there are several documentation entries for word data, you need to specify that you are interested in BNT data. Assuming you are in BNT folder command doc .\data tells Matlab to look for data in current folder. If you are not in the BNT folder, then alternative command will be:
+>> help(fullfile(helpers.bntRoot, 'data'))
+ 
+Parameters
+For most of the scripts from scripts category you will need a file with parameters. Right now this is a simple Matlab files with entries like p.paramName = value;. You can find an example in file examples\bntSettings.m. If you need to modify the parameters, just copy this file somewhere, modify it and provide the path to the modified version whenever you need to. Parameter file can also contain comments in Matlab-style syntax.
+ 
+Input files 
+The toolbox loads data that is described in input file. Input file might describe one or more trials. Detailed description is provided on input file formats page.
+ 
+Versioning 
+The toolbox is named by version ID, with standard major.minor nomenclature with further build specification. For example BNT v1.1-178-g1f8115b tells us that we are 178 build past v1.1 and current code hash is 1f8115b. Left part of this description (major.minor) is useful for researcher to have a quick overview of what version they use. Right part of the ID (especially hash) helps to identify the release uniquely and will be handy to reproduce the exact state of the code.
+ 
+A user can choose which major revision to use. Minor revisions will be updated automatically. Major revisions are any revisions that will alter the values output by the toolbox functions, while minor revisions do not.
+ 
+Example of major revisions: New gridness score calculation algorithm, new way to calculate spatial information.
+ 
+Example of minor revisions: Improved code performance, new options for storing data or figures.
+ 
+You are encouraged to update major revisions early. If a 'frozen' version is desirable it is advised to consult with Edvard and May-Britt. There could be vitally important updates in the new version of the code that you will miss if you use a frozen version. You should not stick with a frozen version just because it works for you.
+ 
+More details about the update process are found on Git and updates page.
+ 
+The current version of BNT can be viewed in Matlab by command: bntVersion. All notable changes are documented in file CHANGELOG.md in BNT root folder. This is a text file in so-called markdown format. You can view it with any editor (Notepad, Matlab). It is also possible to view this file with nice formatting in your browser. You will need an add-on for this. Markdown Preview Plus works fine for Google Chrome, and Markdown Viewer is the one for Firefox. Follow add-ons installation instructions and once you are up and running, you can view CHANGELOG file in your browser. Additionally, I'll try to keep Changelog-Wiki page up-to-date.
