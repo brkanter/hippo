@@ -428,6 +428,13 @@ settingsValues = {hippoGlobe.clusterFormat, ...
 Settings = horzcat(settingsNames',settingsValues');
 xlswrite(fullName,Settings,'Settings','A1');
 
+
+%% close penguin if it's open because BNT data has changed
+openPenguin = findobj('name','penguin');
+if ~isempty(openPenguin)
+    close(openPenguin);
+end
+
 toc
 
 % load handel

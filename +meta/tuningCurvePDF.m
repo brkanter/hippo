@@ -327,4 +327,9 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
 end
 
 
+%% close penguin if it's open because BNT data has changed
+openPenguin = findobj('name','penguin');
+if ~isempty(openPenguin)
+    close(openPenguin);
+end
 

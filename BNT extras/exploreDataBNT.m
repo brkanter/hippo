@@ -9,7 +9,7 @@
 %
 % Written by BRK 2017
 
-function exploreData
+function exploreDataBNT
 
 %% get globals
 global hippoGlobe

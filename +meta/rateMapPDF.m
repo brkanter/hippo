@@ -11,7 +11,7 @@
 
 function rateMapPDF
 
-%% get globals
+ %% get globals
 global hippoGlobe
 if isempty(hippoGlobe.inputFile)
     startup
@@ -446,5 +446,10 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
     sessionCount = sessionCount + numSesh;    
 end
 
+%% close penguin if it's open because BNT data has changed
+openPenguin = findobj('name','penguin');
+if ~isempty(openPenguin)
+    close(openPenguin);
+end
 
 

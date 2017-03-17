@@ -21,6 +21,8 @@ filePath0 = fullfile(splits{1:end-1});
 myDir = dir(filePath0);
 names = extractfield(myDir,'name');
 
+h = msgbox('Working ...');
+
 %% check mouse names
 if ~isempty(strfind(userDir,'BK'))
     ind = strfind(userDir,'BK');
@@ -56,7 +58,7 @@ end
 if numSesh > 10
     nameStore = nameStore(end-9:end);
     numSesh = 10;
-    display('Warning! Only showing 10 most recent sessions.')
+    display('Warning! Only showing 10 most recent sessions ...')
 elseif ~numSesh
     error('Did not find any directories matching mouse name: %s',mouseName)
 end
@@ -123,6 +125,8 @@ for iCSC = 1:4
     title(fileEnding(1:end-4))
 
 end
+
+close(h);
 
 % powerInds = dsearchn(hz',[4 8 16]');
 % powerOther = mean([power(powerInds(1)),power(powerInds(3))]);
