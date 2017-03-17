@@ -13,7 +13,7 @@ InitBNT();
 %% update globals
 global hippoGlobe
 
-hippoGlobe.penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\hippo\penguinInput.txt';
+hippoGlobe.penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\hippo\autoInputBNT.txt';
 hippoGlobe.posSpeedFilter = [2 0];  % ignore times when animal moves < 2 cm/sec
 
 hippoGlobe.clusterFormat = 'MClust';
