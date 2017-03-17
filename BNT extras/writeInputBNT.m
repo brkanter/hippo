@@ -47,6 +47,7 @@ end
 %% find all tetrode and cluster numbers
 if ~isempty(cutList)
     cellMatrix = nan(500,2);
+    flagPP = false;
     if strcmpi(clusterFormat,'MClust')
 
         for iCluster = 1:length(cutList)
@@ -60,6 +61,7 @@ if ~isempty(cutList)
                     t_num = cellfun(@str2double,strtok(splits(1),'T'));
                     c_num = cellfun(@str2double,strtok(splits(2),'.'));
                 elseif length(cutList(iCluster).name) >= 9 && isempty(strfind(cutList(iCluster).name,'SS'))  % norway
+                    flagPP = true;
                     tIdx = strfind(cutFilename, 'T');
                     if isempty(tIdx)
                         continue;
@@ -89,6 +91,7 @@ if ~isempty(cutList)
             if length(cutList(iCluster).name) <= 13 && ~isempty(strfind(cutList(iCluster).name,'SS'))    % oregon
                 t_num = cellfun(@str2double,strtok(splits(1),'T'));
             elseif length(cutList(iCluster).name) >= 13   % norway
+                flagPP = true;
                 t_num = cellfun(@str2double,strtok(splits(2),'T'));
             else
                 continue
@@ -154,7 +157,7 @@ else
             cutsForBNT = [cutsForBNT, fullfile(cutFolder,cutList(iTetrode).name), '; '];
         end
 
-    elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % norway MClust
+    elseif flagPP && strcmpi(clusterFormat,'MClust')   % norway MClust
 
         if sum(find(tetrodes == 1))
             cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP4_TT%u_%u; ')];
@@ -169,7 +172,7 @@ else
             cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP3_TT%u_%u; ')];
         end
 
-    elseif ~isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % norway SS
+    elseif flagPP && strcmpi(clusterFormat,'SS_t')   % norway SS
 
         if sum(find(tetrodes == 1))
             cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP4_TT%u_SS_%02u; ')];
@@ -184,11 +187,11 @@ else
             cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP3_TT%u_SS_%02u; ')];
         end
 
-    elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'MClust')   % oregon MClust
+    elseif ~flagPP && strcmpi(clusterFormat,'MClust')   % oregon MClust
 
         cutsForBNT = fullfile(cutAddon, 'TT; ');
 
-    elseif isempty(strfind(cutList(1).name,'PP')) && strcmpi(clusterFormat,'SS_t')   % oregon SS
+    elseif ~flagPP && strcmpi(clusterFormat,'SS_t')   % oregon SS
 
         cutsForBNT = fullfile(cutAddon, 'TT%u_SS_%02u; ');
 
