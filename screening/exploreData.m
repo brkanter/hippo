@@ -12,15 +12,15 @@
 function exploreData
 
 %% get globals
-global penguinInput arena clusterFormat
-if isempty(penguinInput)
+global hippoGlobe
+if isempty(hippoGlobe.inputFile)
     startup
 end
 
 %% choose recording session and load the data
 folder = uigetdir();
-writeInputBNT(penguinInput,folder,arena,clusterFormat)
-data.loadSessions(penguinInput)
+writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat)
+data.loadSessions(hippoGlobe.inputFile)
 
 %% plot animal's trajectory
 figure;

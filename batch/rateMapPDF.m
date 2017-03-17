@@ -12,8 +12,8 @@
 function rateMapPDF
 
 %% get globals
-global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
-if isempty(penguinInput)
+global hippoGlobe
+if isempty(hippoGlobe.inputFile)
     startup
 end
 
@@ -27,7 +27,7 @@ if outFolder == 0; return; end;
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy','Publication quality'};
 name='Settings';
 numlines=1;
-defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0','n'};
+defaultanswer={num2str(hippoGlobe.smoothing),num2str(hippoGlobe.binWidth),'0','n'};
 options='on';
 Answers = inputdlg(prompt,name,numlines,defaultanswer,options);
 if isempty(Answers); return; end;
@@ -85,8 +85,8 @@ end
 %% load data and make rate maps
 for iFolder = 1:length(allFolders)    
     cd(allFolders{1,iFolder});   
-    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
-    data.loadSessions(penguinInput);
+    writeInputBNT(hippoGlobe.inputFile,allFolders{1,iFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile);
     %% get positions, spikes, map, and rates
     posAve = data.getPositions('speedFilter',[0.2 0]);
     t = posAve(:,1);
@@ -96,7 +96,7 @@ for iFolder = 1:length(allFolders)
     numClusters = size(cellMatrix,1);    
     for iCluster = 1:numClusters          % loop through all cells in folder
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', mapLimits);
+        map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', hippoGlobe.mapLimits);
         meanRate = analyses.meanRate(spikes, posAve);
         mapMat{iCluster,iFolder} = map.z;
         meanMat{iCluster,iFolder} = meanRate;        

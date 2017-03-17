@@ -5,7 +5,7 @@
 %       emperorPenguin
 %
 %   SEE ALSO
-%       emperorSettings emperorHeadings createEmperorArray missingClusterData
+%       emperorSettings emperorHeadings createEmperorArray initClusterData
 %       excelStitch addCellNums kingPenguin
 %
 % Written by BRK 2014
@@ -15,8 +15,8 @@ function emperorPenguin
 tic
 
 %% get globals
-global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
-if isempty(penguinInput)
+global hippoGlobe
+if isempty(hippoGlobe.inputFile)
     startup
 end
 
@@ -42,7 +42,7 @@ ccComps = nchoosek(1:seshPerExp,2);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy'};
 name='Map settings';
 numlines=1;
-defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0'};
+defaultanswer={num2str(hippoGlobe.smoothing),num2str(hippoGlobe.binWidth),'0'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -54,7 +54,7 @@ if include.fields
     prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
     name='Find field settings';
     numlines=1;
-    defaultanswer={'0.2',num2str(dMinBins),'1'};
+    defaultanswer={'0.2',num2str(hippoGlobe.minBins),'1'};
     Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers); return; end;
     fieldThresh = str2double(Answers{1});
@@ -102,8 +102,8 @@ for iFolder = 1:length(folders)
     if mod(iFolder,seshPerExp) == 1
         cellMatrix = [];
         for jFolder = iFolder:(iFolder+(seshPerExp-1))
-            writeInputBNT(penguinInput,folders{1,jFolder},arena,clusterFormat)
-            data.loadSessions(penguinInput);
+            writeInputBNT(hippoGlobe.inputFile,folders{1,jFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
+            data.loadSessions(hippoGlobe.inputFile);
             cellMatrix = [cellMatrix; data.getCells];
         end
         sortedMat = sortrows(cellMatrix);
@@ -112,16 +112,16 @@ for iFolder = 1:length(folders)
     end
     
     %% get positions, spikes, map, and rates
-    writeInputBNT(penguinInput,folders{1,iFolder},arena,clusterFormat)
-    data.loadSessions(penguinInput);
-    posAve = data.getPositions('speedFilter',[2 0]);
+    writeInputBNT(hippoGlobe.inputFile,folders{1,iFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile);
+    posAve = data.getPositions('speedFilter',hippoGlobe.posSpeedFilter);
     posT = posAve(:,1);
     posX = posAve(:,2);
     posY = posAve(:,3);
     
     %% extract necessary measures that don't rely on clusters to save time
     if include.HD
-        pos = data.getPositions('average','off','speedFilter',[2 0]);
+        pos = data.getPositions('average','off','speedFilter',hippoGlobe.posSpeedFilter);
         allHD = analyses.calcHeadDirection(pos);
     end
     if include.speed
@@ -145,7 +145,7 @@ for iFolder = 1:length(folders)
         if isempty(spikes)   % cluster is missing in this session, move on
             continue
         else   % we have spikes, continue as usual
-            map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',mapLimits);
+            map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',hippoGlobe.mapLimits);
             clusterData(iCluster,iFolder,expNum).rateMap = map.z;
             clusterData(iCluster,iFolder,expNum).countMap = map.count;
             meanRate = analyses.meanRate(spikes,posAve);
@@ -185,15 +185,15 @@ for iFolder = 1:length(folders)
                 [fieldsMap,fields] = analyses.placefield(map,'threshold',fieldThresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
                 if ~isempty(fields)
                     fieldNum = length(fields);
-                    sizes = nan(1,50);
+                    peaks = nan(1,50);
                     for iField = 1:length(fields)
-                        sizes(iField) = fields(1,iField).size;
+                        peaks(iField) = fields(1,iField).size;
                     end
-                    biggestField = find(sizes == nanmax(sizes));
-                    fieldMean = nanmean(sizes);
-                    fieldMax = nanmax(sizes);
-                    COMx = fields(1,biggestField).x;
-                    COMy = fields(1,biggestField).y;
+                    peakField = find(peaks == nanmax(peaks));
+                    fieldMean = nanmean(peaks);
+                    fieldMax = nanmax(peaks);
+                    COMx = fields(1,peakField).x;
+                    COMy = fields(1,peakField).y;
                     if ~isempty(fieldsMap)
                         border = analyses.borderScore(map.z,fieldsMap,fields);
                     else
@@ -384,9 +384,9 @@ if ~exist('gridThresh','var')
     gridThresh = '';
 end
 
-settingsValues = {clusterFormat, ...
-    arena, ...
-    num2str(mapLimits), ...
+settingsValues = {hippoGlobe.clusterFormat, ...
+    hippoGlobe.arena, ...
+    num2str(hippoGlobe.mapLimits), ...
     '', ...
     include.spikeWidth, ...
     include.sss, ...

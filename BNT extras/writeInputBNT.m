@@ -3,8 +3,8 @@
 % in specified directories.
 %
 %   USAGE
-%       writeInputBNT(penguinInput, folder, arena, clusterFormat, <cutFolder>)
-%       penguinInput        string specifying where to write the input file
+%       writeInputBNT(inputFile, folder, arena, clusterFormat, <cutFolder>)
+%       inputFile           string specifying where to write the input file
 %       folder              directory of recording session
 %       arena               string with shape and size of recording arena (e.g. 'cylinder 60 60' or 'box 100 100')
 %       clusterFormat       string describing spike timestamp files (e.g. 'MClust' or 'Tint')
@@ -16,7 +16,7 @@
 %
 % Written by BRK 2015
 
-function writeInputBNT(penguinInput, folder, arena, clusterFormat, cutFolder)
+function writeInputBNT(inputFile, folder, arena, clusterFormat, cutFolder)
 
 if nargin < 5 || isempty(cutFolder)
     cutFolder = folder;
@@ -50,9 +50,11 @@ if ~isempty(cutList)
     flagPP = false;
     if strcmpi(clusterFormat,'MClust')
 
+        wrongFiles = false(1, length(cutList));
         for iCluster = 1:length(cutList)
             splits = regexp(cutList(iCluster).name,'_','split');
             if length(splits) == 1
+                wrongFiles(iCluster) = true;
                 continue;
             end
             try
@@ -82,6 +84,7 @@ if ~isempty(cutList)
                 continue;
             end
         end
+        cutList(wrongFiles) = [];
 
     elseif strcmpi(clusterFormat,'SS_t')
 
@@ -199,7 +202,7 @@ else
 end
 
 %% write BNT input file
-fileID = data.safefopen(penguinInput,'w');
+fileID = data.safefopen(inputFile,'w');
 if strcmpi(clusterFormat,'Tint')
     sessionName = fullfile(folder,splits{1});
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',sessionName,cutsForBNT,unitList,arena);

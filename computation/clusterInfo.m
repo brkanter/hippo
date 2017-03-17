@@ -16,8 +16,8 @@
 function [L_ratio IsoD] = clusterInfo(folder,tNum,cNum)
 
 %% check inputs
-global clusterFormat
-if ~strcmpi(clusterFormat,'MClust')
+global hippoGlobe
+if ~strcmpi(hippoGlobe.clusterFormat,'MClust')
     error('This function currently only works for MClust clusters')
 end
 if (helpers.isstring(folder) + helpers.isstring(tNum) + helpers.isstring(cNum)) < 3

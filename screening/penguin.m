@@ -87,14 +87,15 @@ function butt_video_Callback(hObject, eventdata, handles) %#ok<*INUSL,*DEFNU>
 % handles    structure with handles and user data (see GUIDATA)
 
 %% initiliaze
-global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
-handles.inputFileID = penguinInput;
-handles.clusterFormat = clusterFormat;
-handles.arena = arena;
-handles.mapLimits = mapLimits;
-handles.dSmoothing = dSmoothing;
-handles.dBinWidth = dBinWidth;
-handles.dMinBins = dMinBins;
+global hippoGlobe
+handles.inputFile = hippoGlobe.inputFile;
+handles.clusterFormat = hippoGlobe.clusterFormat;
+handles.arena = hippoGlobe.arena;
+handles.mapLimits = hippoGlobe.mapLimits;
+handles.smoothing = hippoGlobe.smoothing;
+handles.binWidth = hippoGlobe.binWidth;
+handles.minBins = hippoGlobe.minBins;
+handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
 
 %% choose directory of behavioral session
 handles.userDir = '';
@@ -104,13 +105,13 @@ set(handles.text_video, 'String', handles.userDir);
 if handles.userDir == 0; close(h); return; end;
 
 %% load all data for designated session
-writeInputBNT(handles.inputFileID,handles.userDir,handles.arena,handles.clusterFormat)
-data.loadSessions(handles.inputFileID);
+writeInputBNT(handles.inputFile,handles.userDir,handles.arena,handles.clusterFormat)
+data.loadSessions(handles.inputFile);
 
 %% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
 clear posAve;
 try
-    posAve = data.getPositions('speedFilter',[2 0]);
+    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
     handles.gotPos = 1;
 catch
     warndlg('Error getting position samples')
@@ -179,7 +180,7 @@ function handles = loadData(handles)
 
     if handles.gotPos
         %% calculate rate map
-        map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
+        map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0, 'limits', handles.mapLimits);
         handles.map = map.z;
 
         %% calculate mean rate in Hz
@@ -248,7 +249,7 @@ handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
 handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
 
 %% calculate rate map
-map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
+map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0, 'limits', handles.mapLimits);
 handles.map = map.z;
 
 %% calculate mean rate in Hz
@@ -388,7 +389,7 @@ function butt_ratemap_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-map = analyses.map([handles.posT handles.posX handles.posY],handles.spikes,'smooth',handles.dSmoothing,'binWidth',handles.dBinWidth,'limits',handles.mapLimits);
+map = analyses.map([handles.posT handles.posX handles.posY],handles.spikes,'smooth',handles.smoothing,'binWidth',handles.binWidth,'limits',handles.mapLimits);
 colorMapBRK(map.z);
 axis on
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
@@ -407,7 +408,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -440,7 +441,7 @@ function butt_findFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-[fieldMap,fields] = analyses.placefield(handles.map,'minBins',handles.dMinBins);
+[fieldMap,fields] = analyses.placefield(handles.map,'minBins',handles.minBins);
 if isempty(fields); warndlg('No fields found'); return; end;
 fieldMap(isnan(handles.map)) = nan;
 for iFieldNum = 1:size(fields,2)
@@ -490,7 +491,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -501,7 +502,7 @@ prompt={'Threshold for including surrounding bins (included if > thresh*peak)','
     'Minimum bins for a field','Minimum peak rate for a field (Hz?)','Display rates (y/n)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1','n'};
+defaultanswer={'0.2',num2str(handles.binWidth),num2str(handles.minBins),'1','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -581,7 +582,7 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles)
 %% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-posAve = data.getPositions('speedFilter',[2 0]);
+posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
 times = posAve(:,1);
 numTimeStamps = length(times);
 
@@ -589,7 +590,7 @@ numTimeStamps = length(times);
 prompt={'Number of time blocks','Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','2',num2str(handles.dBinWidth),'0','n'};
+defaultanswer={'2','2',num2str(handles.binWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 numBlocks = str2double(Answers{1});
@@ -667,7 +668,7 @@ function butt_batchTimeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 %% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-posAve = data.getPositions('speedFilter',[2 0]);
+posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
 times = posAve(:,1);
 numTimeStamps = length(times);
 
@@ -675,7 +676,7 @@ numTimeStamps = length(times);
 prompt={'Number of time blocks','Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2','2',num2str(handles.dBinWidth),'0','n'};
+defaultanswer={'2','2',num2str(handles.binWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 numBlocks = str2double(Answers{1});
@@ -762,7 +763,7 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% calculate HD
-pos = data.getPositions('average','off','speedFilter',[2 0]);
+pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
 [~,spkInd] = data.getSpikePositions(handles.spikes, handles.posAve);
 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
 allHD = analyses.calcHeadDirection(pos);
@@ -780,7 +781,7 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 
 %% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
 msg = msgbox('Loading position data for each LED...');
-pos = data.getPositions('average','off','speedFilter',[2 0]);
+pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
 close(msg);
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
@@ -814,7 +815,7 @@ function butt_grid_Callback(hObject, eventdata, handles)
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -850,7 +851,7 @@ end
 %     randInd = randi([min(shiftList),max(shiftList)],1);
 %     shuffledX = circshift(posX,randInd);
 %     shuffledY = circshift(posY,randInd);
-%     map = analyses.map([handles.posT shuffledX shuffledY], handles.spikes, 'smooth', handles.dSmoothing, 'binWidth', handles.dBinWidth, 'minTime', 0, 'limits', handles.mapLimits);
+%     map = analyses.map([handles.posT shuffledX shuffledY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0, 'limits', handles.mapLimits);
 %     autoCorr = analyses.autocorrelation(map.z);
 %     score = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
 %     if ~isempty(score)
@@ -898,7 +899,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -953,7 +954,7 @@ function butt_border_Callback(hObject, eventdata, handles)
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -969,7 +970,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
+defaultanswer={'0.2',num2str(handles.binWidth),num2str(handles.minBins),'1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -1039,7 +1040,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -1055,7 +1056,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
+defaultanswer={'0.2',num2str(handles.binWidth),num2str(handles.minBins),'1'};
 Answers4 = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers4); return; end;
 fieldThresh = str2double(Answers4{1});
@@ -1278,7 +1279,7 @@ function butt_cellStats_Callback(hObject, eventdata, handles)
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
+defaultanswer={'0.2',num2str(handles.binWidth),num2str(handles.minBins),'1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -1355,7 +1356,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -1370,7 +1371,7 @@ end
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
 numlines=1;
-defaultanswer={'0.2',num2str(handles.dBinWidth),num2str(handles.dMinBins),'1'};
+defaultanswer={'0.2',num2str(handles.binWidth),num2str(handles.minBins),'1'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 thresh = str2double(Answers{1});
@@ -1406,7 +1407,7 @@ for iCluster = 1:numClusters
 
         %% HD
         subplot(323)
-        pos = data.getPositions('average','off','speedFilter',[2 0]);
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
         allHD = analyses.calcHeadDirection(pos);
         [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
         spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
@@ -1492,7 +1493,7 @@ end
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -1640,7 +1641,7 @@ end
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.dBinWidth),'0','n','n'};
+defaultanswer={'2',num2str(handles.binWidth),'0','n','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -1885,7 +1886,7 @@ elseif strcmpi(class(oldKids),'matlab.graphics.primitive.Data')
         0 1 1; ...                  % cyan
         0 0.5 1; ...                % light blue
         0.4 0 0.8];                 % purple
-    fieldMap = analyses.placefield(handles.map,'minBins',handles.dMinBins);
+    fieldMap = analyses.placefield(handles.map,'minBins',handles.minBins);
     fieldMap(isnan(handles.map)) = nan;
     if ~sum(sum(fieldMap == 0))
         cmap(2,:) = get(gca,'color');
@@ -1983,14 +1984,15 @@ function butt_load_mclust_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% initiliaze
-global penguinInput arena mapLimits dSmoothing dBinWidth dMinBins clusterFormat
-handles.inputFileID = penguinInput;
-handles.clusterFormat = clusterFormat;
-handles.arena = arena;
-handles.mapLimits = mapLimits;
-handles.dSmoothing = dSmoothing;
-handles.dBinWidth = dBinWidth;
-handles.dMinBins = dMinBins;
+global hippoGlobe
+handles.inputFile = hippoGlobe.inputFile;
+handles.clusterFormat = hippoGlobe.clusterFormat;
+handles.arena = hippoGlobe.arena;
+handles.mapLimits = hippoGlobe.mapLimits;
+handles.smoothing = hippoGlobe.smoothing;
+handles.binWidth = hippoGlobe.binWidth;
+handles.minBins = hippoGlobe.minBins;
+handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
 
 isMClustActive = true;
 try
@@ -2023,12 +2025,12 @@ clear posAve;
 try
     clustData.TTdn = clusterDir;
     clustData.WriteTfiles;
-    writeInputBNT(handles.inputFileID, TTdn, handles.arena, handles.clusterFormat, clusterDir);
-    data.loadSessions(handles.inputFileID);
+    writeInputBNT(handles.inputFile, TTdn, handles.arena, handles.clusterFormat, clusterDir);
+    data.loadSessions(handles.inputFile);
 
-    posAve = data.getPositions('speedFilter',[2 0]);
+    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
     handles.gotPos = 1;
-    helpers.deleteCache(handles.inputFileID);
+    helpers.deleteCache(handles.inputFile);
 catch
     rmdir(clusterDir);
     handles.gotPos = 0;

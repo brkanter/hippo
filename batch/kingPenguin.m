@@ -15,8 +15,8 @@ function kingPenguin
 tic
 
 %% get globals
-global penguinInput mapLimits dSmoothing dBinWidth arena clusterFormat
-if isempty(penguinInput)
+global hippoGlobe
+if isempty(hippoGlobe.inputFile)
     startup
 end
 
@@ -48,7 +48,7 @@ folders = unique(dataInput(:,1)');
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy'};
 name='Map settings';
 numlines=1;
-defaultanswer={num2str(dSmoothing),num2str(dBinWidth),'0'};
+defaultanswer={num2str(hippoGlobe.smoothing),num2str(hippoGlobe.binWidth),'0'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
@@ -62,8 +62,8 @@ for iFolder = 1:length(folders)
     
     %% load data
     folderInds = find(strcmpi(dataInput(:,1),folders{1,iFolder}));
-    writeInputBNT(penguinInput,folders{1,iFolder},arena,clusterFormat)
-    data.loadSessions(penguinInput);    
+    writeInputBNT(hippoGlobe.inputFile,folders{1,iFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile);    
     
     %% get positions, spikes, map, and rates
     pos = data.getPositions('average','off','speedFilter',[2 0]);
@@ -82,7 +82,7 @@ for iFolder = 1:length(folders)
         tetrode = cell2mat(dataInput(folderInds(iCluster),strcmpi('tetrode',labels)));
         cluster = cell2mat(dataInput(folderInds(iCluster),strcmpi('cluster',labels)));
         spikes = data.getSpikeTimes([tetrode,cluster]);
-        map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',mapLimits);
+        map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',hippoGlobe.mapLimits);
         
         %% store data
         dataInput{folderInds(iCluster),strcmpi('rate map',labels)} = map.z;

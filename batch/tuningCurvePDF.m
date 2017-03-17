@@ -12,8 +12,8 @@
 function tuningCurvePDF
 
 %% get globals
-global penguinInput arena mapLimits dSmoothing dBinWidth clusterFormat
-if isempty(penguinInput)
+global hippoGlobe
+if isempty(hippoGlobe.inputFile)
     startup
 end
 
@@ -53,8 +53,8 @@ end
 %% load data and make rate maps
 for iFolder = 1:length(allFolders)
     cd(allFolders{1,iFolder}); 
-    writeInputBNT(penguinInput,allFolders{1,iFolder},arena,clusterFormat)
-    data.loadSessions(penguinInput);
+    writeInputBNT(hippoGlobe.inputFile,allFolders{1,iFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile);
     %% get positions, spikes, map, and rates
     pos = data.getPositions('average','off','speedFilter',[0.2 0]);
     t = pos(:,1);
@@ -64,7 +64,7 @@ for iFolder = 1:length(allFolders)
     numClusters = size(cellMatrix,1);
     for iCluster = 1:numClusters          % loop through all cells in folder
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        map = analyses.map([t x y], spikes, 'smooth', dSmoothing, 'binWidth', dBinWidth, 'minTime', 0, 'limits', mapLimits);
+        map = analyses.map([t x y], spikes, 'smooth', hippoGlobe.smoothing, 'binWidth', hippoGlobe.binWidth, 'minTime', 0, 'limits', hippoGlobe.mapLimits);
         mapMat{iCluster,iFolder} = map.z;
         [~,spkInd] = data.getSpikePositions(spikes,pos);
         try

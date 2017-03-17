@@ -1,3 +1,4 @@
+
 %% CHANGE THE NAME OF THIS FUNCTION TO STARTUP.M AND MAKE SURE IT IS VISIBLE ON YOUR PATH %%
 % also change the 2 lines containing directory locations so they make sense for your computer
 
@@ -10,44 +11,42 @@ close
 InitBNT();
 
 %% update globals
-global penguinInput ...
-    arena mapLimits ...
-    dSmoothing dBinWidth dMinBins...
-    clusterFormat
+global hippoGlobe
 
-penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\penguinInput.txt';
+hippoGlobe.penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\penguinInput.txt';
+hippoGlobe.posSpeedFilter = [2 0];  % ignore times when animal moves < 2 cm/sec
 
-clusterFormat = 'MClust';
-% clusterFormat = 'SS_t';
-% clusterFormat = 'Tint';
+hippoGlobe.clusterFormat = 'MClust';
+% hippoGlobe.clusterFormat = 'SS_t';
+% hippoGlobe.clusterFormat = 'Tint';
 
-dSmoothing = 2;
+hippoGlobe.smoothing = 2;
 
-% environment-specific settings
+% -- environment-specific settings --
  
-arena = 'cylinder 60 60';
-mapLimits = [-30,30,-30,30];
-dBinWidth = 2;
-dMinBins = 20;
+hippoGlobe.arena = 'cylinder 60 60';
+hippoGlobe.mapLimits = [-30,30,-30,30];
+hippoGlobe.binWidth = 2;
+hippoGlobe.minBins = 20;
 
-% arena = 'box 60 60';
-% mapLimits = [-30,30,-30,30];
-% dBinWidth = 2;
-% dMinBins = 20;
+% hippoGlobe.arena = 'box 60 60';
+% hippoGlobe.mapLimits = [-30,30,-30,30];
+% hippoGlobe.binWidth = 2;
+% hippoGlobe.dMinBins = 20;
  
-% arena = 'box 120 90';
-% mapLimits = [-60,60,-45,45];
-% dBinWidth = 4;
-% dMinBins = 5;
+% hippoGlobe.arena = 'box 120 90';
+% hippoGlobe.mapLimits = [-60,60,-45,45];
+% hippoGlobe.binWidth = 4;
+% hippoGlobe.dMinBins = 5;
 
-% arena = 'box 100 100';
-% mapLimits = [-50,50,-50,50];
-% dBinWidth = 4;
-% dMinBins = 5;
+% hippoGlobe.arena = 'box 100 100';
+% hippoGlobe.mapLimits = [-50,50,-50,50];
+% hippoGlobe.binWidth = 4;
+% hippoGlobe.dMinBins = 5;
 
-% arena = 'box 46 24';
-% mapLimits = [-23,23,-12,12];
-% dBinWidth = 2;
-% dMinBins = 20;
+% hippoGlobe.arena = 'box 46 24';
+% hippoGlobe.mapLimits = [-23,23,-12,12];
+% hippoGlobe.binWidth = 2;
+% hippoGlobe.minBins = 20;
 
 
