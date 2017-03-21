@@ -2,7 +2,7 @@
 % Plot broadband LFP trace, optionally adding theta- and ripple-band filtered traces.
 %
 %   USAGE
-%       calc.plotLFP(<options>)
+%       plt.LFP(<options>)
 %       <options>       'theta' and/or 'ripple' will add these filtered traces
 %
 %   NOTES
@@ -10,11 +10,11 @@
 %       visualized in the same figure window.
 %
 %   SEE ALSO
-%       calc.plotLFP
+%       plt.LFP
 %
 % Written by BRK 2017
 
-function plotLFPfilter(varargin)
+function LFPfilter(varargin)
 
 %% check inputs
 for iArg = 1:length(varargin)

@@ -2,18 +2,18 @@
 % Plot broadband LFP trace(s). If multiple channels are selected, they are plotted in the same figure window.
 %
 %   USAGE
-%       calc.plotLFP
+%       plt.LFP
 %
 %   NOTES
 %       Multiple traces are plotted with their voltages offset so that they can be
 %       visualized in the same figure window.
 %
 %   SEE ALSO
-%       calc.plotLFPfilter
+%       plt.FPfilter
 %
 % Written by BRK 2017
 
-function plotLFP
+function LFP
 
 %% select trace(s)
 [name,path] = uigetfile('*.ncs','Select CSC file(s)','multiselect','on');

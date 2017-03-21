@@ -1,7 +1,7 @@
 % Plot median values as horizontal bars on current axes.
 %
 %   USAGE
-%       calc.plotMedians(x,y,<options>)
+%       plt.medians(x,y,<options>)
 %       x           vector of x values
 %       y           vector of y values
 %       <options>   optional list of property-value pairs (see table below)
@@ -15,7 +15,7 @@
 %
 % Written by BRK 2017. 
 
-function plotMedians(x,y,varargin)
+function medians(x,y,varargin)
 
 if mod(length(varargin),2) || nargin < 2
     error('Incorrect number of parameters.');

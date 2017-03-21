@@ -3,7 +3,7 @@
 % to check for theta power in the LFP during screening.
 %
 %   USAGE
-%       calc.powerSpectrum(userDir)
+%       plt.powerSpectrum(userDir)
 %       userDir         string specifying directory
 %
 %   NOTES
