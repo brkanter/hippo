@@ -2,7 +2,7 @@
 % Filter LFP in theta band and extract phase.
 %
 %   USAGE
-%       [phs,xVals,TimeStamps] = calc.extractThetaPhase(filename)
+%       [phs,xVals,TimeStamps] = calc.thetaPhase(filename)
 %       filename       full path to CSC file
 %
 %   OUTPUT
@@ -12,7 +12,7 @@
 %
 % Written by BRK 2017
 
-function [phs,xVals,TimeStamps] = extractThetaPhase(filename)
+function [phs,xVals,TimeStamps] = thetaPhase(filename)
 
 %% check input
 if helpers.isstring(filename) < 1
