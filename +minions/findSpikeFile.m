@@ -21,10 +21,10 @@ if (iscell(raw) + iscell(labels) + helpers.isstring(clusterNum) + helpers.isstri
 end
 
 %% search in correct directory
-folder = selectCols(raw,labels,'folder','cell num',clusterNum,'session',session);
+folder = extract.cols(raw,labels,'folder','cell num',clusterNum,'session',session);
 splits = regexp(folder,'\','split');
-tetrode = selectCols(raw,labels,'tetrode','cell num',clusterNum,'session',session);
-cluster = selectCols(raw,labels,'cluster','cell num',clusterNum,'session',session);
+tetrode = extract.cols(raw,labels,'tetrode','cell num',clusterNum,'session',session);
+cluster = extract.cols(raw,labels,'cluster','cell num',clusterNum,'session',session);
 searchStr = [splits{1}{end} '_T' num2str(tetrode) 'C' num2str(cluster)];
 d = dir(folder{1,1});
 names = extractfield(d,'name');
