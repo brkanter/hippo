@@ -15,6 +15,7 @@ global hippoGlobe
 
 hippoGlobe.penguinInput = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\hippo\autoInputBNT.txt';
 hippoGlobe.posSpeedFilter = [2 0];  % ignore times when animal moves < 2 cm/sec
+hippoGlobe.binWidthHD = 6;
 
 hippoGlobe.clusterFormat = 'MClust';
 % hippoGlobe.clusterFormat = 'SS_t';

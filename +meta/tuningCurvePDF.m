@@ -27,7 +27,7 @@ if outFolder == 0; return; end;
 prompt={'Angle bin width','Percentile'};
 name='HD settings';
 numlines=1;
-defaultanswer={'6','20'};
+defaultanswer={hippoGlobe.binWidthHD,'20'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 binWidthHD = str2double(Answers{1});

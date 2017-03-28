@@ -96,6 +96,7 @@ handles.smoothing = hippoGlobe.smoothing;
 handles.binWidth = hippoGlobe.binWidth;
 handles.minBins = hippoGlobe.minBins;
 handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
+handles.binWidthHD = hippoGlobe.binWidthHD;
 
 %% choose directory of behavioral session
 handles.userDir = '';
@@ -844,7 +845,7 @@ pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
 [~,spkInd] = data.getSpikePositions(handles.spikes, handles.posAve);
 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
 allHD = analyses.calcHeadDirection(pos);
-tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',6);
+tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
 tcStat = analyses.tcStatistics(tc,6,20);
 figure;
 circularTurningBRK(tc(:,2))
@@ -873,7 +874,7 @@ for iCluster = 1:numClusters
     figure(figBatchHD);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
-    tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',6);
+    tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
     tcStat = analyses.tcStatistics(tc,6,20);
     circularTurningBRK(tc(:,2))
     axis equal
