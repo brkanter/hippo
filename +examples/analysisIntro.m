@@ -37,9 +37,8 @@
 %% load the mat file which is output from kingPenguin
 display('Loading data...')
 tic   % start a stopwatch
-load('N:\benjamka\masterMatDose.mat')
+load('G:\share\ben to MATLAB club\masterMatDose.mat')
 display(sprintf('Loaded data in %.2f sec.\n',toc))   % toc displays the elapsed time from the stopwatch
-
 
 %% extract some information about your experiments
 sessions = extract.cols(dataOutput,labels,'session');
