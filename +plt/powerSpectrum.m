@@ -3,8 +3,8 @@
 % to check for theta power in the LFP during screening.
 %
 %   USAGE
-%       plt.powerSpectrum(userDir)
-%       userDir         string specifying directory
+%       plt.powerSpectrum(<CSCnums>)
+%       CSCnums         (optional) vector specifying which CSC numbers to analyze (default = 
 %
 %   NOTES
 %       This function works by searching directories for your mouse ID and may fail
@@ -13,7 +13,13 @@
 %
 % Written by BRK 2015
 
-function powerSpectrum(userDir)
+function powerSpectrum(CSCnums)
+
+%% choose directory and CSC files
+userDir = uigetdir();
+if ~exist('CSCnums','var')
+    CSCnums = 1:4;
+end
 
 %% find directory names
 splits = regexp(userDir,'\','split');
@@ -36,6 +42,10 @@ elseif ~isempty(strfind(userDir,'KA'))
     ind = strfind(userDir,'KA');
     if length(ind) > 1; ind = ind(end); end;
     mouseName = userDir(ind:ind+2);
+elseif ~isempty(strfind(userDir,'rat'))
+    ind = strfind(userDir,'rat');
+    if length(ind) > 1; ind = ind(end); end;
+    mouseName = userDir(ind+3:end);
 else
     prompt={'Mouse name'};
     name='Did not recognize mouse naming scheme';
@@ -73,13 +83,19 @@ h2 = figure;
 set(gcf,'name',mouseName)
 
 %% do it
-for iCSC = 1:4
+plotSize = ceil(sqrt(numel(CSCnums)));
+for iCSC = CSCnums
     power = nan(numSesh,nPower);
     for iSession = 1:numSesh
         % get data and clean up
         fileEnding = sprintf('CSC%d.ncs',iCSC);
         filename = fullfile(splits{1:end-1},nameStore{iSession},fileEnding);
-        [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
+        try
+            [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
+        catch
+            close(h);
+            error('CSC loading failed. Check that selected CSC files actually exist')
+        end
         squeezedSamples = reshape(Samples,512*size(Samples,2),1);
         for iRow = 1:length(Header)
             if ~isempty(strfind(Header{iRow},'ADBitVolts'))
@@ -106,7 +122,7 @@ for iCSC = 1:4
     
     %% heat maps for each recording session for each LFP channel
     figure(h1)
-    subplot(2,2,iCSC)
+    subplot(plotSize,plotSize,find(CSCnums == iCSC))
     colormap jet
     imagesc(hz(hzBounds(1):hzBounds(2)),1:numSesh,power(:,hzBounds(1):hzBounds(2)))
     xlabel('Frequency'), ylabel('Session')
@@ -115,7 +131,7 @@ for iCSC = 1:4
     %% line graphs for each recording session for each LFP channel
     % N.B. most recent session plotted on top
     figure(h2);
-    subplot(2,2,iCSC)
+    subplot(plotSize,plotSize,find(CSCnums == iCSC))
     cmap = colormap('jet');
     cmap = cmap(round(linspace(1,length(cmap),numSesh)),:);
     set(gca,'colororder',cmap,'NextPlot','replacechildren')

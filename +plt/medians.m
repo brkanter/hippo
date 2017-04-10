@@ -3,7 +3,7 @@
 %   USAGE
 %       plt.medians(x,y,<options>)
 %       x           vector of x values
-%       y           vector of y values
+%       y           vector of y values, or cell array of vectors with each group in a different cell
 %       <options>   optional list of property-value pairs (see table below)
 %
 %    =========================================================================
@@ -36,4 +36,8 @@ Color = inp.Results.color;
 weight = inp.Results.weight;
 
 hold on
-plot([x-width; x+width],[nanmedian(y); nanmedian(y)],'color',Color,'linew',weight)
+if iscell(y)
+    plot([x-width; x+width],[cellfun(@nanmedian,y); cellfun(@nanmedian,y)],'color',Color,'linew',weight)
+else
+    plot([x-width; x+width],[nanmedian(y); nanmedian(y)],'color',Color,'linew',weight)
+end

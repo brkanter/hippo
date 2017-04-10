@@ -294,7 +294,7 @@ end
 handles = loadData(handles);
 
 close(h);
-guidata(hObject, handles);
+guidata(hObject,handles);
 
 % --- Executes on selection change in list_tetrode.
 function list_tetrode_Callback(hObject, eventdata, handles)
@@ -319,6 +319,10 @@ contents = get(handles.list_cluster,'String');
 selectedText = contents{get(handles.list_cluster,'Value')};
 handles.cluster = str2double(selectedText);
 set(handles.text_cluster, 'String', handles.cluster);
+
+handles = updateCurrentCluster(handles);
+
+guidata(hObject,handles);
 
 function handles = updateCurrentCluster(handles)
 
