@@ -1,5 +1,5 @@
 Name: general; Version: 1.0
-Sessions E:\HM3_CA3\Refined boundaries\2016-12-21_14-05-13_BK186_BL
-Cuts PP4_TT%u_%u; PP6_TT%u_%u; PP7_TT%u_%u; PP3_TT%u_%u; 
-Units 1  1  2  3  4  5; 2  1  2  3; 3  1  2  3; 4  1  2  3; 
-Shape box 120 90
+Sessions E:\HM3_CA3\Refined boundaries\2013-09-02_00-26-26_BK101_BL2
+Cuts TT; 
+Units 1  1  2  3; 2  1  2  3  4; 3  1  2; 4  1  3; 
+Shape cylinder 60 60

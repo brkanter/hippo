@@ -18,6 +18,10 @@
 
 function writeInputBNT(inputFile, folder, arena, clusterFormat, cutFolder)
 
+if iscell(folder)
+    folder = folder{1};
+end
+
 if nargin < 5 || isempty(cutFolder)
     cutFolder = folder;
 end
