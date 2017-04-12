@@ -234,6 +234,7 @@ handles.smoothing = hippoGlobe.smoothing;
 handles.binWidth = hippoGlobe.binWidth;
 handles.minBins = hippoGlobe.minBins;
 handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
+handles.binWidthHD = hippoGlobe.binWidthHD;
 
 isMClustActive = true;
 try
@@ -1748,14 +1749,6 @@ function butt_emperor_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 meta.emperorPenguin
-
-% --- Executes on button press in butt_powerSpec.
-function butt_powerSpec_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_powerSpec (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-calc.powerSpectrum(handles.userDir)
 
 % --- Executes on button press in butt_rateMapPDF.
 function butt_rateMapPDF_Callback(hObject, eventdata, handles)
