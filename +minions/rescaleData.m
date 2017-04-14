@@ -18,26 +18,11 @@ function scaledData = rescaleData(dataInput,newMin,newMax)
 if nargin == 1
     newMin = 0;
     newMax = 1;
-elseif nargin == 2
-    newMax = 1;
 end
 
 %% get min and max of data
-oldMin = nanmin(dataInput);
-oldMax = nanmax(dataInput);
-if numel(oldMin) == 1
-    flag = false;
-else
-    flag = true;
-end
-% keep going through all dimensions
-while flag
-    oldMin = nanmin(oldMin);
-    oldMax = nanmax(oldMax);
-    if numel(oldMin) == 1
-        flag = false;
-    end
-end
+oldMin = nanmin(dataInput(:));
+oldMax = nanmax(dataInput(:));
 
 %% get ranges
 newRange = newMax - newMin;
