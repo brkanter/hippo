@@ -1,5 +1,5 @@
 
-% Compute interspike interval.
+% Compute number of spikes in interspike interval.
 %
 %   USAGE
 %       ISIout = calc.ISI(spikes, <PLOT>)
@@ -7,7 +7,7 @@
 %       PLOT        optional. 1 will plot the results, 0 will not (default)
 %
 %   OUTPUT
-%       ISIout      interspike interval
+%       ISIout      number of spikes in ISI (2 msec)
 %
 %   SEE ALSO
 %       calc.crossCorr

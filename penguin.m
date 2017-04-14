@@ -148,7 +148,7 @@ function handles = loadData(handles)
 
     %% update cluster based on current tetrode
     clust_indices = current_tetCells(:,1)==handles.tetrode;
-    current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
+    current_clusters = sort(cellstr(num2str(current_tetCells(clust_indices,2))));
     set(handles.list_cluster,'String',current_clusters,'Value',1);
     contents = get(handles.list_cluster,'String');
     selectedText = contents{get(handles.list_cluster,'Value')};
@@ -160,7 +160,7 @@ function handles = loadData(handles)
     handles.peakRate = 0;
     handles.totalSpikes = 0;
     handles.spikeWidth = 0;
-    handles.Marker = 3;
+    handles.marker = 15;
     for iTrode = 1:8
         handles.trodeTS{iTrode} = '';
     end
@@ -314,7 +314,7 @@ set(handles.text_tetrode, 'String', handles.tetrode);
 
 %% update cluster list based on current tetrode
 clust_indices = handles.current_tetCells(:,1)==handles.tetrode;
-current_clusters = cellstr(num2str(handles.current_tetCells(clust_indices,2)));
+current_clusters = sort(cellstr(num2str(handles.current_tetCells(clust_indices,2))));
 set(handles.list_cluster,'String',current_clusters,'Value',1);
 contents = get(handles.list_cluster,'String');
 selectedText = contents{get(handles.list_cluster,'Value')};
@@ -398,7 +398,7 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 pathTrialBRK('color',[.5 .5 .5])
 axis equal
 hold on
-plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
+plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
 hold off
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 
@@ -412,12 +412,12 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 %        str2double(get(hObject,'String')) returns contents of edit_markersize as a double
 
 %% change marker size for spike overlay
-handles.Marker = str2double(get(hObject,'String'));
+handles.marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
 pathTrialBRK('color',[.5 .5 .5])
 axis equal
 hold on
-plot(handles.spikePos(:,2),handles.spikePos(:,3),'r+','MarkerSize',handles.Marker)
+plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
 hold off
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 
@@ -435,7 +435,7 @@ numClusters = size(cellMatrix,1);
 prompt={'Spike marker size'};
 name='Marker';
 numlines=1;
-defaultanswer={'3'};
+defaultanswer={'15'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 Marker = str2double(Answers{1});
@@ -457,7 +457,7 @@ for iCluster = 1:numClusters
     pathTrialBRK('color',[.5 .5 .5])
     hold on
     %% overlay spikes
-    plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',Marker)
+    plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
     title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
     axis off;
     axis equal;
@@ -1472,7 +1472,7 @@ for iCluster = 1:numClusters
         spikePos = data.getSpikePositions(spikes,handles.posAve);
         pathTrialBRK('color',[.5 .5 .5])
         hold on
-        plot(spikePos(:,2),spikePos(:,3),'r+','MarkerSize',3)
+        plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',15)
         axis off;
         axis equal;
         hold off
