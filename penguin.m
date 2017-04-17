@@ -1178,8 +1178,7 @@ function butt_waves_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% h = msgbox('Loading waves...');
-%% find field settings
+%% settings
 prompt={'Do you want to align all the peaks?'};
 name='Alignment';
 numlines=1;

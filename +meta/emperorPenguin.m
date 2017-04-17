@@ -78,11 +78,11 @@ if include.grid
 end
 
 %% HD settings
-if include.grid
+if include.HD
     prompt={'Angle bin width','Percentile'};
     name='HD settings';
     numlines=1;
-    defaultanswer={hippoGlobe.binWidthHD,'20'};
+    defaultanswer={num2str(hippoGlobe.binWidthHD),'20'};
     Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers); return; end;
     binWidthHD = str2double(Answers{1});

@@ -36,7 +36,6 @@ ISIout = sum(ISI<0.002);
 
 %% plot
 if PLOT
-    figure;
     plot(binsUsed(1:end-1),H,'-','color','b')
     hold on
     plot([0.001 0.001],get(gca,'yLim'),'r-',...

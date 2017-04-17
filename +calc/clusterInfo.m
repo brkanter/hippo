@@ -4,8 +4,8 @@
 %   USAGE
 %       [L_ratio IsoD] = calc.clusterInfo(folder,tNum,cNum)
 %       folder          string specifying where the data lives
-%       tNum            string specifying the tetrode number
-%       cNum            string specifying the cluster number
+%       tNum            double specifying the tetrode number
+%       cNum            double specifying the cluster number
 %
 %   OUTPUTS
 %       L_ratio         L_ratio
@@ -20,8 +20,8 @@ global hippoGlobe
 if ~strcmpi(hippoGlobe.clusterFormat,'MClust')
     error('This function currently only works for MClust clusters')
 end
-if (helpers.isstring(folder) + helpers.isstring(tNum) + helpers.isstring(cNum)) < 3
-    error('Inputs must be strings')
+if (helpers.isstring(folder) + helpers.isdscalar(tNum) + helpers.isdscalar(cNum)) < 3
+    error('Inputs must be 1 string and 2 doubles')
 end
 
 %% get filename
@@ -40,6 +40,8 @@ if ~isempty(strfind(clusterList(1).name,'PP')) && isempty(strfind(clusterList(1)
 elseif isempty(strfind(clusterList(1).name,'SS')) && isempty(strfind(clusterList(1).name,'PP')) % oregon MClust
     TTfn = ['TT' num2str(tNum)];
 end
+
+%% MOST OF THE REST IS FROM MCLUST SOURCE CODE
 
 %% calculate features
 featuresToCalc = {'feature_Energy','feature_WavePC1'};

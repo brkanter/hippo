@@ -1,6 +1,6 @@
 
 % When running emperorPenguin, there may be a cluster missing (or containing 0 spikes).
-% This function fills in the data structure for that cluster with appropriate placeholders,
+% This function fills in the data structure for all clusters with appropriate placeholders,
 % and sets the column order for the output from emperorPenguin.
 %
 %   USAGE
@@ -35,7 +35,8 @@ clusterData(iCluster,iFolder,expNum).peakRate = 0;
 clusterData(iCluster,iFolder,expNum).totalSpikes = 0;
 
 %% quality
-[quality,L_ratio,isoDist] = minions.loadQualityInfo(folder,tetrode,cluster);
+quality = minions.loadQualityInfo(folder,tetrode,cluster);
+[L_ratio isoDist] = calc.clusterInfo(folder,tetrode,cluster);
 clusterData(iCluster,iFolder,expNum).quality = quality;
 clusterData(iCluster,iFolder,expNum).L_ratio = L_ratio;
 clusterData(iCluster,iFolder,expNum).isoDist = isoDist;
