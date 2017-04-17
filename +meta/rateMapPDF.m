@@ -320,7 +320,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                     case {2,3,5,6}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             bottomTitle = title(sprintf('T%dC%d  [%.2f]  [%.2f]',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},meanMat{cellCount,sessionCount},peakMat{cellCount,sessionCount}));
-                            set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))/0.85],'VerticalAlignment','bottom','FontSize',9)
+                            set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))/0.8],'VerticalAlignment','bottom','FontSize',9)
                             set(scaleBar,'FontSize',9)
                         end
                     case 4
@@ -360,17 +360,17 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                         case 3     % labels for 2 Env 6 sessions                            
                             switch iPlotsX        % add column labels whose position is determined by current axes limits                                
                                 case 1                                    
-                                    text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                    
                                 case 2                                    
-                                    text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'B1','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                    
                                 case 3                                    
-                                    text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/0.78,'A''','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A''','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                 
                                 case 4                                    
-                                    text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/0.78,'B''','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B''','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                    
                                 case 5                                    
-                                    text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'A2','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                  
                                 case 6                                    
-                                    text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'B2','FontSize',26,'FontWeight','bold')                                    
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                   
                             end
                         case 4     % labels for 3 Env 7 sessions
                             switch iPlotsX        % add column labels whose position is determined by current axes limits
