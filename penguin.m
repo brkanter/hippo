@@ -106,11 +106,50 @@ set(handles.text_video, 'String', handles.userDir);
 if handles.userDir == 0; close(h); return; end;
 
 %% load all data for designated session
-writeInputBNT(handles.inputFile,handles.userDir,handles.arena,handles.clusterFormat)
-data.loadSessions(handles.inputFile);
+try
+    
+    writeInputBNT(handles.inputFile,handles.userDir,handles.arena,handles.clusterFormat)
+    
+% if there aren't any clusters, just plot the animal's path    
+catch caughtErr
+    
+    if strcmpi(caughtErr.message,'Did not find any clusters.')
+        
+        % plot path
+        warning('Did not find clusters, loading raw position data just to check animal''s exploration.')
+        [x y] = Nlx2MatVT(fullfile(handles.userDir,'VT1.nvt'),[0 1 1 0 0],0,1);
+        axes(handles.axes1);
+        plot(x,y,'color',[0.5 0.5 0.5])
+        set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+        axis equal
+        
+        % clear penguin text fields
+        set(handles.list_tetrode,'String','');
+        set(handles.text_tetrode,'String','');
+        set(handles.list_cluster,'String','');
+        set(handles.text_cluster,'String','');
+        set(handles.text_meanRate,'String','');
+        set(handles.text_peakRate,'String','');
+        set(handles.text_totalSpikes,'String','');
+        set(handles.text_spikeWidth,'String','');
+        set(handles.text_spatContent,'String','');
+        set(handles.text_sparsity,'String','');
+        set(handles.text_selectivity,'String','');
+        set(handles.text_coherence,'String','');
+        set(handles.text_fieldNo,'String','');
+        set(handles.text_fieldMean,'String','');
+        set(handles.text_fieldMax,'String','');
+        
+        close(h);
+        return
+        
+    else
+        rethrow(caughtErr)
+    end
+    
+end
 
-%% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
-clear posAve;
+data.loadSessions(handles.inputFile);
 try
     posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
     handles.gotPos = 1;

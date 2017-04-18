@@ -19,15 +19,39 @@ end
 
 %% choose recording session and load the data
 folder = uigetdir();
-writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat)
+
+% if there aren't any clusters, just plot the animal's path    
+try
+    
+    writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat)
+    
+catch caughtErr
+    
+    if strcmpi(caughtErr.message,'Did not find any clusters.')
+        
+        % plot path
+        warning('Did not find clusters, loading raw position data just to check animal''s exploration.')
+        [x y] = Nlx2MatVT(fullfile(folder,'VT1.nvt'),[0 1 1 0 0],0,1);
+        figure('name',folder);
+        plot(x,y,'color',[0.5 0.5 0.5])
+        axis off
+        return
+        
+    else
+        rethrow(caughtErr)
+    end
+    
+end
+
 data.loadSessions(hippoGlobe.inputFile)
 
 %% plot animal's trajectory
-figure;
+figure('name',folder);
 hold on
-pathTrialBRK('color',[.5 .5 .5])
+pathTrialBRK('color',[0.5 0.5 0.5])
 axis off
 
 %% display cluster list
 clusterList = data.getCells;
 display(clusterList)
+

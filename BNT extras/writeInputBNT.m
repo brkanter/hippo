@@ -138,15 +138,7 @@ end
 
 %% create cut list for input file
 cutsForBNT = [];
-if isempty(cutList) && strcmpi(clusterFormat,'MClust')   % make fake .t file to use BNT without cutting anything
-
-    '';
-    cellTS = 1;
-    save(fullfile(cutFolder,'PP4_TT1_99.t'),'cellTS')
-    unitList = '1 99;';
-    cutsForBNT = [cutsForBNT,'PP4_TT%u_%u; '];
-
-elseif isempty(cutList)
+if isempty(cutList)
 
     error('Did not find any clusters.')
 

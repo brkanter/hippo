@@ -145,10 +145,10 @@ for iFolder = 1:length(folders)
         display(sprintf('Cluster %d of %d',iCluster,numClusters))
         
         %% initialize cluster data storage
-        if ~exist('clusterData','var')
-            clusterData = [];
+        if ~exist('clustData','var')
+            clustData = [];
         end
-        clusterData = minions.initClusterData(clusterData,folders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2), ...
+        clustData = minions.initClusterData(clustData,folders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2), ...
             iCluster,iFolder,expNum, ...
             include);
         
@@ -158,18 +158,18 @@ for iFolder = 1:length(folders)
             continue
         else   % we have spikes, continue as usual
             map = analyses.map([posT posX posY],spikes,'smooth',smooth,'binWidth',binWidth,'minTime',minTime,'limits',hippoGlobe.mapLimits);
-            clusterData(iCluster,iFolder,expNum).rateMap = map.z;
-            clusterData(iCluster,iFolder,expNum).countMap = map.count;
+            clustData(iCluster,iFolder,expNum).rateMap = map.z;
+            clustData(iCluster,iFolder,expNum).countMap = map.count;
             meanRate = analyses.meanRate(spikes,posAve);
-            clusterData(iCluster,iFolder,expNum).meanRate = meanRate;
+            clustData(iCluster,iFolder,expNum).meanRate = meanRate;
             if ~isfield(map,'peakRate')
                 peakRate = 0;
             else
                 peakRate = map.peakRate;
             end
-            clusterData(iCluster,iFolder,expNum).peakRate = peakRate;
+            clustData(iCluster,iFolder,expNum).peakRate = peakRate;
             totalSpikes = length(spikes);
-            clusterData(iCluster,iFolder,expNum).totalSpikes = totalSpikes;
+            clustData(iCluster,iFolder,expNum).totalSpikes = totalSpikes;
             %% spike width
             if include.spikeWidth
                 try
@@ -177,19 +177,19 @@ for iFolder = 1:length(folders)
                 catch
                     spikeWidth = nan;
                 end
-                clusterData(iCluster,iFolder,expNum).spikeWidth = spikeWidth;
+                clustData(iCluster,iFolder,expNum).spikeWidth = spikeWidth;
             end
             
             %% descriptive stats
             if include.sss
                 [info,spars,sel] = analyses.mapStatsPDF(map);
-                clusterData(iCluster,iFolder,expNum).spatInfo = info.content;
-                clusterData(iCluster,iFolder,expNum).sparsity = spars;
-                clusterData(iCluster,iFolder,expNum).selectivity = sel;
+                clustData(iCluster,iFolder,expNum).spatInfo = info.content;
+                clustData(iCluster,iFolder,expNum).sparsity = spars;
+                clustData(iCluster,iFolder,expNum).selectivity = sel;
             end
             if include.coherence
                 Coherence = analyses.coherence(map.z);
-                clusterData(iCluster,iFolder,expNum).coherence = Coherence;
+                clustData(iCluster,iFolder,expNum).coherence = Coherence;
             end
             
             %% field stats and border scores
@@ -219,12 +219,12 @@ for iFolder = 1:length(folders)
                     COMy = nan;
                     border = nan;
                 end
-                clusterData(iCluster,iFolder,expNum).fieldNum = fieldNum;
-                clusterData(iCluster,iFolder,expNum).fieldMean = fieldMean;
-                clusterData(iCluster,iFolder,expNum).fieldMax = fieldMax;
-                clusterData(iCluster,iFolder,expNum).COMx = COMx;
-                clusterData(iCluster,iFolder,expNum).COMy = COMy;
-                clusterData(iCluster,iFolder,expNum).border = border;
+                clustData(iCluster,iFolder,expNum).fieldNum = fieldNum;
+                clustData(iCluster,iFolder,expNum).fieldMean = fieldMean;
+                clustData(iCluster,iFolder,expNum).fieldMax = fieldMax;
+                clustData(iCluster,iFolder,expNum).COMx = COMx;
+                clustData(iCluster,iFolder,expNum).COMy = COMy;
+                clustData(iCluster,iFolder,expNum).border = border;
             end
             
             %% grid statistics
@@ -252,11 +252,11 @@ for iFolder = 1:length(folders)
                     gridOrientation2 = nan;
                     gridOrientation3 = nan;
                 end
-                clusterData(iCluster,iFolder,expNum).gridScore = gridScore;
-                clusterData(iCluster,iFolder,expNum).gridSpacing = gridSpacing;
-                clusterData(iCluster,iFolder,expNum).gridOrient1 = gridOrientation1;
-                clusterData(iCluster,iFolder,expNum).gridOrient2 = gridOrientation2;
-                clusterData(iCluster,iFolder,expNum).gridOrient3 = gridOrientation3;
+                clustData(iCluster,iFolder,expNum).gridScore = gridScore;
+                clustData(iCluster,iFolder,expNum).gridSpacing = gridSpacing;
+                clustData(iCluster,iFolder,expNum).gridOrient1 = gridOrientation1;
+                clustData(iCluster,iFolder,expNum).gridOrient2 = gridOrientation2;
+                clustData(iCluster,iFolder,expNum).gridOrient3 = gridOrientation3;
             end
             
             %% head direction
@@ -272,8 +272,8 @@ for iFolder = 1:length(folders)
                     vLength = nan;
                     meanAngle = nan;
                 end
-                clusterData(iCluster,iFolder,expNum).mvl = vLength;
-                clusterData(iCluster,iFolder,expNum).angle = meanAngle;
+                clustData(iCluster,iFolder,expNum).mvl = vLength;
+                clustData(iCluster,iFolder,expNum).angle = meanAngle;
             end
             
             %% speed
@@ -285,7 +285,7 @@ for iFolder = 1:length(folders)
                 kernel = (1 / helpers.sampleTimeFromData(posAve)) / 0.4;   % smoothing kernel = 0.4 sec
                 scores = analyses.speedScore(Speed,instRate,kernel);
                 speedScore = scores(2);
-                clusterData(iCluster,iFolder,expNum).speed = speedScore;
+                clustData(iCluster,iFolder,expNum).speed = speedScore;
             end
             
             %% theta
@@ -304,21 +304,21 @@ for iFolder = 1:length(folders)
                 catch
                     thetaIndLFP = nan;
                 end
-                clusterData(iCluster,iFolder,expNum).thetaSpikes = thetaIndSpikes;
-                clusterData(iCluster,iFolder,expNum).thetaLFP = thetaIndLFP;
+                clustData(iCluster,iFolder,expNum).thetaSpikes = thetaIndSpikes;
+                clustData(iCluster,iFolder,expNum).thetaLFP = thetaIndLFP;
             end
             if include.obj
                 [objRate objTime] = calc.objectAnalyis(map,objectLocations);
-                clusterData(iCluster,iFolder,expNum).rateRatioO1 = objRate(1);
-                clusterData(iCluster,iFolder,expNum).rateRatioO2 = objRate(2);
-                clusterData(iCluster,iFolder,expNum).ratePvalO1 = objRate(3);
-                clusterData(iCluster,iFolder,expNum).ratePvalO2 = objRate(4);
-                clusterData(iCluster,iFolder,expNum).ratePvalAll = objRate(5);
-                clusterData(iCluster,iFolder,expNum).timeRatioO1 = objTime(1);
-                clusterData(iCluster,iFolder,expNum).timeRatioO2 = objTime(2);
-                clusterData(iCluster,iFolder,expNum).timePvalO1 = objTime(3);
-                clusterData(iCluster,iFolder,expNum).timePvalO2 = objTime(4);
-                clusterData(iCluster,iFolder,expNum).timePvalAll = objTime(5);
+                clustData(iCluster,iFolder,expNum).rateRatioO1 = objRate(1);
+                clustData(iCluster,iFolder,expNum).rateRatioO2 = objRate(2);
+                clustData(iCluster,iFolder,expNum).ratePvalO1 = objRate(3);
+                clustData(iCluster,iFolder,expNum).ratePvalO2 = objRate(4);
+                clustData(iCluster,iFolder,expNum).ratePvalAll = objRate(5);
+                clustData(iCluster,iFolder,expNum).timeRatioO1 = objTime(1);
+                clustData(iCluster,iFolder,expNum).timeRatioO2 = objTime(2);
+                clustData(iCluster,iFolder,expNum).timePvalO1 = objTime(3);
+                clustData(iCluster,iFolder,expNum).timePvalO2 = objTime(4);
+                clustData(iCluster,iFolder,expNum).timePvalAll = objTime(5);
             end
             
         end
@@ -331,10 +331,10 @@ for iFolder = 1:length(folders)
                 
                 sesh1comp = ccComps(iCorrs,1) + seshPerExp * (expNum-1);
                 sesh2comp = ccComps(iCorrs,2) + seshPerExp * (expNum-1);
-                CC = analyses.spatialCrossCorrelation(clusterData(iCluster,sesh1comp,expNum).rateMap,clusterData(iCluster,sesh2comp,expNum).rateMap);
+                CC = analyses.spatialCrossCorrelation(clustData(iCluster,sesh1comp,expNum).rateMap,clustData(iCluster,sesh2comp,expNum).rateMap);
                 % store in repeating fashion for each session
                 for iSession = (iFolder-seshPerExp+1):iFolder
-                    eval(sprintf('clusterData(iCluster,iSession,expNum).cc%dvs%d = CC;',ccComps(iCorrs,1),ccComps(iCorrs,2)));
+                    eval(sprintf('clustData(iCluster,iSession,expNum).cc%dvs%d = CC;',ccComps(iCorrs,1),ccComps(iCorrs,2)));
                 end
                 
             end
@@ -344,7 +344,7 @@ for iFolder = 1:length(folders)
 end
 
 %% store everything in one cell array
-emperor = minions.createEmperorArray(clusterData,length(folders)/seshPerExp,include);
+emperor = minions.createEmperorArray(clustData,length(folders)/seshPerExp,include);
 
 %% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];
