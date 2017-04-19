@@ -36,7 +36,12 @@ clusterData(iCluster,iFolder,expNum).totalSpikes = 0;
 
 %% quality
 quality = minions.loadQualityInfo(folder,tetrode,cluster);
-[L_ratio isoDist] = calc.clusterInfo(folder,tetrode,cluster);
+try
+    [L_ratio isoDist] = calc.clusterInfo(folder,tetrode,cluster);
+catch
+    L_ratio = nan;
+    isoDist = nan;
+end
 clusterData(iCluster,iFolder,expNum).quality = quality;
 clusterData(iCluster,iFolder,expNum).L_ratio = L_ratio;
 clusterData(iCluster,iFolder,expNum).isoDist = isoDist;
