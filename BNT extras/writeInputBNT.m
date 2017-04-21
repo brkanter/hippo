@@ -126,6 +126,8 @@ if ~isempty(cutList)
     elseif strcmpi(clusterFormat,'Tint')
         rowCount = 1;
         for iTetrode = 1:length(cutList)
+            
+            % to find the tetrode number, look for a digit that is not preceded or followed by a digit
             ind = regexp(cutList{iTetrode},'(?<!\d)(\d)(?!\d)');
             t_num = str2double(cutList{iTetrode}(ind(end)));
             
@@ -177,7 +179,16 @@ else
     else
         cutAddon = [];
     end
-
+    
+    if flagPP
+        % get cut file names
+        cutNames = extractfield(cutList,'name');
+        % find digits that follow PP in each name
+        inds = cellfun(@regexp,cutNames,repmat({'(?<=PP)\d'},1,length(cutNames)),'uniformoutput',0);
+        % get unique list of them
+        PPnums = unique(cellfun(@(x,y) str2double(x(y)),cutNames,inds),'stable');
+    end
+    
     if strcmpi(clusterFormat,'Tint')   % Tint
 
         for iTetrode = 1:length(cutList)
@@ -185,35 +196,17 @@ else
         end
 
     elseif flagPP && strcmpi(clusterFormat,'MClust')   % norway MClust
-
-        if sum(find(tetrodes == 1))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP4_TT%u_%u; ')];
-        end
-        if sum(find(tetrodes == 2))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP6_TT%u_%u; ')];
-        end
-        if sum(find(tetrodes == 3))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP7_TT%u_%u; ')];
-        end
-        if sum(find(tetrodes == 4))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP3_TT%u_%u; ')];
+        
+        for iPP = 1:numel(PPnums)
+            cutsForBNT = [cutsForBNT,fullfile(cutAddon, ['PP' num2str(PPnums(iPP)) '_TT%u_%u; '])];
         end
 
     elseif flagPP && strcmpi(clusterFormat,'SS_t')   % norway SS
 
-        if sum(find(tetrodes == 1))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP4_TT%u_SS_%02u; ')];
+        for iPP = 1:numel(PPnums)
+            cutsForBNT = [cutsForBNT,fullfile(cutAddon, ['PP' num2str(PPnums(iPP)) '_TT%u_SS_%02u; '])];
         end
-        if sum(find(tetrodes == 2))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP6_TT%u_SS_%02u; ')];
-        end
-        if sum(find(tetrodes == 3))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP7_TT%u_SS_%02u; ')];
-        end
-        if sum(find(tetrodes == 4))
-            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'PP3_TT%u_SS_%02u; ')];
-        end
-
+        
     elseif ~flagPP && strcmpi(clusterFormat,'MClust')   % oregon MClust
 
         cutsForBNT = fullfile(cutAddon, 'TT; ');

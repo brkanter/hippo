@@ -17,6 +17,13 @@
 
 function spikeWidth = halfMaxWidth(userDir,tetrode,spikes)
 
+%% fix me
+global hippoGlobe
+if strcmpi(hippoGlobe.clusterFormat,'Tint')
+    spikeWidth = nan;
+    return
+end
+
 %% check inputs
 if (helpers.isstring(userDir) + helpers.isiscalar(tetrode) + helpers.isdvector(spikes)) < 3
     error('Incorrect input format (type ''help <a href="matlab:help halfMaxWidth">halfMaxWidth</a>'' for details).');

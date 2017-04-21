@@ -88,15 +88,10 @@ function butt_video_Callback(hObject, eventdata, handles) %#ok<*INUSL,*DEFNU>
 
 %% initiliaze
 global hippoGlobe
-handles.inputFile = hippoGlobe.inputFile;
-handles.clusterFormat = hippoGlobe.clusterFormat;
-handles.arena = hippoGlobe.arena;
-handles.mapLimits = hippoGlobe.mapLimits;
-handles.smoothing = hippoGlobe.smoothing;
-handles.binWidth = hippoGlobe.binWidth;
-handles.minBins = hippoGlobe.minBins;
-handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
-handles.binWidthHD = hippoGlobe.binWidthHD;
+fNames = fieldnames(hippoGlobe);
+for iField = 1:length(fNames)
+   eval(sprintf('handles.%s = hippoGlobe.%s;',fNames{iField},fNames{iField}));
+end
 
 %% choose directory of behavioral session
 handles.userDir = '';
@@ -105,10 +100,21 @@ h = msgbox('Loading...');
 set(handles.text_video, 'String', handles.userDir);
 if handles.userDir == 0; close(h); return; end;
 
+%% choose session within a folder for Tint cluster format
+if strcmpi(handles.clusterFormat,'Tint')
+    prompt={'If you have more than one session in that folder, enter the session name'};
+    name='';
+    numlines=1;
+    defaultanswer={'10051302'};
+    sessionName = inputdlg(prompt,name,numlines,defaultanswer,'on');
+else
+    sessionName = '';
+end
+
 %% load all data for designated session
 try
     
-    writeInputBNT(handles.inputFile,handles.userDir,handles.arena,handles.clusterFormat)
+    writeInputBNT(handles.inputFile,handles.userDir,handles.arena,handles.clusterFormat,sessionName)
     
 % if there aren't any clusters, just plot the animal's path    
 catch caughtErr
@@ -265,15 +271,10 @@ function butt_load_mclust_Callback(hObject, eventdata, handles)
 
 %% initiliaze
 global hippoGlobe
-handles.inputFile = hippoGlobe.inputFile;
-handles.clusterFormat = hippoGlobe.clusterFormat;
-handles.arena = hippoGlobe.arena;
-handles.mapLimits = hippoGlobe.mapLimits;
-handles.smoothing = hippoGlobe.smoothing;
-handles.binWidth = hippoGlobe.binWidth;
-handles.minBins = hippoGlobe.minBins;
-handles.posSpeedFilter = hippoGlobe.posSpeedFilter;
-handles.binWidthHD = hippoGlobe.binWidthHD;
+fNames = fieldnames(hippoGlobe);
+for iField = 1:length(fNames)
+   eval(sprintf('handles.%s = hippoGlobe.%s;',fNames{iField},fNames{iField}));
+end
 
 isMClustActive = true;
 try
@@ -306,7 +307,7 @@ clear posAve;
 try
     clustData.TTdn = clusterDir;
     clustData.WriteTfiles;
-    writeInputBNT(handles.inputFile, TTdn, handles.arena, handles.clusterFormat, clusterDir);
+    writeInputBNT(handles.inputFile, TTdn, handles.arena, handles.clusterFormat, [], clusterDir);
     data.loadSessions(handles.inputFile);
 
     posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
@@ -1216,6 +1217,12 @@ function butt_waves_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_waves (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%% fix me
+if strcmpi(handles.clusterFormat,'Tint')
+    display('Not currently available for this cluster format.')
+    return
+end
 
 %% settings
 prompt={'Do you want to align all the peaks?'};
