@@ -3,11 +3,14 @@
 % in specified directories.
 %
 %   USAGE
-%       writeInputBNT(inputFile, folder, arena, clusterFormat, <cutFolder>)
+%       writeInputBNT(inputFile, folder, arena, clusterFormat, <sessionName>, <cutFolder>)
 %       inputFile           string specifying where to write the input file
-%       folder              directory of recording session
+%       folder              directory with clusters, position data, etc.
 %       arena               string with shape and size of recording arena (e.g. 'cylinder 60 60' or 'box 100 100')
 %       clusterFormat       string describing spike timestamp files (e.g. 'MClust' or 'Tint')
+%       sessionName         optional. String with session name if multiple sessions are stored in one folder
+%                           (N.B.: if you have .pos files, session name is the whole name of the .pos file without the .pos itself,
+%                           e.g. session name for Mouse58313_20170322_02_5Hz20mW.pos is 'Mouse58313_20170322_02_5Hz20mW')
 %       cutFolder           optional. Directory where cut files should be searched for. If omitted,
 %                           then `folder` is used.
 %
@@ -16,13 +19,24 @@
 %
 % Written by BRK 2015
 
-function writeInputBNT(inputFile, folder, arena, clusterFormat, cutFolder)
+function writeInputBNT(inputFile, folder, arena, clusterFormat, sessionName, cutFolder)
 
+%% check inputs
 if iscell(folder)
     folder = folder{1};
 end
-
-if nargin < 5 || isempty(cutFolder)
+if exist('sessionName','var')
+    if iscell(sessionName)
+        if isempty(sessionName)
+            sessionName = '';
+        else
+            sessionName = sessionName{1};
+        end
+    end
+else
+    sessionName = '';
+end
+if nargin < 6 || isempty(cutFolder)
     cutFolder = folder;
 end
 
@@ -32,16 +46,18 @@ if strcmpi(clusterFormat,'MClust') || strcmpi(clusterFormat,'SS_t')
     cutList = dir(fullfile(cutFolder, '*.t*'));
 
 elseif strcmpi(clusterFormat,'Tint')
-
-    prompt={'Enter the date and trial number'};
-    name='';
-    numlines=1;
-    defaultanswer={'10051302'};
-    Answer = inputdlg(prompt,name,numlines,defaultanswer,'on');
-    if isempty(Answer); return; end;
-    date_trial = Answer{1};
-    cutList = dir([fullfile(cutFolder,date_trial),'*.cut']);
-
+    
+    % find all .cut files in folder
+    cutFiles = extractfield(dir(fullfile(cutFolder,'*.cut')),'name'); 
+    
+    % find .cut files for a particular session
+    if numel(sessionName)
+        inds = ~cellfun(@isempty,cellfun(@strfind,cutFiles,repmat({sessionName},1,length(cutFiles)),'uniformoutput',0));
+        cutList = cutFiles(inds);
+    else 
+        cutList = cutFiles;
+    end
+    
 else
 
     error('Cluster format not recognized.')
@@ -106,14 +122,23 @@ if ~isempty(cutList)
             cellMatrix(iCluster,1) = t_num;
             cellMatrix(iCluster,2) = c_num;
         end
-
+        
     elseif strcmpi(clusterFormat,'Tint')
-
         rowCount = 1;
         for iTetrode = 1:length(cutList)
-            splits = regexp(cutList(iTetrode).name,'_','split');
-            t_num = cellfun(@str2double,strtok(splits(end),'.'));
-            clusters = unique(io.axona.getCut(fullfile(cutFolder,cutList(iTetrode).name)));
+            ind = regexp(cutList{iTetrode},'(?<!\d)(\d)(?!\d)');
+            t_num = str2double(cutList{iTetrode}(ind(end)));
+            
+            % session name could be ambiguous, so make sure it is followed by tetrode number
+            if isempty(strfind(cutList{iTetrode},[sessionName,'_',num2str(t_num) '_'])) ...
+                    && isempty(strfind(cutList{iTetrode},[sessionName,'_',num2str(t_num) '.']))
+                
+                % if not, remove that cut and continue
+                cutList{iTetrode} = '';
+                continue
+            end
+            
+            clusters = unique(io.axona.getCut(fullfile(cutFolder,cutList{iTetrode})));
             clusters = clusters(clusters ~=0);
             for iCluster = 1:length(clusters)
                 c_num = clusters(iCluster);
@@ -122,8 +147,11 @@ if ~isempty(cutList)
                 rowCount = rowCount + 1;
             end
         end
-
+        
+        % update list in case some were removed above
+        cutList = cutList(~cellfun(@isempty,cutList));
     end
+    
     cellMatrix(all(arrayfun(@isnan,cellMatrix),2),:) = [];
 
     %% create unit list for input file
@@ -153,7 +181,7 @@ else
     if strcmpi(clusterFormat,'Tint')   % Tint
 
         for iTetrode = 1:length(cutList)
-            cutsForBNT = [cutsForBNT, fullfile(cutFolder,cutList(iTetrode).name), '; '];
+            cutsForBNT = [cutsForBNT, fullfile(cutFolder,cutList{iTetrode}), '; '];
         end
 
     elseif flagPP && strcmpi(clusterFormat,'MClust')   % norway MClust
@@ -200,8 +228,12 @@ end
 %% write BNT input file
 fileID = data.safefopen(inputFile,'w');
 if strcmpi(clusterFormat,'Tint')
-    sessionName = fullfile(folder,splits{1});
-    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',sessionName,cutsForBNT,unitList,arena);
+    if ~numel(sessionName)
+        sessionName = extractfield(dir(fullfile(folder,'*.pos')),'name');
+        sessionName = sessionName{1}(1:end-4);
+    end
+    sessionPath = fullfile(folder,sessionName);
+    fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',sessionPath,cutsForBNT,unitList,arena);
 else
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',folder,cutsForBNT,unitList,arena);
 end

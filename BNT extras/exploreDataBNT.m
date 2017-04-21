@@ -19,12 +19,17 @@ end
 
 %% choose recording session and load the data
 folder = uigetdir();
+prompt={'If you have more than one session in that folder, enter the session name'};
+name='';
+numlines=1;
+defaultanswer={'10051302'};
+sessionName = inputdlg(prompt,name,numlines,defaultanswer,'on');
 
 % if there aren't any clusters, just plot the animal's path    
 try
-    
-    writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat)
-    
+     
+    writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat,sessionName)
+
 catch caughtErr
     
     if strcmpi(caughtErr.message,'Did not find any clusters.')

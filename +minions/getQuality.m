@@ -22,15 +22,21 @@ axis off
 for iFile = 1:length(ind)
     quality = 0;
     name = matFiles{ind(iFile),1};
-    load(name)
-    h = text(1,iFile,name(1:strfind(name,'-')-1),'interpreter','none');
+    load(fullfile(folder,name))
+    hCluster = text(1,iFile,name(1:strfind(name,'-')-1),'interpreter','none');
     if strcmpi(name(strfind(name,'TT')+2),'1')
-        set(h,'color','m');
+        set(hCluster,'color','m');
     elseif strcmpi(name(strfind(name,'TT')+2),'2')
-        set(h,'color','b');
+        set(hCluster,'color','b');
     elseif strcmpi(name(strfind(name,'TT')+2),'3')
-        set(h,'color','r');
+        set(hCluster,'color','r');
     end
-    text(10,iFile,num2str(quality));
+    hQual = text(10,iFile,num2str(quality));
+    if quality == 3
+        set(hQual,'color','r');
+    elseif quality == 4
+        set(hQual,'color',[0.7 0.7 0.7]);
+    end
+    
 end
 axis([0 15 0 iFile+1])
