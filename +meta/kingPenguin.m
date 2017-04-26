@@ -147,32 +147,12 @@ while flag
 end
 
 %% convert some numbers into strings to make things easier later 
-for iFolder = 1:size(dataOutput,1)
-    dataOutput{iFolder,strcmpi('cell num',labels)} = num2str(dataOutput{iFolder,strcmpi('cell num',labels)});
-    dataOutput{iFolder,strcmpi('quality',labels)} = num2str(dataOutput{iFolder,strcmpi('quality',labels)});
-end
-if sum(strcmpi('exp num',labels))
-    for iFolder = 1:size(dataOutput,1)
-        dataOutput{iFolder,strcmpi('exp num',labels)} = num2str(dataOutput{iFolder,strcmpi('exp num',labels)});
-    end
-end
-if sum(strcmpi('dose',labels))
-    for iFolder = 1:size(dataOutput,1)
-        dataOutput{iFolder,strcmpi('dose',labels)} = num2str(dataOutput{iFolder,strcmpi('dose',labels)});
-    end
-end
-if sum(strcmpi('cno num',labels))
-    for iFolder = 1:size(dataOutput,1)
-        if isnan(dataOutput{iFolder,strcmpi('cno num',labels)})
-            dataOutput{iFolder,strcmpi('cno num',labels)} = 0;
-        end
-    end
-end
+dataOutput(:,strcmpi('quality',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('quality',labels)),'uniformoutput',0);
+dataOutput(:,strcmpi('cell num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('cell num',labels)),'uniformoutput',0);
+dataOutput(:,strcmpi('exp num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('exp num',labels)),'uniformoutput',0);
+dataOutput(cell2mat(cellfun(@isnan,dataOutput(:,strcmpi('cno num',labels)),'uniformoutput',0)),strcmpi('cno num',labels)) = {0};
 
 %% save output
 save(matFile,'dataOutput','labels');
 
 toc
-
-% load handel
-% sound(y(1:7000),Fs)
