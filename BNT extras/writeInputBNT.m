@@ -184,9 +184,14 @@ else
         % get cut file names
         cutNames = extractfield(cutList,'name');
         % find digits that follow PP in each name
-        inds = cellfun(@regexp,cutNames,repmat({'(?<=PP)\d'},1,length(cutNames)),'uniformoutput',0);
+        PPinds = cellfun(@regexp,cutNames,repmat({'(?<=PP)\d'},1,length(cutNames)),'uniformoutput',0);
         % get unique list of them
-        PPnums = unique(cellfun(@(x,y) str2double(x(y)),cutNames,inds),'stable');
+        PPnums = unique(cellfun(@(x,y) str2double(x(y)),cutNames,PPinds),'stable');
+        % repeat for tetrode nums to have PP nums in the correct order
+        TTinds = cellfun(@regexp,cutNames,repmat({'(?<=TT)\d'},1,length(cutNames)),'uniformoutput',0);
+        TTnums = unique(cellfun(@(x,y) str2double(x(y)),cutNames,TTinds),'stable');
+        [~,sortInds] = sort(TTnums);
+        PPnums = PPnums(sortInds);
     end
     
     if strcmpi(clusterFormat,'Tint')   % Tint

@@ -19,17 +19,21 @@ end
 
 %% choose recording session and load the data
 folder = uigetdir();
-prompt={'If you have more than one session in that folder, enter the session name'};
-name='';
-numlines=1;
-defaultanswer={'10051302'};
-sessionName = inputdlg(prompt,name,numlines,defaultanswer,'on');
 
-% if there aren't any clusters, just plot the animal's path    
+% check for multiple sessions in single folder for Tint/Klusta data
+if strcmpi(hippoGlobe.clusterFormat,'Tint')
+    prompt={'If you have more than one session in that folder, enter the session name'};
+    name='';
+    numlines=1;
+    defaultanswer={'10051302'};
+    sessionName = inputdlg(prompt,name,numlines,defaultanswer,'on');
+end
+
+% if there aren't any clusters, just plot the animal's path
 try
-     
+    
     writeInputBNT(hippoGlobe.inputFile,folder,hippoGlobe.arena,hippoGlobe.clusterFormat,sessionName)
-
+    
 catch caughtErr
     
     if strcmpi(caughtErr.message,'Did not find any clusters.')
@@ -58,5 +62,5 @@ axis off
 
 %% display cluster list
 clusterList = data.getCells;
-display(clusterList)
+display(sortrows(clusterList))
 
