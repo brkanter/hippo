@@ -27,6 +27,8 @@ if strcmpi(hippoGlobe.clusterFormat,'Tint')
     numlines=1;
     defaultanswer={'10051302'};
     sessionName = inputdlg(prompt,name,numlines,defaultanswer,'on');
+else
+    sessionName = {};
 end
 
 % if there aren't any clusters, just plot the animal's path

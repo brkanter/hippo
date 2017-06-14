@@ -29,7 +29,7 @@ function array = rows(array,labels,type,varargin)
 
 %% check inputs
 if (iscell(array) + iscell(labels) + helpers.isstring(type,'keep','remove')) < 3
-    error('Incorrect input format (type ''help <a href="matlab:help selectRows">selectRows</a>'' for details).');
+    error('Incorrect input format (type ''help <a href="matlab:help extract.rows">extract.rows</a>'' for details).');
 end
 
 %% double comparisons

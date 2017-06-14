@@ -2,12 +2,14 @@
 % Extract spike times from previously saved file created by BNT to avoid recalculating.
 %
 %   USAGE
-%       minions.findSpikeFile(raw,labels,clusterNum,session)
+%       spikes = minions.findSpikeFile(raw,labels,clusterNum,session)
 %       raw            cell array of data
 %       labels         cell array of strings containing column headers
 %       clusterNum     string specifying cluster number
 %       session        string specifying session name
 %
+%   OUTPUTS
+%       spikes         vector of spike times
 %   SEE ALSO
 %       data.getSpikeTimes
 %

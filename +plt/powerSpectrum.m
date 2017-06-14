@@ -93,8 +93,8 @@ for iCSC = CSCnums
         try
             [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
         catch
-            close(h);
-            error('CSC loading failed. Check that selected CSC files actually exist')
+            warning('CSC loading failed. Check that selected CSC files actually exist')
+            continue
         end
         squeezedSamples = reshape(Samples,512*size(Samples,2),1);
         for iRow = 1:length(Header)
@@ -107,7 +107,11 @@ for iCSC = CSCnums
         squeezedSamples = squeezedSamples * scale;
         srate0 = SampleFrequency(1);
         rsrate = 500;
-        resampled = resample(squeezedSamples,rsrate,srate0);
+        try
+            resampled = resample(squeezedSamples,rsrate,srate0);
+        catch
+            continue
+        end
         ds = detrend(resampled);
         
         % FFT

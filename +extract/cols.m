@@ -22,7 +22,7 @@ function colsOut = cols(array,labels,colsToGet,varargin)
 
 %% check inputs
 if (iscell(array) + iscell(labels) + (iscell(colsToGet) || helpers.isstring(colsToGet))) < 3
-    error('Incorrect input format (type ''help <a href="matlab:help selectCols">selectCols</a>'' for details).');
+    error('Incorrect input format (type ''help <a href="matlab:help extract.cols">extract.cols</a>'' for details).');
 end
 
 %% inspect columns

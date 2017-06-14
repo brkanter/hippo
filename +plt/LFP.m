@@ -28,7 +28,7 @@ figure('position',[9 583 1900 494],'name',path)
 
 % allow quick switching between x limits
 butt_xlim = uicontrol(gcf,'style','togglebutton', ...
-    'string','<html>Change x range<br>to 2 sec', ...
+    'string','<html>Change x range<br>to 5 sec', ...
     'units','normalized','position',[0.925 0.01 0.07 0.2], ...
     'enable','inactive', ...
     'buttondownfcn',@updateXlim);
@@ -101,9 +101,9 @@ function updateXlim(hObject,eventData)
 
 if strcmpi(eventData.Source.String,'<html>Change x range<br>to full session')
     xlim auto
-    eventData.Source.String = '<html>Change x range<br>to 2 sec';
+    eventData.Source.String = '<html>Change x range<br>to 5 sec';
 else
-    xlim([0 2])
+    xlim([0 5])
     eventData.Source.String = '<html>Change x range<br>to full session';
 end
 
