@@ -33,7 +33,7 @@ else
 end
 filename = fullfile(folder,CSCfiles(CSCind).name);
                
-[SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
+[SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);
 for iRow = 1:length(Header)
     if ~isempty(strfind(Header{iRow},'ADBitVolts'))

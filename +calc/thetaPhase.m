@@ -20,7 +20,7 @@ if helpers.isstring(filename) < 1
 end
 
 %% load LFP
-[TimeStamps,SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
+[TimeStamps,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);
 
 % isolate 2nd half of CNO session
@@ -35,7 +35,7 @@ for iRow = 1:length(Header)
     end
 end
 [~,str] =strtok(Header{idx});
-scale = 1000000*str2num(str);
+scale = 1000000*str2double(str);
 squeezedSamples = squeezedSamples * scale;
 srate0 = SampleFrequency(1);
 

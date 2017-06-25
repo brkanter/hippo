@@ -48,8 +48,8 @@ for iTrace = 1:numTraces
         filename = fullfile(path,name);
     end
     
-    display(sprintf('Loading trace %d of %d...',iTrace,numTraces))
-    [TimeStamps,SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
+    fprintf('Loading trace %d of %d...',iTrace,numTraces)
+    [~,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
     squeezedSamples = reshape(Samples,512*size(Samples,2),1);
     
     % scale to microvolts
@@ -60,7 +60,7 @@ for iTrace = 1:numTraces
             end
         end
         [~,str] = strtok(Header{idx});
-        scale = 1000000*str2num(str);
+        scale = 1000000*str2double(str);
     end
     squeezedSamples = squeezedSamples * scale;
     
@@ -92,7 +92,7 @@ end
 [~,icons] = legend(name,'location','eastoutside','box','off');
 set(findobj(icons,'type','line'),'linew',3)
 
-display('Done.')
+disp('Done.')
 keyboardnavigate   % this lets you scroll with the arrow keys (when not in zoom/pan/edit modes)
 
 

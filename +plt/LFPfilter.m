@@ -27,23 +27,23 @@ end
 [name,path] = uigetfile('*.ncs','Select CSC file');
 filename = fullfile(path,name);
 
-display('Loading CSC file...')
-[TimeStamps,SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
+disp('Loading CSC file...')
+[~,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);   
 
 % scale to microvolts
-display('Scaling voltages...')
+disp('Scaling voltages...')
 for iRow = 1:length(Header)
     if ~isempty(strfind(Header{iRow},'ADBitVolts'))
         idx = iRow;
     end
 end
 [~,str] = strtok(Header{idx});
-scale = 1000000*str2num(str);
+scale = 1000000*str2double(str);
 squeezedSamples = squeezedSamples * scale;
 
 % downsample to save time
-display('Resampling and detrending...')
+disp('Resampling and detrending...')
 srate0 = SampleFrequency(1);
 rsrate = 1000;   % 1 kHz
 resampled = resample(squeezedSamples,rsrate,srate0);
@@ -69,7 +69,7 @@ butt_xlim = uicontrol(gcf,'style','togglebutton', ...
 
 %% theta filter (4-12 Hz)
 if sum(strcmpi('theta',varargin))
-    display('Theta filter...')
+    disp('Theta filter...')
     [b a] = butter(2,[4/(rsrate/2) 12/(rsrate/2)],'bandpass');
     filt_theta = filter(b,a,dt_resampled);
     offset = max(abs(dt_resampled));
@@ -81,7 +81,7 @@ end
 
 %% ripple filter (100-400 Hz)
 if sum(strcmpi('ripple',varargin))
-    display('Ripple filter...')
+    disp('Ripple filter...')
     [b a] = butter(2,[100/(rsrate/2) 400/(rsrate/2)],'bandpass');
     filt_ripple = filter(b,a,dt_resampled);
     if ~exist('offset','var')
@@ -125,7 +125,7 @@ if exist('icons','var')
     set(findobj(icons,'type','line'),'linew',3)
 end
 
-display('Done.')
+disp('Done.')
 keyboardnavigate   % this lets you scroll with the arrow keys (when not in zoom/pan/edit modes)
 
 try
@@ -216,7 +216,7 @@ if numRipples
         'units','normalized','position',[0.925 0.37 0.07 0.05], ...
         'value',1, ...
         'min',1,'max',numRipples,'sliderstep',[1/numRipples 10/numRipples], ...
-        'callback',{@updateRipple,MEAN,STD});
+        'callback',@updateRipple);
     
     % zoom in and plot all ripples
     xlim([ripp_ints(1,1) - 1, ripp_ints(1,1) + 1])
@@ -242,7 +242,7 @@ handles.text_ripp = text_ripp;
 guidata(hObject,handles)
 
 %% show different ripple
-function updateRipple(hObject,eventData,MEAN,STD)
+function updateRipple(hObject,eventData)
 
 handles = guidata(hObject);
 rippToShow = ceil(get(handles.slide_ripp,'value'));
@@ -255,7 +255,7 @@ guidata(hObject,handles)
 function updateThresh(hObject,eventData,filt_ripple,rsrate)
 
 thresh = get(hObject,'string');
-identifyRipples(hObject,eventData,filt_ripple,rsrate,str2num(thresh))
+identifyRipples(hObject,eventData,filt_ripple,rsrate,str2double(thresh))
 
 
 

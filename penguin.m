@@ -947,7 +947,7 @@ minTime = str2double(Answers{3});
 gridThresh = str2double(Answers{4});
 if gridThresh < 0 || gridThresh > 1
     gridThresh = 0.2;
-    display('Grid threshold value out of range, using default 0.2.')
+    disp('Grid threshold value out of range, using default 0.2.')
 end
 
 % %% prompt for settings
@@ -1031,7 +1031,7 @@ minTime = str2double(Answers{3});
 gridThresh = str2double(Answers{4});
 if gridThresh < 0 || gridThresh > 1
     gridThresh = 0.2;
-    display('Grid threshold value out of range, using default 0.2.')
+    disp('Grid threshold value out of range, using default 0.2.')
 end
 
 %% calculate and plot
@@ -1220,7 +1220,7 @@ function butt_waves_Callback(hObject, eventdata, handles)
 
 %% fix me
 if strcmpi(handles.clusterFormat,'Tint')
-    display('Not currently available for this cluster format.')
+    disp('Not currently available for this cluster format.')
     return
 end
 
@@ -1493,7 +1493,7 @@ minTime = str2double(Answers{3});
 gridThresh = str2double(Answers{4});
 if gridThresh < 0 || gridThresh > 1
     gridThresh = 0.2;
-    display('Grid threshold value out of range, using default 0.2.')
+    disp('Grid threshold value out of range, using default 0.2.')
 end
 
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};

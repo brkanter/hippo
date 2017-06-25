@@ -38,11 +38,11 @@ for iTrode = 1:length(nttFiles)
     end
 end
 spikeFile = [userDir,'\',nttFiles(ind).name];
-[trodeTS] = Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
+[trodeTS] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
 trodeTS_sec = (trodeTS/1000000)';
 clusterTS = spikes;
 clusterInds = knnsearch(trodeTS_sec,clusterTS);
-[DataPoints] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,3,clusterInds);
+[DataPoints] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,3,clusterInds);
 DataPoints = DataPoints/100;        % convert to microvolts
 
 %% calculate mean waves

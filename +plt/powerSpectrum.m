@@ -91,7 +91,7 @@ for iCSC = CSCnums
         fileEnding = sprintf('CSC%d.ncs',iCSC);
         filename = fullfile(splits{1:end-1},nameStore{iSession},fileEnding);
         try
-            [SampleFrequency,Samples,Header] = Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
+            [SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
         catch
             warning('CSC loading failed. Check that selected CSC files actually exist')
             continue
@@ -103,7 +103,7 @@ for iCSC = CSCnums
             end
         end
         [~,str] =strtok(Header{idx});
-        scale = 1000000*str2num(str);
+        scale = 1000000*str2double(str);
         squeezedSamples = squeezedSamples * scale;
         srate0 = SampleFrequency(1);
         rsrate = 500;
@@ -127,7 +127,6 @@ for iCSC = CSCnums
     %% heat maps for each recording session for each LFP channel
     figure(h1)
     subplot(plotSize,plotSize,find(CSCnums == iCSC))
-    colormap jet
     imagesc(hz(hzBounds(1):hzBounds(2)),1:numSesh,power(:,hzBounds(1):hzBounds(2)))
     xlabel('Frequency'), ylabel('Session')
     title(fileEnding(1:end-4))
@@ -136,6 +135,7 @@ for iCSC = CSCnums
     % N.B. most recent session plotted on top
     figure(h2);
     subplot(plotSize,plotSize,find(CSCnums == iCSC))
+%     colormapjet
     cmap = colormap('jet');
     cmap = cmap(round(linspace(1,length(cmap),numSesh)),:);
     set(gca,'colororder',cmap,'NextPlot','replacechildren')

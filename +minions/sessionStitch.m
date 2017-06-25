@@ -35,8 +35,8 @@ for iFile = 1:numCSCs
     filenames3{iFile} = fullfile(folder3, fileEndings1(iFile).name);
 end
 for iFile = 1:numCSCs
-    [Timestamp{1,iFile}, ChanNum{1,iFile}, SampleFrequency{1,iFile}, NumValSamples{1,iFile}, Samples{1,iFile}, Header{1,iFile}] = Nlx2MatCSC(filenames1{iFile}, [1 1 1 1 1], 1, 1);
-    [Timestamp{2,iFile}, ChanNum{2,iFile}, SampleFrequency{2,iFile}, NumValSamples{2,iFile}, Samples{2,iFile}, Header{2,iFile}] = Nlx2MatCSC(filenames2{iFile}, [1 1 1 1 1], 1, 1); %#ok<*SAGROW>
+    [Timestamp{1,iFile}, ChanNum{1,iFile}, SampleFrequency{1,iFile}, NumValSamples{1,iFile}, Samples{1,iFile}, Header{1,iFile}] = io.neuralynx.Nlx2MatCSC(filenames1{iFile}, [1 1 1 1 1], 1, 1);
+    [Timestamp{2,iFile}, ChanNum{2,iFile}, SampleFrequency{2,iFile}, NumValSamples{2,iFile}, Samples{2,iFile}, Header{2,iFile}] = io.neuralynx.Nlx2MatCSC(filenames2{iFile}, [1 1 1 1 1], 1, 1); %#ok<*SAGROW>
     % shift back to 0, shift to end of first file, shift by one sample, append to first file
     Timestamp{3,iFile} = horzcat(Timestamp{1,iFile},Timestamp{2,iFile} - Timestamp{2,iFile}(1) + Timestamp{1,iFile}(end)  + (Timestamp{1,iFile}(end) - Timestamp{1,iFile}(end-1)));
     ChanNum{3,iFile} = horzcat(ChanNum{1,iFile},ChanNum{2,iFile});
@@ -44,7 +44,7 @@ for iFile = 1:numCSCs
     NumValSamples{3,iFile} = horzcat(NumValSamples{1,iFile},NumValSamples{2,iFile});
     Samples{3,iFile} = horzcat(Samples{1,iFile},Samples{2,iFile});
     Header{3,iFile} = horzcat(Header{1,iFile},Header{2,iFile});
-    Mat2NlxCSC(filenames3{iFile}, 0, 1, 1, [1 1 1 1 1 1], Timestamp{3,iFile}, ChanNum{3,iFile}, SampleFrequency{3,iFile}, NumValSamples{3,iFile}, Samples{3,iFile}, Header{3,iFile});    
+    io.neuralynx.Mat2NlxCSC(filenames3{iFile}, 0, 1, 1, [1 1 1 1 1 1], Timestamp{3,iFile}, ChanNum{3,iFile}, SampleFrequency{3,iFile}, NumValSamples{3,iFile}, Samples{3,iFile}, Header{3,iFile});    
 end
 
 %% NTT files (spikes)
@@ -60,15 +60,15 @@ for iFile = 1:4
     filenames3{iFile} = fullfile(folder3, fileEndings1(iFile).name);
 end
 for iFile = 1:4
-    [Timestamps{1,iFile}, ScNumbers{1,iFile}, CellNumbers{1,iFile}, Params{1,iFile}, DataPoints{1,iFile}, Header{1,iFile}] = Nlx2MatSpike(filenames1{iFile}, [1 1 1 1 1], 1, 1);
-    [Timestamps{2,iFile}, ScNumbers{2,iFile}, CellNumbers{2,iFile}, Params{2,iFile}, DataPoints{2,iFile}, Header{2,iFile}] = Nlx2MatSpike(filenames2{iFile}, [1 1 1 1 1], 1, 1); %#ok<*SAGROW>
+    [Timestamps{1,iFile}, ScNumbers{1,iFile}, CellNumbers{1,iFile}, Params{1,iFile}, DataPoints{1,iFile}, Header{1,iFile}] = io.neuralynx.Nlx2MatSpike(filenames1{iFile}, [1 1 1 1 1], 1, 1);
+    [Timestamps{2,iFile}, ScNumbers{2,iFile}, CellNumbers{2,iFile}, Params{2,iFile}, DataPoints{2,iFile}, Header{2,iFile}] = io.neuralynx.Nlx2MatSpike(filenames2{iFile}, [1 1 1 1 1], 1, 1); %#ok<*SAGROW>
     Timestamps{3,iFile} = horzcat(Timestamps{1,iFile},Timestamps{2,iFile} - Timestamps{2,iFile}(1) + Timestamps{1,iFile}(end)  + (Timestamps{1,iFile}(end) - Timestamps{1,iFile}(end-1)));
     ScNumbers{3,iFile} = horzcat(ScNumbers{1,iFile},ScNumbers{2,iFile});
     CellNumbers{3,iFile} = horzcat(CellNumbers{1,iFile},CellNumbers{2,iFile});
     Params{3,iFile} = horzcat(Params{1,iFile},Params{2,iFile});
     DataPoints{3,iFile} = cat(3,DataPoints{1,iFile},DataPoints{2,iFile});
     Header{3,iFile} = horzcat(Header{1,iFile},Header{2,iFile});
-    Mat2NlxSpike(filenames3{iFile}, 0, 1, 1, [1 1 1 1 1 1], Timestamps{3,iFile}, ScNumbers{3,iFile}, CellNumbers{3,iFile}, Params{3,iFile}, DataPoints{3,iFile}, Header{3,iFile})
+    io.neuralynx.Mat2NlxSpike(filenames3{iFile}, 0, 1, 1, [1 1 1 1 1 1], Timestamps{3,iFile}, ScNumbers{3,iFile}, CellNumbers{3,iFile}, Params{3,iFile}, DataPoints{3,iFile}, Header{3,iFile})
 end
 
 %% NVT files (video)
@@ -77,8 +77,8 @@ filenames1 = fullfile(folder1, fileEndings1.name);
 fileEndings2 = dir(fullfile(folder2,'*.nvt'));
 filenames2 = fullfile(folder2, fileEndings2.name);
 filenames3 = fullfile(folder3, fileEndings1.name);
-[TimeStamps{1,1}, ExtractedX{1,1}, ExtractedY{1,1}, ExtractedAngle{1,1}, Targets{1,1}, Points{1,1}, Header{1,1}] = Nlx2MatVT( filenames1, [1 1 1 1 1 1], 1, 1);
-[TimeStamps{2,1}, ExtractedX{2,1}, ExtractedY{2,1}, ExtractedAngle{2,1}, Targets{2,1}, Points{2,1}, Header{2,1}] = Nlx2MatVT( filenames2, [1 1 1 1 1 1], 1, 1);
+[TimeStamps{1,1}, ExtractedX{1,1}, ExtractedY{1,1}, ExtractedAngle{1,1}, Targets{1,1}, Points{1,1}, Header{1,1}] = io.neuralynx.Nlx2MatVT( filenames1, [1 1 1 1 1 1], 1, 1);
+[TimeStamps{2,1}, ExtractedX{2,1}, ExtractedY{2,1}, ExtractedAngle{2,1}, Targets{2,1}, Points{2,1}, Header{2,1}] = io.neuralynx.Nlx2MatVT( filenames2, [1 1 1 1 1 1], 1, 1);
 TimeStamps{3,1} = horzcat(TimeStamps{1,1},TimeStamps{2,1} - TimeStamps{2,1}(1) + TimeStamps{1,1}(end)  + (TimeStamps{1,1}(end) - TimeStamps{1,1}(end-1)));
 ExtractedX{3,1} = horzcat(ExtractedX{1,1},ExtractedX{2,1});
 ExtractedY{3,1} = horzcat(ExtractedY{1,1},ExtractedY{2,1});
@@ -86,5 +86,5 @@ ExtractedAngle{3,1} = horzcat(ExtractedAngle{1,1},ExtractedAngle{2,1});
 Targets{3,1} = horzcat(Targets{1,1},Targets{2,1});
 Points{3,1} = horzcat(Points{1,1},Points{2,1});
 Header{3,1} = horzcat(Header{1,1},Header{2,1});
-Mat2NlxVT(filenames3, 0, 1, 1, [1 1 1 1 1 1 1], TimeStamps{3,1}, ExtractedX{3,1}, ExtractedY{3,1}, ExtractedAngle{3,1}, Targets{3,1}, Points{3,1}, Header{3,1})
+io.neuralynx.Mat2NlxVT(filenames3, 0, 1, 1, [1 1 1 1 1 1 1], TimeStamps{3,1}, ExtractedX{3,1}, ExtractedY{3,1}, ExtractedAngle{3,1}, Targets{3,1}, Points{3,1}, Header{3,1})
 

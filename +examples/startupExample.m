@@ -3,7 +3,7 @@
 % also change the 2 lines containing directory locations so they make sense for your computer
 
 %% update path and start BNT
-addpath(genpath('\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB'));
+addpath(genpath('\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB')); % CHANGE ME
 
 set(groot,'defaultfigurecolor','w','defaultfigurecolormap',jet);
 close
@@ -13,7 +13,7 @@ InitBNT();
 %% update globals
 global hippoGlobe
 
-hippoGlobe.inputFile = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\hippo\autoInputBNT.txt';
+hippoGlobe.inputFile = '\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB\Ben\hippo\autoInputBNT.txt';  % CHANGE ME
 hippoGlobe.posSpeedFilter = [2 0];  % ignore times when animal moves < 2 cm/sec
 hippoGlobe.binWidthHD = 6;
 

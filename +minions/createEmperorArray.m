@@ -5,7 +5,6 @@
 %       emperor = minions.createEmperorArray(clusterData,numExp,include)
 %       clusterData     structure for storing all data
 %       numExp          double indicating total number of experiments
-%       include         structure indicating which measures to calculate
 %
 %   OUTPUT
 %       emperor         cell array with all data
@@ -15,7 +14,7 @@
 %
 % Written by BRK 2017
 
-function emperor = createEmperorArray(clusterData,numExp,include)
+function emperor = createEmperorArray(clusterData,numExp)
 
 %% extract names of measures
 fields = fieldnames(clusterData);

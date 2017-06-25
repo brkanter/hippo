@@ -13,7 +13,7 @@
 %
 % There are many other little things throughout that should be useful in the future. Some examples are:
 % 
-%   - Displaying text in the command window or in a figure with the help of sprintf.
+%   - Displaying text in the command window or in a figure with the help of fprintf and sprintf.
 %   - Using combinations of numel, sum, unique, all, and isnan to count your data.
 %   - Padding arrays with nans and later removing these unused rows/columns.
 %   - Nested for loops. Which levels (e.g. dose, session) do you need, and which order should they be in?
@@ -35,10 +35,10 @@
 %     with variables that you probably don't need/want stored in memory.
 
 %% load the mat file which is output from kingPenguin
-display('Loading data...')
+disp('Loading data...')
 tic   % start a stopwatch
 load('G:\share\ben to MATLAB club\masterMatDose.mat')
-display(sprintf('Loaded data in %.2f sec.\n',toc))   % toc displays the elapsed time from the stopwatch
+fprintf('Loaded data in %.2f sec.\n',toc)  % toc displays the elapsed time from the stopwatch
 
 %% extract some information about your experiments
 sessions = extract.cols(dataOutput,labels,'session');
@@ -54,7 +54,7 @@ sessions = unique(sessions,'stable');
 numSesh = numel(sessions);
 
 % we can display the information extracted as we go
-display(sprintf('We have %d sessions: %s\n',numSesh,strjoin(sessions)))
+fprintf('We have %d sessions: %s\n',numSesh,strjoin(sessions))
 
 
 %% filter to include only cells with good cluster quality
@@ -69,11 +69,11 @@ cleanedData = extract.cleanUpQuality(dataOutput,labels,sessions,numSesh,badQ,off
 % let's display how many much of the data we're filtering out at each step
 numIn = numel(unique(extract.cols(dataOutput,labels,'cell num')));       % this line finds the number of unique cell numbers in 'dataOutput'
 numOut = numel(unique(extract.cols(cleanedData,labels,'cell num')));
-display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d good quality cells.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d good quality cells.', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
-    numOut))
+    numOut)
 
 
 %% filter to include only CA1 cells with CNO doses of 0, 0.5, 15 mg/kg
@@ -81,11 +81,11 @@ CA1subset = extract.rows(cleanedData,labels,'keep','region','CA1','dose',{'0','0
 
 numIn = numel(unique(extract.cols(cleanedData,labels,'cell num')));
 numOut = numel(unique(extract.cols(CA1subset,labels,'cell num')));
-display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d CA1 cells with 0, 0.5, or 15 mg/kg CNO.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d CA1 cells with 0, 0.5, or 15 mg/kg CNO.', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
-    numOut))
+    numOut)
 
 %% filter for putative excitatory cells (i.e. mean rate under 7 Hz in first session)
 
@@ -99,11 +99,11 @@ CA1exc = extract.rows(CA1subset,labels,'keep','cell num',cellsToKeep);
 
 numIn = numel(unique(extract.cols(CA1subset,labels,'cell num')));
 numOut = numel(unique(extract.cols(CA1exc,labels,'cell num')));
-display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d excitatory cells.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d excitatory cells.', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
-    numOut))
+    numOut)
 
 
 %% filter for place cells (i.e. mean rate >= 0.1 Hz and at least 1 place field in EITHER of the first 2 sessions)
@@ -115,11 +115,11 @@ CA1place = extract.rows(CA1exc,labels,'keep','cell num',cellsToKeep);
 
 numIn = numel(unique(extract.cols(CA1exc,labels,'cell num')));
 numOut = numel(unique(extract.cols(CA1place,labels,'cell num')));
-display(sprintf('We just threw out %d of %d cells (%.0f%%). We have %d place cells.\n', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d place cells.\n', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
-    numOut))
+    numOut)
 
 
 %% extract mean firing rate
@@ -254,7 +254,7 @@ normTest(3) = lillietest(rdHighAbs);
 
 pVals = [];
 if sum(normTest)   % this is true if any of the null hypotheses were rejected
-    display('Failed normality test, using nonparametric statistics...')
+    disp('Failed normality test, using nonparametric statistics...')
     pVals(1) = ranksum(rdLowAbs,rdConAbs,'tail','right');
     pVals(2) = ranksum(rdHighAbs,rdConAbs,'tail','right');
     pVals(3) = ranksum(rdHighAbs,rdLowAbs,'tail','right');
@@ -262,7 +262,7 @@ if sum(normTest)   % this is true if any of the null hypotheses were rejected
     %      more rate change. remove last 2 arguments to run a two-sided test (default).
     %      also note that these are independent tests, use signrank for paired tests.
 else
-    display('Passed normality test, using parametric statistics...')
+    dis('Passed normality test, using parametric statistics...')
     [~,pVals(1)] = ttest2(rdLowAbs,rdConAbs,'tail','right');
     [~,pVals(2)] = ttest2(rdHighAbs,rdConAbs,'tail','right');
     [~,pVals(3)] = ttest2(rdHighAbs,rdLowAbs,'tail','right');
@@ -271,9 +271,9 @@ else
     %      also note that these are independent tests, use ttest for paired tests.
 end
 
-display(sprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4e',pVals(1)))
-display(sprintf('15 mg/kg vs. 0 mg/kg:   p = %.4e',pVals(2)))
-display(sprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4e\n',pVals(3)))
+fprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4e',pVals(1))
+fprintf('15 mg/kg vs. 0 mg/kg:   p = %.4e',pVals(2))
+fprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4e\n',pVals(3))
 
 
 %% save figures
@@ -289,14 +289,14 @@ beehiveName = [saveDir '\exampleBeehive_' dt '.pdf'];
 saveas(hFig_bar,barName)
 saveas(hFig_beehive,beehiveName)
 
-display(sprintf('Saved bar plot as:      %s',barName))
-display(sprintf('Saved beehive plot as:  %s',beehiveName))
+fprintf('Saved bar plot as:      %s',barName)
+fprintf('Saved beehive plot as:  %s',beehiveName)
 
 
 %% save results
 dataName = [saveDir '\exampleResults_ ' dt '.mat'];
 save(dataName,'medianVals','pVals')
 
-display(sprintf('Saved results as:       %s',dataName))
+fprintf('Saved results as:       %s',dataName)
 
 

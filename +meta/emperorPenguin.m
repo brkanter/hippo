@@ -73,7 +73,7 @@ if include.grid
     gridThresh = str2double(Answers{1});
     if gridThresh < 0 || gridThresh > 1
         gridThresh = 0.2;
-        display('Grid threshold value out of range, using default 0.2.')
+        disp('Grid threshold value out of range, using default 0.2.')
     end
 end
 
@@ -107,7 +107,7 @@ colHeaders = minions.emperorHeadings(include,ccComps);
 
 %% compute stats for each folder
 for iFolder = 1:length(folders)
-    display(sprintf('Folder %d of %d',iFolder,length(folders)))
+    fprintf('Folder %d of %d',iFolder,length(folders))
     
     %% check all sessions in experiment for clusters in case some are only present in certain sessions
     expNum = ceil(iFolder/seshPerExp);
@@ -142,7 +142,7 @@ for iFolder = 1:length(folders)
     
     %% loop through all cells
     for iCluster = 1:numClusters
-        display(sprintf('Cluster %d of %d',iCluster,numClusters))
+        fprintf('Cluster %d of %d',iCluster,numClusters)
         
         %% initialize cluster data storage
         if ~exist('clustData','var')
@@ -344,7 +344,7 @@ for iFolder = 1:length(folders)
 end
 
 %% store everything in one cell array
-emperor = minions.createEmperorArray(clustData,length(folders)/seshPerExp,include);
+emperor = minions.createEmperorArray(clustData,length(folders)/seshPerExp);
 
 %% add headers and save excel sheet
 emperorExcel = [colHeaders; emperor];
