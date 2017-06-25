@@ -123,7 +123,8 @@ catch caughtErr
         
         % plot path
         warning('Did not find clusters, loading raw position data just to check animal''s exploration.')
-        [x y] = Nlx2MatVT(fullfile(handles.userDir,'VT1.nvt'),[0 1 1 0 0],0,1);
+        [x y] = io.neuralynx.Nlx2MatVT(fullfile(handles.userDir,'VT1.nvt'),[0 1 1 0 0],0,1);
+        [x y] = general.removePosJumps(x,y,6,2.5); % default BNT values
         axes(handles.axes1);
         plot(x,y,'color',[0.5 0.5 0.5])
         set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
@@ -1244,7 +1245,7 @@ for iTrode = 1:length(nttFiles)
 end
 spikeFile = [handles.userDir,'\',nttFiles(ind).name];
 if isempty(handles.trodeTS{handles.tetrode})
-    [trodeTS] = Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
+    [trodeTS] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
     handles.trodeTS{handles.tetrode} = trodeTS;
 else
     trodeTS = handles.trodeTS{handles.tetrode};
@@ -1252,7 +1253,7 @@ end
 trodeTS_sec = (trodeTS/1000000)';
 clusterTS = handles.spikes;
 clusterInds = knnsearch(trodeTS_sec,clusterTS);
-[DataPoints,NlxHeader] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],1,3,clusterInds);
+[DataPoints,NlxHeader] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],1,3,clusterInds);
 ymin = (str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end)))*(-1);      % gets input range from header
 ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
 
@@ -1320,7 +1321,7 @@ end
 guidata(hObject,handles);
 
 %% calculate peaks
-[DataPoints0] = Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,1);  % open Nlx2MatSpike for help with arguments
+[DataPoints0] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,1);  % open Nlx2MatSpike for help with arguments
 numWaves0 = size(DataPoints0,3);
 wavePeaks0 = zeros(4,numWaves0);
 wavePeaks = zeros(4,numWaves);
