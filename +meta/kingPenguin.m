@@ -58,7 +58,7 @@ minTime = str2double(Answers{3});
 %% compute stats for each folder
 for iFolder = 1:length(folders)
     
-    fprintf('Folder %d of %d',iFolder,length(folders))
+    fprintf('Folder %d of %d\n',iFolder,length(folders))
     
     %% load data
     folderInds = find(strcmpi(dataInput(:,1),folders{1,iFolder}));
@@ -76,7 +76,7 @@ for iFolder = 1:length(folders)
     numClusters = length(folderInds);
     for iCluster = 1:numClusters
         
-        fprintf('Cluster %d of %d',iCluster,numClusters)
+        fprintf('Cluster %d of %d\n',iCluster,numClusters)
         
         %% calculate maps
         tetrode = cell2mat(dataInput(folderInds(iCluster),strcmpi('tetrode',labels)));

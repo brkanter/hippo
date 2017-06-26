@@ -107,7 +107,7 @@ colHeaders = minions.emperorHeadings(include,ccComps);
 
 %% compute stats for each folder
 for iFolder = 1:length(folders)
-    fprintf('Folder %d of %d',iFolder,length(folders))
+    fprintf('Folder %d of %d\n',iFolder,length(folders))
     
     %% check all sessions in experiment for clusters in case some are only present in certain sessions
     expNum = ceil(iFolder/seshPerExp);
@@ -142,7 +142,7 @@ for iFolder = 1:length(folders)
     
     %% loop through all cells
     for iCluster = 1:numClusters
-        fprintf('Cluster %d of %d',iCluster,numClusters)
+        fprintf('Cluster %d of %d\n',iCluster,numClusters)
         
         %% initialize cluster data storage
         if ~exist('clustData','var')

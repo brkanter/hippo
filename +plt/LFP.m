@@ -48,7 +48,7 @@ for iTrace = 1:numTraces
         filename = fullfile(path,name);
     end
     
-    fprintf('Loading trace %d of %d...',iTrace,numTraces)
+    fprintf('Loading trace %d of %d...\n',iTrace,numTraces)
     [~,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
     squeezedSamples = reshape(Samples,512*size(Samples,2),1);
     
