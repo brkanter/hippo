@@ -55,7 +55,7 @@ if ismember(4,selections); scaleMethod = 4; end
 %% session labels
 [selections, OK] = listdlg('PromptString','Choose experiment type', ...
     'SelectionMode','single',...
-    'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E','BL1 CNO'}, ...
+    'ListString',{'BL1 CNO BL2','BL1 CNO1 CNO2 CNO3 CNO4 BL2','A1 B1 A'' B'' A2 B2','A1 B1 A'' B'' A2 B2 C','A1 B1 A2 B2','A B C D E','BL1 CNO','A1 B1 C1 C2 B2 A2'}, ...
     'InitialValue',1, ...
     'ListSize',[400, 400]);
 if OK == 0; return; end;
@@ -66,11 +66,12 @@ if ismember(4,selections); expType = 4; end
 if ismember(5,selections); expType = 5; end
 if ismember(6,selections); expType = 6; end
 if ismember(7,selections); expType = 7; end
+if ismember(8,selections); expType = 8; end
 
 switch expType
     case 1
         numSesh = 3;
-    case {2,3}
+    case {2,3,8}
         numSesh = 6;
     case 4
         numSesh = 7;
@@ -98,6 +99,9 @@ for iFolder = 1:length(allFolders)
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         map = analyses.map([t x y], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', hippoGlobe.mapLimits);
         meanRate = analyses.meanRate(spikes, posAve);
+        if expType == 8 && (iFolder > 1 && iFolder < length(allFolders))
+            map.z = rot90(map.z,2);
+        end
         mapMat{iCluster,iFolder} = map.z;
         meanMat{iCluster,iFolder} = meanRate;        
         if ~isfield(map,'peakRate')     % rate map was all zeros
@@ -300,18 +304,18 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');                
                 switch expType                    
-                    case {1,7}
+                    case {1,7,8}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             Q = qualityMat{cellCount,sessionCount};
                             if strcmpi(Q,'4')
                                 Q = 'off';
                             end
                             bottomTitle = title(sprintf('T%dC%d  Q%s  m=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},Q,meanMat{cellCount,sessionCount}));
-                            set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+7.5],'VerticalAlignment','bottom','FontSize',9)
+                            set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+5.5],'VerticalAlignment','bottom','FontSize',9)
                             if strcmpi(Q,'3')
                                 set(bottomTitle,'color','r')
                             elseif strcmpi(Q,'off')
-                                set(bottomTitle,'color','b')
+                                set(bottomTitle,'color',[0.5 0.5 0.5])
                             end
                             try
                                 set(scaleBar,'FontSize',8)
@@ -419,7 +423,22 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.5,(Ylims(1))-5,'BL1','FontSize',20,'FontWeight','bold')                                    
                                 case 2                                    
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(1))-5,'CNO','FontSize',20,'FontWeight','bold')                                                                   
-                            end  
+                            end
+                        case 8     % labels for 2 Env 6 sessions
+                            switch iPlotsX        % add column labels whose position is determined by current axes limits
+                                case 1
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                                case 2
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                                case 3
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'C1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                                case 4
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'C2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                                case 5
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                                case 6
+                                    text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
+                            end
                     end                    
                 end                                
                 sessionCount = sessionCount + 1;                
