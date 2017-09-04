@@ -61,8 +61,8 @@ xlabel 'Time (sec)'
 ylabel 'Voltage (uV)'
 
 % allow quick switching between x limits
-butt_xlim = uicontrol(gcf,'style','togglebutton', ...
-    'string','<html>Change x range<br>to 5 sec', ...
+uicontrol(gcf,'style','togglebutton', ...
+    'string','<html>Change x range<br>to 2 sec', ...
     'units','normalized','position',[0.925 0.01 0.07 0.2], ...
     'enable','inactive', ...
     'buttondownfcn',@updateXlim);
@@ -102,10 +102,10 @@ if sum(strcmpi('ripple',varargin))
         'string',num2str(thresh), ...
         'units','normalized','position',[0.96 0.21 0.035 0.05], ...
         'callback',{@updateThresh,filt_ripple,rsrate});
-    textBox = uicontrol(gcf,'style','text', ...
+    uicontrol(gcf,'style','text', ...
         'string','Threshold (std)', ...
         'units','normalized','position',[0.96 0.26 0.035 0.1]);
-    butt_ripp = uicontrol(gcf,'style','togglebutton', ...
+    uicontrol(gcf,'style','togglebutton', ...
         'string','<html>Find<br>ripples', ...
         'units','normalized','position',[0.925 0.21 0.035 0.15], ...
         'enable','inactive', ...
@@ -136,21 +136,20 @@ end
 
 
 %% update x axis limits
-function updateXlim(hObject,eventData)
+function updateXlim(~,eventData)
 
 if strcmpi(eventData.Source.String,'<html>Change x range<br>to full session')
     xlim auto
-    eventData.Source.String = '<html>Change x range<br>to 5 sec';
+    eventData.Source.String = '<html>Change x range<br>to 2 sec';
 else
-    xlim([0 5])
+    xlim([0 2])
     eventData.Source.String = '<html>Change x range<br>to full session';
 end
 
 %% find ripples
-function identifyRipples(hObject,eventData,filt_ripple,rsrate,thresh)
+function identifyRipples(hObject,~,filt_ripple,rsrate,thresh)
 
 handles = guidata(hObject);
-mainFig = gcf;
 
 filt_ripple_abs = abs(filt_ripple);
 MEAN = nanmean(filt_ripple_abs);
@@ -209,7 +208,7 @@ if numRipples
     delete(findobj(gcf,'type','line','linewidth',3));
     
     % make new slider
-    textBox = uicontrol(gcf,'style','text', ...
+    uicontrol(gcf,'style','text', ...
         'string','Threshold (std)', ...
         'units','normalized','position',[0.96 0.26 0.035 0.1]);
     slide_ripp = uicontrol('style','slider', ...
@@ -242,7 +241,7 @@ handles.text_ripp = text_ripp;
 guidata(hObject,handles)
 
 %% show different ripple
-function updateRipple(hObject,eventData)
+function updateRipple(hObject,~)
 
 handles = guidata(hObject);
 rippToShow = ceil(get(handles.slide_ripp,'value'));

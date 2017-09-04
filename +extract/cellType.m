@@ -6,7 +6,7 @@
 %       array               cell array of data
 %       labels              cell array of strings containing column headers
 %       sessions            cell array of string containing session names
-%       thresh              structure containing
+%       thresh              structure containing thresholds (i.e. firing rate, grid score)
 %       cellType            string specifying functional type. accepted strings:
 %                               'excitatory','inhibitory','place','HD','grid','nongrid','border','spatial'
 %       sessionsToCheck     cell array of strings with sessions to check for non-firing rate criteria
@@ -35,7 +35,6 @@ array = extract.rows(array,labels,'keep','cell num',cellsToKeep);
 cellsToKeep = [];
 switch cellType
     
-    case 'inhibitory'
     case 'place'
         for iSession = 1:length(sessionsToCheck)
             temp = extract.cols(array,labels,'cell num','session',sessionsToCheck{iSession},'mean rate','>=',0.1,'number of fields','>',0);

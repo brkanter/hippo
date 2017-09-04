@@ -31,19 +31,23 @@ searchStr = [splits{1}{end} '_T' num2str(tetrode) 'C' num2str(cluster) '_'];
 d = dir(folder{1,1});
 names = extractfield(d,'name');
 numFiles = sum(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0)));
-if ~numFiles
-    error('Could not find spike times')
+if numFiles
+    
+    spikeFile = names(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0)));
+    
+    %% if there are multiple versions, use most recent one
+    if numFiles > 1
+        dates = extractfield(d,'date');
+        [~,sortInds] = sort(dates(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0))));
+        spikeFile = spikeFile(sortInds == 1);
+    end
+    
+    %% load it
+    spikeFile = fullfile(folder{1,1},spikeFile{1,1});
+    load(spikeFile)
+    spikes = cellTS;
+    
+else
+    warning('Could not find spike times')
+    spikes = [];
 end
-spikeFile = names(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0)));
-
-%% if there are multiple versions, use most recent one
-if numFiles > 1
-    dates = extractfield(d,'date');
-    [~,sortInds] = sort(dates(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0))));
-    spikeFile = spikeFile(sortInds == 1);
-end
-
-%% load it
-spikeFile = fullfile(folder{1,1},spikeFile{1,1});
-load(spikeFile)
-spikes = cellTS;

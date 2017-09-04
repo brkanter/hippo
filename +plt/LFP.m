@@ -9,7 +9,7 @@
 %       visualized in the same figure window.
 %
 %   SEE ALSO
-%       plt.FPfilter
+%       plt.LFPfilter
 %
 % Written by BRK 2017
 
@@ -27,8 +27,8 @@ end
 figure('position',[9 583 1900 494],'name',path)
 
 % allow quick switching between x limits
-butt_xlim = uicontrol(gcf,'style','togglebutton', ...
-    'string','<html>Change x range<br>to 5 sec', ...
+uicontrol(gcf,'style','togglebutton', ...
+    'string','<html>Change x range<br>to 2 sec', ...
     'units','normalized','position',[0.925 0.01 0.07 0.2], ...
     'enable','inactive', ...
     'buttondownfcn',@updateXlim);
@@ -49,7 +49,7 @@ for iTrace = 1:numTraces
     end
     
     fprintf('Loading trace %d of %d...\n',iTrace,numTraces)
-    [~,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
+    [SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[0 0 1 0 1],1,1);
     squeezedSamples = reshape(Samples,512*size(Samples,2),1);
     
     % scale to microvolts
@@ -60,7 +60,7 @@ for iTrace = 1:numTraces
             end
         end
         [~,str] = strtok(Header{idx});
-        scale = 1000000*str2double(str);
+        scale = 1000000*str2num(str);
     end
     squeezedSamples = squeezedSamples * scale;
     
@@ -97,13 +97,13 @@ keyboardnavigate   % this lets you scroll with the arrow keys (when not in zoom/
 
 
 %% nested function for updating x axis limits
-function updateXlim(hObject,eventData)
+function updateXlim(~,eventData)
 
 if strcmpi(eventData.Source.String,'<html>Change x range<br>to full session')
     xlim auto
-    eventData.Source.String = '<html>Change x range<br>to 5 sec';
+    eventData.Source.String = '<html>Change x range<br>to 2 sec';
 else
-    xlim([0 5])
+    xlim([0 2])
     eventData.Source.String = '<html>Change x range<br>to full session';
 end
 

@@ -107,9 +107,14 @@ if ~isempty(cutList)
         cutList(wrongFiles) = [];
 
     elseif strcmpi(clusterFormat,'SS_t')
-
+        
+        wrongFiles = false(1, length(cutList));
         for iCluster = 1:length(cutList)
             splits = regexp(cutList(iCluster).name,'_','split');
+            if length(splits) == 1
+                wrongFiles(iCluster) = true;
+                continue;
+            end
             c_num = cellfun(@str2double,strtok(splits(end),'.'));
             if length(cutList(iCluster).name) <= 13 && ~isempty(strfind(cutList(iCluster).name,'SS'))    % oregon
                 t_num = cellfun(@str2double,strtok(splits(1),'T'));
@@ -122,6 +127,7 @@ if ~isempty(cutList)
             cellMatrix(iCluster,1) = t_num;
             cellMatrix(iCluster,2) = c_num;
         end
+        cutList(wrongFiles) = [];
         
     elseif strcmpi(clusterFormat,'Tint')
         rowCount = 1;
