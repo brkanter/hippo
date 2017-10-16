@@ -27,7 +27,7 @@ mapsCellArray = array(:,strcmpi(labels,'rate map'));
 logicalCellArray = cellfun(@isnan,mapsCellArray,'uniformoutput',0);
 
 %% check if number of nans exceeds ~80% of the total pixels (approximation b/c of matrix corners for circular arenas)
-badCovLogic = cell2mat( cellfun(@(x) (sum(sum(~x))/numel(x)) < thresh,logicalCellArray,'uniformoutput',0) );
+badCovLogic = cell2mat( cellfun(@(x) (sum(~x(:))/numel(x)) < thresh,logicalCellArray,'uniformoutput',0) );
 
 %% change quality to bad
 array(badCovLogic,strcmpi(labels,'quality')) = {badQ};

@@ -37,8 +37,8 @@ if numFiles
     
     %% if there are multiple versions, use most recent one
     if numFiles > 1
-        dates = extractfield(d,'date');
-        [~,sortInds] = sort(dates(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0))));
+        dates = extractfield(d,'datenum');
+        [~,sortInds] = sort(dates(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0))),'descend');
         spikeFile = spikeFile(sortInds == 1);
     end
     

@@ -42,7 +42,7 @@ catch caughtErr
         
         % plot path
         warning('Did not find clusters, loading raw position data just to check animal''s exploration.')
-        [x y] = Nlx2MatVT(fullfile(folder,'VT1.nvt'),[0 1 1 0 0],0,1);
+        [x y] = io.neuralynx.Nlx2MatVT(fullfile(folder,'VT1.nvt'),[0 1 1 0 0],0,1);
         figure('name',folder);
         plot(x,y,'color',[0.5 0.5 0.5])
         axis off

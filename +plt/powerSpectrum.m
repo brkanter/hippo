@@ -41,7 +41,7 @@ elseif ~isempty(strfind(userDir,'CML'))
 elseif ~isempty(strfind(userDir,'KA'))
     ind = strfind(userDir,'KA');
     if length(ind) > 1; ind = ind(end); end;
-    mouseName = userDir(ind:ind+2);
+    mouseName = userDir(ind:end);
 elseif ~isempty(strfind(userDir,'rat'))
     ind = strfind(userDir,'rat');
     if length(ind) > 1; ind = ind(end); end;
@@ -119,9 +119,21 @@ for iCSC = CSCnums
         hz = linspace(0.1,rsrate/2,nHz);
         hzBounds = dsearchn(hz',[1 15]');
         tempPower = 2*abs(sineX(1:length(hz)));
+        Power = tempPower;
         tempPower = tempPower/max(tempPower);
         tempPower = general.smooth(tempPower,10);
         power(iSession,:) = tempPower;
+        
+        % theta index
+        tb = dsearchn(hz',[5 11]');
+        bb = dsearchn(hz',[0.5 50]');
+        peakTheta = nanmax(Power(tb(1):tb(2)));
+        [~,peakThetaInd] = min(abs(Power-peakTheta));
+        length1Hz = round(nHz/(rsrate/2));
+        thetaPower = nanmean(Power(peakThetaInd-length1Hz:peakThetaInd+length1Hz));
+        bbPower = nanmean(Power(bb(1):bb(2)));
+%         fprintf('Current session theta index = %.2f\n',thetaPower/bbPower)
+        thetaInd(iSession,iCSC) = thetaPower/bbPower;
     end
     
     %% heat maps for each recording session for each LFP channel
@@ -135,7 +147,6 @@ for iCSC = CSCnums
     % N.B. most recent session plotted on top
     figure(h2);
     subplot(plotSize,plotSize,find(CSCnums == iCSC))
-%     colormapjet
     cmap = colormap('jet');
     cmap = cmap(round(linspace(1,length(cmap),numSesh)),:);
     set(gca,'colororder',cmap,'NextPlot','replacechildren')
@@ -148,7 +159,6 @@ end
 
 close(h);
 
-% powerInds = dsearchn(hz',[4 8 16]');
-% powerOther = mean([power(powerInds(1)),power(powerInds(3))]);
-% powerTheta = power(powerInds(2));
-% thetaRatio = powerTheta/powerOther
+fprintf(' --- Theta indices --- \n')
+disp(thetaInd)
+

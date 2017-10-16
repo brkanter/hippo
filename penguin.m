@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 17-Mar-2017 11:24:44
+% Last Modified by GUIDE v2.5 15-Oct-2017 16:23:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -158,11 +158,16 @@ end
 
 data.loadSessions(handles.inputFile);
 try
-    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+    load(fullfile(handles.userDir,'posMasked.mat'))
     handles.gotPos = 1;
 catch
-    warndlg('Error getting position samples')
-    handles.gotPos = 0;
+    try
+        posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+        handles.gotPos = 1;
+    catch
+        warndlg('Error getting position samples')
+        handles.gotPos = 0;
+    end
 end
 if handles.gotPos
     handles.posAve = posAve;
@@ -214,7 +219,9 @@ function handles = loadData(handles)
     %% plot animal path
     if handles.gotPos
         axes(handles.axes1);
-        pathTrialBRK('color',[.5 .5 .5])
+        hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
+        set(hSPP,'hittest','off') 
+        set(gca,'ydir','reverse')
         set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
         axis equal
     end
@@ -310,9 +317,18 @@ try
     clustData.WriteTfiles;
     writeInputBNT(handles.inputFile, TTdn, handles.arena, handles.clusterFormat, [], clusterDir);
     data.loadSessions(handles.inputFile);
-
-    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
-    handles.gotPos = 1;
+    try
+        load(fullfile(handles.userDir,'posMasked.mat'))
+        handles.gotPos = 1;
+    catch
+        try
+            posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+            handles.gotPos = 1;
+        catch
+            warndlg('Error getting position samples')
+            handles.gotPos = 0;
+        end
+    end
     helpers.deleteCache(handles.inputFile);
 catch
     rmdir(clusterDir);
@@ -336,6 +352,39 @@ end
 handles = loadData(handles);
 
 close(h);
+guidata(hObject,handles);
+
+% --- Executes on button press in butt_fixPos.
+function butt_fixPos_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_fixPos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+figure;
+plot(handles.posAve(:,2),handles.posAve(:,3),'.')
+set(gca,'ydir','reverse')
+title('Draw ROI, then double-click on shape.');
+try
+    load(fullfile(handles.userDir,'nodes.mat'))
+    h1 = impoly(gca,nodes);
+catch
+    h1 = impoly;
+end
+nodes = wait(h1);
+close(gcf);
+save(fullfile(handles.userDir,'nodes.mat'),'nodes');
+toKeep = inpolygon(handles.posAve(:,2),handles.posAve(:,3),nodes(:,1),nodes(:,2));
+handles.posAve(~toKeep,2:end) = nan;
+posAve = handles.posAve;
+save(fullfile(handles.userDir,'posMasked.mat'),'posAve');
+
+handles.posT = handles.posAve(:,1);
+handles.posX = handles.posAve(:,2);
+handles.posY = handles.posAve(:,3);
+handles.spikePos = [];
+
+handles = loadData(handles);
+
 guidata(hObject,handles);
 
 % --- Executes on selection change in list_tetrode.
@@ -407,6 +456,9 @@ set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
 pathTrialBRK('color',[.5 .5 .5])
+hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]);
+set(hSPP,'hittest','off')
+set(gca,'ydir','reverse')
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
 axis equal
 
@@ -436,7 +488,9 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-pathTrialBRK('color',[.5 .5 .5])
+hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
+set(hSPP,'hittest','off') 
+set(gca,'ydir','reverse')
 axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
@@ -455,7 +509,9 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 %% change marker size for spike overlay
 handles.marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
-pathTrialBRK('color',[.5 .5 .5])
+hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
+set(hSPP,'hittest','off') 
+set(gca,'ydir','reverse')
 axis equal
 hold on
 plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
@@ -495,7 +551,9 @@ for iCluster = 1:numClusters
     figure(figBatchSPP);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
-    pathTrialBRK('color',[.5 .5 .5])
+    hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
+    set(hSPP,'hittest','off') 
+    set(gca,'ydir','reverse')
     hold on
     %% overlay spikes
     plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
@@ -597,8 +655,8 @@ colormap(gca,cmap)
 caxis([-1 8])
 
 hold on
-h = plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',15);
-set(h,'hittest','off')
+hSPP = plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',15);
+set(hSPP,'hittest','off')
 hold off
 axis on
 
@@ -706,7 +764,7 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles)
 %% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+posAve = handles.posAve;
 times = posAve(:,1);
 numTimeStamps = length(times);
 
@@ -792,7 +850,7 @@ function butt_batchTimeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 %% get cell list and all timestamps
 cellMatrix = data.getCells;
 numClusters = size(cellMatrix,1);
-posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+posAve = handles.posAve;
 times = posAve(:,1);
 numTimeStamps = length(times);
 
@@ -1516,7 +1574,9 @@ for iCluster = 1:numClusters
         subplot(321)
         spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
         spikePos = data.getSpikePositions(spikes,handles.posAve);
-        pathTrialBRK('color',[.5 .5 .5])
+        hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
+        set(hSPP,'hittest','off') 
+        set(gca,'ydir','reverse')
         hold on
         plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',15)
         axis off;
@@ -1982,4 +2042,5 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
 
