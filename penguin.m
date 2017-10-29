@@ -527,7 +527,7 @@ function butt_batchSPP_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% prompt for settings
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 prompt={'Spike marker size'};
 name='Marker';
@@ -584,6 +584,7 @@ function butt_batchRM_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 cellMatrix = data.getCells;
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
@@ -666,7 +667,8 @@ function butt_batchFindFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
@@ -762,7 +764,8 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get cell list and all timestamps
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 posAve = handles.posAve;
 times = posAve(:,1);
@@ -848,7 +851,8 @@ function butt_batchTimeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get cell list and all timestamps
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 posAve = handles.posAve;
 times = posAve(:,1);
@@ -965,7 +969,8 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 msg = msgbox('Loading position data for each LED...');
 pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
 close(msg);
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 allHD = analyses.calcHeadDirection(pos);
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
@@ -1074,7 +1079,8 @@ function butt_batchGrid_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
@@ -1215,7 +1221,8 @@ function butt_batchBorder_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% rate map settings
@@ -1429,7 +1436,8 @@ function butt_batchAutocorr_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% set parameters
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 figAutocorr = figure;
 set(figAutocorr,'color','white')
@@ -1536,7 +1544,8 @@ function butt_MECcells_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells;
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
@@ -1777,6 +1786,7 @@ minTime = str2double(Answers{3});
 h = msgbox('Working ...');
 
 cellMatrix = data.getCells;
+cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 for iCluster = 1:numClusters
