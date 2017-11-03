@@ -21,10 +21,10 @@
 %   - Accessing figure objects with findobj and changing their properties
 %
 %   USAGE
-%       analysisIntro
+%       examples.analysisIntro
 %
 %   SEE ALSO
-%       kingPenguin emperorPenguin
+%       meta.kingPenguin meta.emperorPenguin
 %
 % Written by BRK 2017
 
@@ -37,7 +37,15 @@
 %% load the mat file which is output from kingPenguin
 disp('Loading data...')
 tic   % start a stopwatch
-load('T:\mh\kin\share\ben to MATLAB club\masterMatDose.mat')
+% check drive letter first
+d = dir('N:\benjamka');
+if isempty(d)
+    path = 'Q:\benjamka';
+else
+    path = 'N:\benjamka';
+end
+clear d
+load(fullfile(path,'masterMatDose.mat'))
 fprintf('Loaded data in %.2f sec.\n',toc)  % toc displays the elapsed time from the stopwatch
 
 %% extract some information about your experiments
@@ -69,7 +77,7 @@ cleanedData = extract.cleanUpQuality(dataOutput,labels,sessions,numSesh,badQ,off
 % let's display how many much of the data we're filtering out at each step
 numIn = numel(unique(extract.cols(dataOutput,labels,'cell num')));       % this line finds the number of unique cell numbers in 'dataOutput'
 numOut = numel(unique(extract.cols(cleanedData,labels,'cell num')));
-fprintf('We just threw out %d of %d cells (%.0f%%). We have %d good quality cells.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d good quality cells.\n', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
@@ -81,7 +89,7 @@ CA1subset = extract.rows(cleanedData,labels,'keep','region','CA1','dose',{'0','0
 
 numIn = numel(unique(extract.cols(cleanedData,labels,'cell num')));
 numOut = numel(unique(extract.cols(CA1subset,labels,'cell num')));
-fprintf('We just threw out %d of %d cells (%.0f%%). We have %d CA1 cells with 0, 0.5, or 15 mg/kg CNO.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d CA1 cells with 0, 0.5, or 15 mg/kg CNO.\n', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
@@ -99,7 +107,7 @@ CA1exc = extract.rows(CA1subset,labels,'keep','cell num',cellsToKeep);
 
 numIn = numel(unique(extract.cols(CA1subset,labels,'cell num')));
 numOut = numel(unique(extract.cols(CA1exc,labels,'cell num')));
-fprintf('We just threw out %d of %d cells (%.0f%%). We have %d excitatory cells.', ...
+fprintf('We just threw out %d of %d cells (%.0f%%). We have %d excitatory cells.\n', ...
     numIn-numOut, ...
     numIn, ...
     100*((numIn-numOut)/numIn), ...
@@ -271,8 +279,8 @@ else
     %      also note that these are independent tests, use ttest for paired tests.
 end
 
-fprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4e',pVals(1))
-fprintf('15 mg/kg vs. 0 mg/kg:   p = %.4e',pVals(2))
+fprintf('0.5 mg/kg vs. 0 mg/kg:  p = %.4e\n',pVals(1))
+fprintf('15 mg/kg vs. 0 mg/kg:   p = %.4e\n',pVals(2))
 fprintf('15 mg/kg vs. 0.5 mg/kg: p = %.4e\n',pVals(3))
 
 
