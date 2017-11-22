@@ -140,94 +140,94 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         %% set subplot specs
         switch numSesh            
             case 3       % 3 sessions
-                plotheight=16;
-                plotwidth=16;
-                subplotsx=3;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0.4;
-                spacey=0.8;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);                
+                plotheight = 16;
+                plotwidth = 16;
+                spCols = 3;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0.4;
+                spacey = 0.8;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);                
             case 4       % 4 sessions
-                plotheight=12;
-                plotwidth=16;
-                subplotsx=4;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0;
-                spacey=0.6;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);                                        
+                plotheight = 12;
+                plotwidth = 16;
+                spCols = 4;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0;
+                spacey = 0.6;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);                                        
             case 6       % 6 sessions
-                plotheight=12;
-                plotwidth=24;
-                subplotsx=6;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0;
-                spacey=0.6;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey); 
+                plotheight = 12;
+                plotwidth = 24;
+                spCols = 6;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0;
+                spacey = 0.6;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
             case 7       % 7 sessions
-                plotheight=10;
-                plotwidth=24;
-                subplotsx=7;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0;
-                spacey=0.6;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey); 
+                plotheight = 10;
+                plotwidth = 24;
+                spCols = 7;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0;
+                spacey = 0.6;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
             case 5       % 5 sessions
-                plotheight=12;
-                plotwidth=24;
-                subplotsx=5;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0;
-                spacey=0.6;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey); 
+                plotheight = 12;
+                plotwidth = 24;
+                spCols = 5;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0;
+                spacey = 0.6;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
             case 2       % 2 sessions
-                plotheight=16;
-                plotwidth=16;
-                subplotsx=2;
-                subplotsy=4;
-                leftedge=1.2;
-                rightedge=0.4;
-                topedge=1;
-                bottomedge=1;
-                spacex=0.4;
-                spacey=0.8;
-                fontsize=10;
-                sub_pos=subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,subplotsx,subplotsy,spacex,spacey);       
+                plotheight = 16;
+                plotwidth = 16;
+                spCols = 2;
+                spRows = 4;
+                leftedge = 1.2;
+                rightedge = 0.4;
+                topedge = 1;
+                bottomedge = 1;
+                spacex = 0.4;
+                spacey = 0.8;
+                fontsize = 10;
+                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);       
         end
         %% set the Matlab figure
         figBatchRM = figure;
         clf(figBatchRM);
-        set(gcf, 'PaperUnits', 'centimeters');
-        set(gcf, 'PaperSize', [plotwidth plotheight]);
-        set(gcf, 'PaperPositionMode', 'manual');
-        set(gcf, 'PaperPosition', [0 0 plotwidth plotheight]);        
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[plotwidth plotheight]);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 plotwidth plotheight]);        
         %% create subplots
-        for iPlotsY = 1:subplotsy           % each cell            
-            if iPlotsY > 1 || iSheet > 1                
+        for iPltCluster = 1:spRows           % each cell            
+            if iPltCluster > 1 || iSheet > 1                
                 sessionCount = 1;                
                 if iExp > 1                    
                     sessionCount = iExp + (numSesh-1);                    
@@ -235,14 +235,14 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             end            
             %% if we've plotted all the maps already...
             if cellCount > size(mapMat(~cellfun(@isempty,mapMat(:,sessionCount))),1); break; end;            
-            for iPlotsX = 1:subplotsx           % each session                
-                axes('position',sub_pos{iPlotsX,5-iPlotsY},'XGrid','off','XMinorGrid','off','FontSize',fontsize,'Box','on','Layer','top'); %#ok<LAXES>                
+            for iPltSession = 1:spCols           % each session                
+                axes('position',sub_pos{iPltCluster,iPltSession}); %#ok<LAXES>
                 if ~isempty(mapMat{cellCount,sessionCount})    % make sure map exists                    
                     if scaleMethod == 1     % autoscale each session                                  
                         [scaleBar,~] = colorMapBRK(mapMat{cellCount,sessionCount},'bar','on','pubQual',pubQual);
                     elseif scaleMethod == 2  % scale to peak of first session                        
-                        if ~isempty(mapMat{cellCount,sessionCount-(iPlotsX-1)})    % make sure 1st map exists                            
-                            prevMax = nanmax(nanmax(mapMat{cellCount,sessionCount-(iPlotsX-1)}));  % find previous max                            
+                        if ~isempty(mapMat{cellCount,sessionCount-(iPltSession-1)})    % make sure 1st map exists                            
+                            prevMax = nanmax(nanmax(mapMat{cellCount,sessionCount-(iPltSession-1)}));  % find previous max                            
                             if prevMax == 0; prevMax = 0.0001; end;   % make sure prevMax isn't zero                            
                             if nanmin(nanmin(mapMat{cellCount,sessionCount})) > prevMax   % if min is bigger than max, set min to zero                                
                                 [scaleBar,~] = colorMapBRK(mapMat{cellCount,sessionCount},'bar','on','pubQual',pubQual,'cutoffs',[0,prevMax]);                                
@@ -267,7 +267,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                             [scaleBar,~] = colorMapBRK(mapMat{cellCount,sessionCount},'bar','on','pubQual',pubQual,'cutoffs',[nanmin(nanmin(mapMat{cellCount,sessionCount})),maxPeak]);                            
                         end                        
                     elseif scaleMethod == 4    % scale to peak As to A and Bs to B                        
-                        switch iPlotsX                            
+                        switch iPltSession                            
                             case {1,2}                                
                                 [scaleBar,~] = colorMapBRK(mapMat{cellCount,sessionCount},'bar','on','pubQual',pubQual);  % autoscale                                
                             case {3,4}                                
@@ -335,10 +335,10 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                         end
                 end
                 %% column labels
-                if iPlotsY == 1                    
+                if iPltCluster == 1                    
                     switch expType                        
                         case 1      % labels for 1 Env 3 sessions                            
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits                                
+                            switch iPltSession        % add column labels whose position is determined by current axes limits                                
                                 case 1                                    
                                     text((Xlims(2)-Xlims(1))/3.5,(Ylims(1))-5,'BL1','FontSize',20,'FontWeight','bold')                                    
                                 case 2                                    
@@ -347,7 +347,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.5,(Ylims(1))-5,'BL2','FontSize',20,'FontWeight','bold')                                    
                             end                            
                         case 2       % labels for 1 Env 6 sessions                            
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits                                
+                            switch iPltSession        % add column labels whose position is determined by current axes limits                                
                                 case 1                                    
                                     text(13,77,'BL1','FontSize',20,'FontWeight','bold')                                    
                                 case 2                                    
@@ -362,7 +362,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text(13,77,'BL2','FontSize',20,'FontWeight','bold')                                    
                             end                            
                         case 3     % labels for 2 Env 6 sessions                            
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits                                
+                            switch iPltSession        % add column labels whose position is determined by current axes limits                                
                                 case 1                                    
                                     text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                    
                                 case 2                                    
@@ -377,7 +377,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'B2','FontSize',18,'FontWeight','bold','horizontalAlignment','center')                                   
                             end
                         case 4     % labels for 3 Env 7 sessions
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/4.5,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')
                                 case 2
@@ -394,7 +394,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/0.78,'C','FontSize',26,'FontWeight','bold')
                             end
                         case 5     % labels for 2 Env 4 sessions
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1                                    
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')                                    
                                 case 2                                    
@@ -405,7 +405,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/0.78,'B2','FontSize',26,'FontWeight','bold')                                                                       
                             end   
                         case 6     % labels for 1 Env 5 sessions
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/-5,'A','FontSize',26,'FontWeight','bold')
                                 case 2
@@ -418,14 +418,14 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/-5,'E','FontSize',26,'FontWeight','bold')
                             end
                         case 7      % labels for 1 Env 3 sessions
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits                                
+                            switch iPltSession        % add column labels whose position is determined by current axes limits                                
                                 case 1                                    
                                     text((Xlims(2)-Xlims(1))/3.5,(Ylims(1))-5,'BL1','FontSize',20,'FontWeight','bold')                                    
                                 case 2                                    
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(1))-5,'CNO','FontSize',20,'FontWeight','bold')                                                                   
                             end
                         case 8     % labels for 2 Env 6 sessions
-                            switch iPlotsX        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/2,(0 - 0.2*(Ylims(2)-Ylims(1))),'A1','FontSize',18,'FontWeight','bold','horizontalAlignment','center')
                                 case 2
