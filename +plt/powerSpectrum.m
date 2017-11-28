@@ -159,6 +159,8 @@ end
 
 close(h);
 
+thetaInd(:,all(thetaInd == 0)) = [];
+
 fprintf(' --- Theta indices --- \n')
 disp(thetaInd)
 

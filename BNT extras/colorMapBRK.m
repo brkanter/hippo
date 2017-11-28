@@ -30,6 +30,8 @@
 %                  as video cameras measure y in reverse direction)
 %    'pubQual'**   interpolate map for finer smoothing,
 %                  either 0 (default) or 1
+%    'aspectRat'** set aspect ratio to something other than square (default)
+%
 %   **BRK 2014
 %   =========================================================================
 %
@@ -68,6 +70,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     scaleBar = 0;
     hSurf = 0;
     pubQual = 0;
+    aspectRat = [1 1 1];
     inputMap = data;
     
     if nargin < 1,
@@ -125,6 +128,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
             %% BRK    
             case 'pubqual',
                 pubQual = lower(varargin{i+1});
+            case 'aspectrat',
+                aspectRat = lower(varargin{i+1});
             %%
             
             otherwise,
@@ -194,7 +199,9 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     end
     
     %% BRK
-    set(gca,'DataAspectRatio',[1 1 1])
+    if ~isempty(aspectRat)
+        set(gca,'DataAspectRatio',aspectRat)
+    end
     axis off
     %%
     
