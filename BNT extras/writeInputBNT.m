@@ -134,8 +134,8 @@ if ~isempty(cutList)
         for iTetrode = 1:length(cutList)
             
             % to find the tetrode number, look for a digit that is not preceded or followed by a digit
-            ind = regexp(cutList{iTetrode},'(?<!\d)(\d)(?!\d)');
-            t_num = str2double(cutList{iTetrode}(ind(end)));
+            indPos = regexp(cutList{iTetrode},'(?<!\d)(\d)(?!\d)');
+            t_num = str2double(cutList{iTetrode}(indPos(end)));
             
             % session name could be ambiguous, so make sure it is followed by tetrode number
             if isempty(strfind(cutList{iTetrode},[sessionName,'_',num2str(t_num) '_'])) ...
@@ -242,3 +242,35 @@ else
     fprintf(fileID,'Name: general; Version: 1.0\nSessions %s\nCuts %s\nUnits %s\nShape %s',folder,cutsForBNT,unitList,arena);
 end
 
+%% issue warning if duplicate cache files are detected and some have manual changes
+global hippoGlobe
+if exist('hippoGlobe','var') && isfield(hippoGlobe,'checkCache') && ~hippoGlobe.checkCache
+    return  % user has suppressed warning
+else
+    myDir = dir(folder);
+    names = extractfield(myDir,'name');
+    indPos = find(~cellfun(@isempty,strfind(names,'pos.mat')));
+    indPosClean = find(~cellfun(@isempty,strfind(names,'posClean.mat')));
+    posUpdates = 0;
+    if length(indPos) > 1
+        for i = 1:length(indPos)
+            info = load(fullfile(folder,names{indPos(i)}),'info');
+            if isfield(info,'manual') && info.manual
+                posUpdates = posUpdates + 1;
+            end
+        end
+    end
+    if length(indPosClean) > 1
+        for i = 1:length(indPosClean)
+            info = load(fullfile(folder,names{indPosClean(i)}),'info');
+            if isfield(info,'manual') && info.manual
+                posUpdates = posUpdates + 1;
+            end
+        end
+    end
+    if posUpdates > 0
+        waitfor(warndlg(['Multiple posClean.mat files detected, probably from changing folder names.' ...
+                    'Since some have been manually corrected, you should consider' ...
+                    'deleting unwanted cache files and restarting the analysis!']));
+    end
+end

@@ -354,39 +354,6 @@ handles = loadData(handles);
 close(h);
 guidata(hObject,handles);
 
-% --- Executes on button press in butt_fixPos.
-function butt_fixPos_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_fixPos (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-figure;
-plot(handles.posAve(:,2),handles.posAve(:,3),'.')
-set(gca,'ydir','reverse')
-title('Draw ROI, then double-click on shape.');
-try
-    load(fullfile(handles.userDir,'nodes.mat'))
-    h1 = impoly(gca,nodes);
-catch
-    h1 = impoly;
-end
-nodes = wait(h1);
-close(gcf);
-save(fullfile(handles.userDir,'nodes.mat'),'nodes');
-toKeep = inpolygon(handles.posAve(:,2),handles.posAve(:,3),nodes(:,1),nodes(:,2));
-handles.posAve(~toKeep,2:end) = nan;
-posAve = handles.posAve;
-save(fullfile(handles.userDir,'posMasked.mat'),'posAve');
-
-handles.posT = handles.posAve(:,1);
-handles.posX = handles.posAve(:,2);
-handles.posY = handles.posAve(:,3);
-handles.spikePos = [];
-
-handles = loadData(handles);
-
-guidata(hObject,handles);
-
 % --- Executes on selection change in list_tetrode.
 function list_tetrode_Callback(hObject, eventdata, handles)
 % hObject    handle to list_tetrode (see GCBO)
