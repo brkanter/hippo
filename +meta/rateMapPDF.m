@@ -140,91 +140,91 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         %% set subplot specs
         switch numSesh            
             case 3       % 3 sessions
-                plotheight = 16;
-                plotwidth = 16;
+                pageHeight = 16;
+                pageWidth = 16;
                 spCols = 3;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0.4;
-                spacey = 0.8;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0.4;
+                spaceY = 0.8;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);                
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY);                
             case 4       % 4 sessions
-                plotheight = 12;
-                plotwidth = 16;
+                pageHeight = 12;
+                pageWidth = 16;
                 spCols = 4;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0;
-                spacey = 0.6;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0;
+                spaceY = 0.6;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);                                        
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY);                                        
             case 6       % 6 sessions
-                plotheight = 12;
-                plotwidth = 24;
+                pageHeight = 12;
+                pageWidth = 24;
                 spCols = 6;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0;
-                spacey = 0.6;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0;
+                spaceY = 0.6;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY); 
             case 7       % 7 sessions
-                plotheight = 10;
-                plotwidth = 24;
+                pageHeight = 10;
+                pageWidth = 24;
                 spCols = 7;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0;
-                spacey = 0.6;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0;
+                spaceY = 0.6;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY); 
             case 5       % 5 sessions
-                plotheight = 12;
-                plotwidth = 24;
+                pageHeight = 12;
+                pageWidth = 24;
                 spCols = 5;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0;
-                spacey = 0.6;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0;
+                spaceY = 0.6;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey); 
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY); 
             case 2       % 2 sessions
-                plotheight = 16;
-                plotwidth = 16;
+                pageHeight = 16;
+                pageWidth = 16;
                 spCols = 2;
                 spRows = 4;
-                leftedge = 1.2;
-                rightedge = 0.4;
-                topedge = 1;
-                bottomedge = 1;
-                spacex = 0.4;
-                spacey = 0.8;
+                leftEdge = 1.2;
+                rightEdge = 0.4;
+                topEdge = 1;
+                bottomEdge = 1;
+                spaceX = 0.4;
+                spaceY = 0.8;
                 fontsize = 10;
-                sub_pos = subplot_pos(plotwidth,plotheight,leftedge,rightedge,bottomedge,topedge,spCols,spRows,spacex,spacey);       
+                sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY);       
         end
         %% set the Matlab figure
         figBatchRM = figure;
         clf(figBatchRM);
         set(gcf,'PaperUnits','centimeters');
-        set(gcf,'PaperSize',[plotwidth plotheight]);
+        set(gcf,'PaperSize',[pageWidth pageHeight]);
         set(gcf,'PaperPositionMode','manual');
-        set(gcf,'PaperPosition',[0 0 plotwidth plotheight]);        
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);        
         %% create subplots
         for iPltCluster = 1:spRows           % each cell            
             if iPltCluster > 1 || iSheet > 1                
