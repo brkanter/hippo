@@ -24,10 +24,10 @@ outFolder = uigetdir('','Choose folder for PDF output');
 if outFolder == 0; return; end;
 
 %% select settings
-prompt={'Angle bin width','Percentile'};
-name='HD settings';
-numlines=1;
-defaultanswer={hippoGlobe.binWidthHD,'20'};
+prompt = {'Angle bin width','Percentile'};
+name = 'HD settings';
+numlines = 1;
+defaultanswer = {num2str(hippoGlobe.binWidthHD),'20'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 binWidthHD = str2double(Answers{1});
@@ -85,7 +85,7 @@ for iFolder = 1:length(allFolders)
         catch 
             tetrodeMat{iCluster,iFolder} = cellMatrix(iCluster,1);
             clusterMat{iCluster,iFolder} = cellMatrix(iCluster,2);
-            tcMat{iCluster,iFolder} = nan;
+            tcMat{iCluster,iFolder} = nan(1,3);
             vectorLengthMat{iCluster,iFolder} = nan;
             meanAngleMat{iCluster,iFolder} = nan;
             continue
@@ -195,8 +195,8 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
         set(gcf,'PaperPositionMode','manual');
         set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);
         %% create subplots
-        for iPlotCluster = 1:spRows           % each cell
-            if iPlotCluster > 1 || iSheet > 1
+        for iPltCluster = 1:spRows           % each cell
+            if iPltCluster > 1 || iSheet > 1
                 sessionCount = 1;
                 if iExp > 1
                     sessionCount = iExp + (numSesh-1);
@@ -204,7 +204,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             end
             %% if we've plotted all the maps already...
             if cellCount > size(mapMat(~cellfun(@isempty,mapMat(:,sessionCount))),1); break; end;
-            for iPlotSession = 1:spCols           % each session
+            for iPltSession = 1:spCols           % each session
                 axes('position',sub_pos{iPltCluster,iPltSession}); %#ok<LAXES>
                 if ~isempty(mapMat{cellCount,sessionCount})    % make sure map exists
                     circularTurningBRK(tcMat{cellCount,sessionCount}(:,2))
@@ -234,10 +234,10 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                         end
                 end
                 %% column labels
-                if iPlotCluster == 1
+                if iPltCluster == 1
                     switch expType
                         case 1      % labels for 1 Env 3 sessions
-                            switch iPlotSession        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text(0,(Ylims(2)*1.35),'BL1','horizontalalignment','center','FontSize',20,'FontWeight','bold')
                                 case 2
@@ -246,7 +246,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text(0,(Ylims(2)*1.35),'BL2','horizontalalignment','center','FontSize',20,'FontWeight','bold')
                             end
                         case 2       % labels for 1 Env 6 sessions
-                            switch iPlotSession        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text(13,77,'BL1','FontSize',20,'FontWeight','bold')
                                 case 2
@@ -261,7 +261,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text(13,77,'BL2','FontSize',20,'FontWeight','bold')
                             end
                         case 3     % labels for 2 Env 6 sessions
-                            switch iPlotSession        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')
                                 case 2
@@ -276,7 +276,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'B2','FontSize',26,'FontWeight','bold')
                             end
                         case 4     % labels for 3 Env 7 sessions
-                            switch iPlotSession        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/4.5,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')
                                 case 2
@@ -293,7 +293,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                     text((Xlims(2)-Xlims(1))/3.53,(Ylims(2)-Ylims(1))/0.78,'C','FontSize',26,'FontWeight','bold')
                             end
                         case 5     % labels for 2 Env 4 sessions
-                            switch iPlotSession        % add column labels whose position is determined by current axes limits
+                            switch iPltSession        % add column labels whose position is determined by current axes limits
                                 case 1
                                     text((Xlims(2)-Xlims(1))/4,(Ylims(2)-Ylims(1))/0.78,'A1','FontSize',26,'FontWeight','bold')
                                 case 2

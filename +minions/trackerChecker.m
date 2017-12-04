@@ -55,7 +55,7 @@ h.text = uicontrol(h.fig,'style','text', ...
     'string',sprintf('You can zoom or pan even during ROI selection\nby toggling on/off the buttons on the toolbar.'));
 
 % show tracking data
-h.axes = axes(gcf,'position',[0.5 0.25 0.40 0.55],'xticklabels','','yticklabels','');
+h.axes = axes('position',[0.5 0.25 0.40 0.55],'xticklabels','','yticklabels','');
 
 % create posClean file if one does not exist already (load data in BNT)
 h.butt_getPosBNT = uicontrol(h.fig,'style','pushbutton', ...
@@ -179,6 +179,9 @@ h.butt_fixChopped = uicontrol(h.fig,'style','pushbutton', ...
             h1 = impoly;
             nodes = wait(h1);
             if isempty(nodes); return; end;
+            try
+                delete(h1)
+            end
             positions = h.positions;
             toKeep = inpolygon(positions(:,2),positions(:,3),nodes(:,1),nodes(:,2));
             positions(~toKeep,2:end) = nan;
@@ -240,8 +243,21 @@ h.butt_fixChopped = uicontrol(h.fig,'style','pushbutton', ...
         global hippoGlobe
         writeInputBNT(hippoGlobe.inputFile,h.currFolder,hippoGlobe.arena,hippoGlobe.clusterFormat)
         data.loadSessions(hippoGlobe.inputFile);
+        
+        % set dist thresh to inf to avoid chopping
         [p.distanceThreshold,p.maxInterpolationGap,p.posStdThreshold] = deal(inf,1,2.5);
         pos = data.getPositions('params',p);
+        splits = regexp(h.currFolder,'\','split');
+        
+        % reset dist thresh to default to avoid posClean being overwritten
+        % in the future
+        load(fullfile(h.currFolder,[splits{end},'_posClean.mat']),'info');
+        info.distanceThreshold = 150;
+        dateTime = datestr(clock,30);
+        info.manual = true;
+        info.manualTimestamp = dateTime;
+        save(fullfile(h.currFolder,[splits{end},'_posClean.mat']),'info','-append');
+        
         cla(h.axes)
         axes(h.axes)
         sessionSelect();
