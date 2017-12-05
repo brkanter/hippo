@@ -42,6 +42,7 @@ if numFiles
     if numFiles > 1
         [~,sortInds] = sort(dates(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(searchStr,length(d),1)),'uniformoutput',0))),'descend');
         spikeFile = spikeFile(sortInds == 1);
+        spkInd = find(~cellfun(@isempty,cellfun(@strfind,names',cellstr(repmat(spikeFile,length(d),1)),'uniformoutput',0)));
     end
     
     %% check that cached file was made after all changes to .t files
