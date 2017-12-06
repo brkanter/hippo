@@ -2,11 +2,12 @@
 % Extract spike times from previously saved file created by BNT to avoid recalculating.
 %
 %   USAGE
-%       spikes = minions.loadSpikes(raw,labels,clusterNum,session)
+%       spikes = minions.loadSpikes(raw,labels,clusterNum,session,<exptHalf>)
 %       raw            cell array of data
 %       labels         cell array of strings containing column headers
 %       clusterNum     string specifying cluster number
 %       session        string specifying session name
+%       exptHalf       Optional. string or double specifying experiment half
 %
 %   OUTPUTS
 %       spikes         vector of spike times
@@ -15,12 +16,24 @@
 %
 % Written by BRK 2017
 
-function spikes = loadSpikes(raw,labels,clusterNum,session)
+function spikes = loadSpikes(raw,labels,clusterNum,session,exptHalf)
 
 %% check inputs
 global hippoGlobe
 if (iscell(raw) + iscell(labels) + helpers.isstring(clusterNum) + helpers.isstring(session)) < 4
     error('Incorrect input format (type ''help <a href="matlab:help findSpikeFile">findSpikeFile</a>'' for details).');
+end
+if exist('exptHalf','var')
+    % convert to strings
+    if isnumeric(exptHalf)
+        exptHalf = num2str(exptHalf);
+    end
+    if isnumeric(raw{1,strcmpi(labels,'exptHalf')})
+        for iRow = 1:size(raw,1)
+            raw{iRow,strcmpi('exptHalf',labels)} = num2str(raw{iRow,strcmpi('exptHalf',labels)});
+        end
+    end
+    raw = extract.rows(raw,labels,'keep','exptHalf',exptHalf);
 end
 
 %% search in correct directory

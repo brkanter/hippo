@@ -249,17 +249,8 @@ if exist('hippoGlobe','var') && isfield(hippoGlobe,'checkCache') && ~hippoGlobe.
 else
     myDir = dir(folder);
     names = extractfield(myDir,'name');
-    indPos = find(~cellfun(@isempty,strfind(names,'pos.mat')));
     indPosClean = find(~cellfun(@isempty,strfind(names,'posClean.mat')));
     posUpdates = 0;
-    if length(indPos) > 1
-        for i = 1:length(indPos)
-            info = load(fullfile(folder,names{indPos(i)}),'info');
-            if isfield(info,'manual') && info.manual
-                posUpdates = posUpdates + 1;
-            end
-        end
-    end
     if length(indPosClean) > 1
         for i = 1:length(indPosClean)
             info = load(fullfile(folder,names{indPosClean(i)}),'info');
