@@ -278,15 +278,18 @@ for iFolder = 1:length(folders)
             
             %% speed
             if include.speed
-                if ~exist('spikePos','var')
-                    spikePos = data.getSpikePositions(spikes,posAve);
+                spikePos = data.getSpikePositions(spikes,posAve);
+                if size(spikePos,1) > 1
+                    instRate = analyses.instantRate(spikePos(:,1),posAve);
+                    kernel = round((1 / helpers.sampleTimeFromData(posAve)) * 0.4); % smoothing kernel = 0.4 sec
+                    scores = analyses.speedScore(Speed,instRate,kernel);
+                    speedScore = scores(2);
+                    clustData(iCluster,iFolder,expNum).speed = speedScore;
+                else
+                    clustData(iCluster,iFolder,expNum).speed = nan;
                 end
-                instRate = analyses.instantRate(spikePos(:,1),posAve);
-                kernel = (1 / helpers.sampleTimeFromData(posAve)) / 0.4;   % smoothing kernel = 0.4 sec
-                scores = analyses.speedScore(Speed,instRate,kernel);
-                speedScore = scores(2);
-                clustData(iCluster,iFolder,expNum).speed = speedScore;
             end
+                    
             
             %% theta
             if include.theta

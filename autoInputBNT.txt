@@ -1,5 +1,5 @@
 Name: general; Version: 1.0
-Sessions E:\HM3_CA3\Refined boundaries\2017-01-10_14-43-55_BK185_BL
-Cuts C:\Users\benjamka\AppData\Local\Temp\tp8a239a52_b0c0_4daf_b21a_9c33b3b73e3f\PP7_TT%u_%u; 
-Units 3  1  10   2   3   4   5   6   7   8   9; 
+Sessions Q:\chrislyk\MATLAB practice files\Experiments\11-01_11-02\2016-11-02_08-38-48_CML120_B
+Cuts PP4_TT%u_%u; PP6_TT%u_%u; PP7_TT%u_%u; 
+Units 1  1  2  3  4  5  6  7; 2  1  2; 3  1  10   2   3   4   5   6   7   8   9; 
 Shape cylinder 60 60

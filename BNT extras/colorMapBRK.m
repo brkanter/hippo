@@ -31,6 +31,7 @@
 %    'pubQual'**   interpolate map for finer smoothing,
 %                  either 0 (default) or 1
 %    'aspectRat'** set aspect ratio to something other than square (default)
+%    'clrMap'**    colormap other than 'jet' (default)
 %
 %   **BRK 2014
 %   =========================================================================
@@ -130,6 +131,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
                 pubQual = lower(varargin{i+1});
             case 'aspectrat',
                 aspectRat = lower(varargin{i+1});
+            case 'clrmap',
+                clrMap = lower(varargin{i+1});
             %%
             
             otherwise,
@@ -152,8 +155,14 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     end
 
     a = gca;
-    colormap(a,jet(64));
-
+    %% BRK
+    if exist('clrMap','var')
+        colormap(a,clrMap)
+    else
+        colormap(a,jet(64));
+    end
+    %%
+    
     %% BRK  
     if pubQual
         numBinsX = size(inputMap,1);

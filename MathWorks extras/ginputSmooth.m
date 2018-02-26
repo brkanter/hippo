@@ -6,8 +6,7 @@
 % Written by BRK 2015. Please distribute and modify freely.
 
 function [X,Y] = ginputSmooth()
-% need zoom off to use windowbuttonfcns
-zoom on; zoom off;
+
 % initialize coordinate vectors and handles structure
 X = [];
 Y = [];
@@ -16,9 +15,21 @@ dynamicData = guihandles(gcf);
 dynamicData.x = [];
 dynamicData.y = [];
 guidata(gcf,dynamicData);
-figName = get(gcf,'name');
-% set button functions
+
+% set button functions (need uicontrol off)
+z = zoom;
+p = pan;
+zSwitch = false;
+pSwitch = false;
+if strcmpi(z.Enable,'on')
+    zoom off
+    zSwitch = true;
+elseif strcmpi(p.Enable,'on')
+    pan off
+    pSwitch = true;
+end
 set(gcf,'windowbuttondownfcn',@click);
+
     function click(~,~)
         % clicking activates motion and release functions
         set(gcf,'windowbuttonmotionfcn',@move);
@@ -35,6 +46,7 @@ set(gcf,'windowbuttondownfcn',@click);
         end
         function release(~,~)
             % reset button fcns and get output
+            set(gcf,'windowbuttondownfcn','');
             set(gcf,'windowbuttonmotionfcn','');
             set(gcf,'windowbuttondownfcn','');
             finalData = guidata(gcbo);
@@ -47,12 +59,16 @@ set(gcf,'windowbuttondownfcn',@click);
                 Y = Y(1:round(totalPoints/15):end);
             end
             % need to alter fig property to trigger resume of waitfor
-            set(gcf,'name','cut');
+            set(gcf,'UserData',datestr(now))
         end
     end
 % wait for fig property change triggered by button release
-waitfor(gcf,'name','cut')
-% reset fig name
-set(gcf,'name',figName)
+waitfor(gcf,'UserData')
+% resume uicontrol
+if zSwitch
+    zoom on
+elseif pSwitch
+    pan on
+end
 end
 

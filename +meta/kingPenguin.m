@@ -116,10 +116,9 @@ while flag
     if strcmpi(Answer,'Yes')
         labels(end+1) = {'Exp num'};
         folderList = folders';
-        try     % maybe we already have sessions
-            seshNames = unique(dataOutput(:,strcmpi('session',labels)));
-            numSesh = numel(seshNames);
-        catch   % or maybe we don't
+        seshNames = unique(dataOutput(:,strcmpi('session',labels)));
+        numSesh = numel(seshNames);
+        if numSesh == 0
             Answer2 = inputdlg('How many sessions are in each experiment?','',1,{'3'});
             if ~isempty(Answer2)
                 numSesh = str2double(Answer2{1});

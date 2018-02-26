@@ -220,7 +220,9 @@ else
         
     elseif ~flagPP && strcmpi(clusterFormat,'MClust')   % oregon MClust
 
-        cutsForBNT = fullfile(cutAddon, 'TT; ');
+        for i = 1:length(tetrodes)
+            cutsForBNT = [cutsForBNT,fullfile(cutAddon, 'TT%u_%u; ')];
+        end
 
     elseif ~flagPP && strcmpi(clusterFormat,'SS_t')   % oregon SS
 

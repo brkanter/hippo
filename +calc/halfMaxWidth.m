@@ -38,22 +38,39 @@ for iTrode = 1:length(nttFiles)
     end
 end
 spikeFile = [userDir,'\',nttFiles(ind).name];
-[trodeTS] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
+[trodeTS,trodeData] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,1],0,1);     % open Nlx2MatSpike for help with arguments
 trodeTS_sec = (trodeTS/1000000)';
 clusterTS = spikes;
-clusterInds = knnsearch(trodeTS_sec,clusterTS);
-[DataPoints] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,3,clusterInds);
-DataPoints = DataPoints/100;        % convert to microvolts
+clusterData = trodeData(:,:,knnsearch(trodeTS_sec,clusterTS));
+clusterData = clusterData/100;        % convert to microvolts
 
-%% calculate mean waves
+%% peak alignment and averaging
 meanWave = zeros(32,4);
 for iChannel = 1:4
-    meanWave(:,iChannel) = squeeze(mean(DataPoints(:,iChannel,:),3));
-end
-
-for iChannel = 1:4
+    voltages = squeeze(clusterData(:,iChannel,:));
+    % trick to find max for each wave in matrix
+    idx = find(voltages==repmat(max(voltages,[],1),32,1));
+    [r,c] = ind2sub(size(voltages),idx);
+    peakInds = accumarray(c,r,[],@min);
+    shiftAmount = 8 - peakInds;
+    % trick for circshift using different shift amounts for each wave
+    [r,c] = size(voltages);
+    temp = mod(bsxfun(@plus,(0:r-1).',-shiftAmount(:).' ),r)+1;
+    temp = bsxfun(@plus,temp,(0:c-1)*r);
+    alignedVoltages = voltages(temp);
+    % cutoff tail (can we vectorize this??)
+    for iWave = 1:length(clusterTS)
+        v = alignedVoltages(:,iWave);
+        if shiftAmount(iWave) < 0
+            v(end-abs(shiftAmount(iWave)):end) = nan;
+            alignedVoltages(:,iWave) = v;
+        end
+    end
+    meanWave(:,iChannel) = nanmean(alignedVoltages,2);
     peaks(iChannel) = max(max(meanWave(:,iChannel)));
 end
+
+%% select dominant channel
 [maxPeak, maxPeakIdx] = max(peaks);
 halfMax = maxPeak / 2;
 

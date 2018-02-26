@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 15-Oct-2017 16:23:16
+% Last Modified by GUIDE v2.5 03-Feb-2018 16:52:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -158,16 +158,11 @@ end
 
 data.loadSessions(handles.inputFile);
 try
-    load(fullfile(handles.userDir,'posMasked.mat'))
+    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
     handles.gotPos = 1;
 catch
-    try
-        posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
-        handles.gotPos = 1;
-    catch
-        warndlg('Error getting position samples')
-        handles.gotPos = 0;
-    end
+    warndlg('Error getting position samples')
+    handles.gotPos = 0;
 end
 if handles.gotPos
     handles.posAve = posAve;
@@ -212,9 +207,6 @@ function handles = loadData(handles)
     handles.totalSpikes = 0;
     handles.spikeWidth = 0;
     handles.marker = 15;
-    for iTrode = 1:8
-        handles.trodeTS{iTrode} = '';
-    end
 
     %% plot animal path
     if handles.gotPos
@@ -422,7 +414,6 @@ set(handles.text_fieldMean, 'String', '');
 set(handles.text_fieldMax, 'String', '');
 
 %% plot animal path
-pathTrialBRK('color',[.5 .5 .5])
 hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]);
 set(hSPP,'hittest','off')
 set(gca,'ydir','reverse')
@@ -789,9 +780,13 @@ for iBlock = 1:numBlocks
     mapMat{1,iBlock} = map.z;
     meanRateMat(1,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
     subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
-    colorMapBRK(map.z,'bar','on');
-    title(sprintf('%.2f',meanRateMat(1,iBlock)))
-    hold on
+    try
+        colorMapBRK(map.z,'bar','on');
+        title(sprintf('%.2f',meanRateMat(1,iBlock)))
+        hold on
+    catch
+        axis off
+    end
 end
 figure;
 numMaps = 1:1:numBlocks;
@@ -1276,18 +1271,13 @@ for iTrode = 1:length(nttFiles)
     end
 end
 spikeFile = [handles.userDir,'\',nttFiles(ind).name];
-if isempty(handles.trodeTS{handles.tetrode})
-    [trodeTS] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,0],0,1);     % open Nlx2MatSpike for help with arguments
-    handles.trodeTS{handles.tetrode} = trodeTS;
-else
-    trodeTS = handles.trodeTS{handles.tetrode};
-end
+[trodeTS,tetrodeData,NlxHeader] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,1],1,1);     % open Nlx2MatSpike for help with arguments
 trodeTS_sec = (trodeTS/1000000)';
 clusterTS = handles.spikes;
-clusterInds = knnsearch(trodeTS_sec,clusterTS);
-[DataPoints,NlxHeader] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],1,3,clusterInds);
-ymin = (str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end)))*(-1);      % gets input range from header
-ymax = str2double(NlxHeader{strncmpi('-inputrange',NlxHeader,11)}(end-2:end));
+clusterData = tetrodeData(:,:,knnsearch(trodeTS_sec,clusterTS));
+if numel(clusterTS) < 1
+    return
+end
 
 %% create figure
 figWaves = figure;
@@ -1299,21 +1289,29 @@ try
 catch
     clusterColor = [1 0 0];
 end
-
-%% calculate mean waves
-meanWave = zeros(32,4);
-for iChannel = 1:4
-    meanWave(:,iChannel) = squeeze(mean(DataPoints(:,iChannel,:),3));
-end
+pageHeight = 16;
+pageWidth = 16;
+spCols = 5;
+spRows = 2;
+leftEdge = 0.5;
+rightEdge = 0.2;
+topEdge = 0.2;
+bottomEdge = 0.2;
+spaceX = 0.75;
+spaceY = 0.05;
+fontsize = 6;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+plotInds = [1 3 2 4 5 7 9 6 8 10];
 
 %% plot waves
-subLocWaves = [1 2 6 7];
-% DataPointsAligned = nan(32,4,numWaves);
+meanWave = zeros(32,4);
 for iChannel = 1:4         % for each electrode
-    subplot(2,5,subLocWaves(iChannel))
+    axes('position',sub_pos{ind2sub([2 5],plotInds(iChannel))});
+    meanWave(:,iChannel) = squeeze(mean(clusterData(:,iChannel,:),3));
     if ~strcmpi(align,'n')
+        
         %% peak alignment
-        voltages = squeeze(DataPoints(:,iChannel,:));
+        voltages = squeeze(clusterData(:,iChannel,:));
         % trick to find max for each wave in matrix
         idx = find(voltages==repmat(max(voltages,[],1),32,1));
         [r,c] = ind2sub(size(voltages),idx);
@@ -1333,44 +1331,206 @@ for iChannel = 1:4         % for each electrode
             end
         end
         % plot
-        patchline(meshgrid(1:32,1:numWaves)',alignedVoltages,'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
+        patchline(meshgrid(1:32,1:numWaves)',alignedVoltages,'linestyle','-','edgecolor',clusterColor,'linewidth',1,'edgealpha',0.1);
         %% peak-align mean waves as well
         meanWave(:,iChannel) = nanmean(alignedVoltages,2);
     else
-        patchline(meshgrid(1:32,1:numWaves)',squeeze(DataPoints(:,iChannel,:)),'linestyle','-','edgecolor','k','linewidth',1,'edgealpha',0.1);
+        patchline(meshgrid(1:32,1:numWaves)',squeeze(clusterData(:,iChannel,:)),'linestyle','-','edgecolor',clusterColor,'linewidth',1,'edgealpha',0.1);
     end
     %% plot mean wave and bring to front
-    hMean = animatedline(1:32,meanWave(:,iChannel));
-    set(hMean,'linestyle','-','color',clusterColor,'linewidth',2);
-    axis([1,32,ymin*100,ymax*100]);
+    hold on
+    plot(1:32,meanWave(:,iChannel),'k:','linewidth',2);
+    hold off
+    axis([1,32,min(clusterData(:)),max(clusterData(:))]);
     axis square
     ylabel('Voltage (uV)')
     xlabel('Time (usec)')
     set(gca,'XTick',[1,8,16,24,32])
     set(gca,'XTickLabel',{'0','250','500','750','1000'})
+    
+    peaks(iChannel) = max(max(meanWave(:,iChannel)));
+    [maxPeak, maxPeakIdx] = max(peaks);
+    halfMax = maxPeak / 2;
 end
 
-guidata(hObject,handles);
+%% spike width
+interpWave = interp1(1:32,meanWave(:,maxPeakIdx),1:0.01:32,'spline');
+interpMaxIdx = find(interpWave == maxPeak);
+Diff = sort(abs(halfMax - interpWave(1:interpMaxIdx))); 
+Diff2 = sort(abs(halfMax - interpWave(interpMaxIdx+1:end)));
+closest = find(abs(halfMax - interpWave) == Diff(1));
+closest2 = find(abs(halfMax - interpWave) == Diff2(1));
+spikeWidth = abs(closest - closest2) * (1/3101) * 1000;
 
 %% calculate peaks
-[DataPoints0] = io.neuralynx.Nlx2MatSpike(spikeFile,[0,0,0,0,1],0,1);  % open Nlx2MatSpike for help with arguments
-numWaves0 = size(DataPoints0,3);
+numWaves0 = size(tetrodeData,3);
 wavePeaks0 = zeros(4,numWaves0);
 wavePeaks = zeros(4,numWaves);
 for iChannel = 1:4
-    wavePeaks0(iChannel,:) = squeeze(max(DataPoints0(:,iChannel,:),[],1));
-    wavePeaks(iChannel,:) = squeeze(max(DataPoints(:,iChannel,:),[],1));
+    wavePeaks0(iChannel,:) = squeeze(max(tetrodeData(:,iChannel,:),[],1));
+    wavePeaks(iChannel,:) = squeeze(max(clusterData(:,iChannel,:),[],1));
 end
 
 %% plot peaks
-subLocPeaks = [3 4 5 8 9 10];
 peakComps = [1 2; 1 3; 1 4; 2 3; 2 4; 3 4];
 for iPeakPlot = 1:length(peakComps)
-    subplot(2,5,subLocPeaks(iPeakPlot))
+    axes('position',sub_pos{ind2sub([2 5],plotInds(iPeakPlot+4))});
     hold on
     plot(wavePeaks0(peakComps(iPeakPlot,1),:),wavePeaks0(peakComps(iPeakPlot,2),:),'k.','markersize',1)
-    plot(wavePeaks(peakComps(iPeakPlot,1),:),wavePeaks(peakComps(iPeakPlot,2),:),'.','color',clusterColor,'markersize',1)
-    axis([0,ymax*100,0,ymax*100]);
+    plot(wavePeaks(peakComps(iPeakPlot,1),:),wavePeaks(peakComps(iPeakPlot,2),:),'.','color',clusterColor,'markersize',5)
+    try
+        axis([0,max(wavePeaks0(peakComps(iPeakPlot,1),:)),0,max(wavePeaks0(peakComps(iPeakPlot,2),:))]);
+    end
+    axis square
+    xlabel(sprintf('Peak %d',peakComps(iPeakPlot,1)))
+    ylabel(sprintf('Peak %d',peakComps(iPeakPlot,2)))
+end
+
+t = suptitle(sprintf('Spike width = %.2f usec',spikeWidth));
+% trust the spike width less if peaks are misaligned...
+if strcmpi(align,'n')
+    set(t,'color',[.5 .5 .5])
+end
+
+% --- Executes on button press in butt_clustView.
+function butt_clustView_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_clustView (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% get clusters
+cellMatrix = data.getCells; 
+cellMatrix = sortrows(cellMatrix(cellMatrix(:,1) == handles.tetrode,:),[1 2]);
+numClusters = size(cellMatrix,1);
+
+%% fix me
+if strcmpi(handles.clusterFormat,'Tint')
+    disp('Not currently available for this cluster format.')
+    return
+end
+
+%% settings
+prompt={'Do you want to align all the peaks?'};
+name='Alignment';
+numlines=1;
+defaultanswer={'n'};
+Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+if isempty(Answers); return; end;
+align = Answers{1};
+
+%% create figure
+figWaves = figure;
+set(figWaves,'position',get(0,'screensize'))
+try
+    load cutterColorsBRK
+    clusterColor = cutterColorsBRK(3:numClusters+2,:);
+catch
+    cmap = colormap('jet');
+    clusterColor = cmap(round(linspace(1,64,numClusters)),:);
+end
+pageHeight = 16;
+pageWidth = 16;
+spCols = 5;
+spRows = 2;
+leftEdge = 0.5;
+rightEdge = 0.2;
+topEdge = 0.2;
+bottomEdge = 0.2;
+spaceX = 0.75;
+spaceY = 0.05;
+fontsize = 6;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+plotInds = [1 3 2 4 5 7 9 6 8 10];
+
+%% tetrode data
+nttFiles = dir(fullfile(handles.userDir,'*.ntt'));
+for iTrode = 1:length(nttFiles)
+    found = regexp(nttFiles(iTrode).name,sprintf('TT%d',handles.tetrode),'once');
+    if ~isempty(found)
+        ind = iTrode;
+        break
+    end
+end
+spikeFile = [handles.userDir,'\',nttFiles(ind).name];
+[trodeTS,tetrodeData,NlxHeader] = io.neuralynx.Nlx2MatSpike(spikeFile,[1,0,0,0,1],1,1);     % open Nlx2MatSpike for help with arguments
+trodeTS_sec = (trodeTS/1000000)';
+
+%% cluster data
+for iCluster = 1:numClusters
+    spikes = data.getSpikeTimes([cellMatrix(iCluster,1) cellMatrix(iCluster,2)]);
+    clusterTS = spikes;
+    clusterData{iCluster} = tetrodeData(:,:,knnsearch(trodeTS_sec,clusterTS));
+end
+
+%% plot waves
+meanWave = zeros(32,4);
+for iChannel = 1:4         % for each electrode
+    axes('position',sub_pos{ind2sub([2 5],plotInds(iChannel))});
+    for iCluster = 1:numClusters
+        meanWave(:,iChannel) = squeeze(mean(clusterData{iCluster}(:,iChannel,:),3));
+        if ~strcmpi(align,'n')
+            
+            %% peak alignment
+            voltages = squeeze(clusterData{iCluster}(:,iChannel,:));
+            % trick to find max for each wave in matrix
+            idx = find(voltages==repmat(max(voltages,[],1),32,1));
+            [r,c] = ind2sub(size(voltages),idx);
+            peakInds = accumarray(c,r,[],@min);
+            shiftAmount = 8 - peakInds;
+            % trick for circshift using different shift amounts for each wave
+            [r,c] = size(voltages);
+            temp = mod(bsxfun(@plus,(0:r-1).',-shiftAmount(:).' ),r)+1;
+            temp = bsxfun(@plus,temp,(0:c-1)*r);
+            alignedVoltages = voltages(temp);
+            % cutoff tail (can we vectorize this??)
+            for iWave = 1:size(alignedVoltages,2)
+                v = alignedVoltages(:,iWave);
+                if shiftAmount(iWave) < 0
+                    v(end-abs(shiftAmount(iWave)):end) = nan;
+                    alignedVoltages(:,iWave) = v;
+                end
+            end
+            %% peak-align mean waves as well
+            meanWave(:,iChannel) = nanmean(alignedVoltages,2);
+        else
+        end
+        %% plot mean wave
+%         hold on
+%         plot(1:32,meanWave(:,iChannel),'-','color',clusterColor(iCluster,:),'linewidth',3)
+%         hold off
+        patchline(meshgrid(1:32,1:2)',[meanWave(:,iChannel),meanWave(:,iChannel)],'linestyle','-','edgecolor',clusterColor(iCluster,:),'linewidth',3,'edgealpha',0.4)
+        axis([1,32,min(tetrodeData(:)),max(tetrodeData(:))]);
+        axis square
+        ylabel('Voltage (uV)')
+        xlabel('Time (usec)')
+        set(gca,'XTick',[1,8,16,24,32])
+        set(gca,'XTickLabel',{'0','250','500','750','1000'})
+    end
+end
+
+%% calculate peaks
+numWaves0 = size(tetrodeData,3);
+wavePeaks0 = zeros(4,numWaves0);
+wavePeaks = cell(1,numClusters);
+for iChannel = 1:4
+    wavePeaks0(iChannel,:) = squeeze(max(tetrodeData(:,iChannel,:),[],1));
+    for iCluster = 1:numClusters
+        wavePeaks{iCluster}(iChannel,:) = squeeze(max(clusterData{iCluster}(:,iChannel,:),[],1));
+    end
+end
+
+%% plot peaks
+peakComps = [1 2; 1 3; 1 4; 2 3; 2 4; 3 4];
+for iPeakPlot = 1:length(peakComps)
+    axes('position',sub_pos{ind2sub([2 5],plotInds(iPeakPlot+4))});
+    hold on
+    plot(wavePeaks0(peakComps(iPeakPlot,1),:),wavePeaks0(peakComps(iPeakPlot,2),:),'k.','markersize',1)
+    for iCluster = 1:numClusters
+        plot(wavePeaks{iCluster}(peakComps(iPeakPlot,1),:),wavePeaks{iCluster}(peakComps(iPeakPlot,2),:),'.','color',clusterColor(iCluster,:),'markersize',5)
+    end
+    try
+        axis([0,max(wavePeaks0(peakComps(iPeakPlot,1),:)),0,max(wavePeaks0(peakComps(iPeakPlot,2),:))]);
+    end
     axis square
     xlabel(sprintf('Peak %d',peakComps(iPeakPlot,1)))
     ylabel(sprintf('Peak %d',peakComps(iPeakPlot,2)))
@@ -2019,5 +2179,4 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-
 
