@@ -310,8 +310,10 @@ for iFolder = 1:length(folders)
                 clustData(iCluster,iFolder,expNum).thetaSpikes = thetaIndSpikes;
                 clustData(iCluster,iFolder,expNum).thetaLFP = thetaIndLFP;
             end
+            
+            %% objects
             if include.obj
-                [objRate objTime] = calc.objectAnalyis(map,objectLocations);
+                [objRate objTime] = calc.objectAnalysis(map,objectLocations);
                 clustData(iCluster,iFolder,expNum).rateRatioO1 = objRate(1);
                 clustData(iCluster,iFolder,expNum).rateRatioO2 = objRate(2);
                 clustData(iCluster,iFolder,expNum).ratePvalO1 = objRate(3);
