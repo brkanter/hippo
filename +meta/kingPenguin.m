@@ -145,6 +145,12 @@ while flag
     end
 end
 
+%% convert some numbers into strings to make things easier later 
+dataOutput(:,strcmpi('quality',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('quality',labels)),'uniformoutput',0);
+dataOutput(:,strcmpi('cell num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('cell num',labels)),'uniformoutput',0);
+dataOutput(:,strcmpi('exp num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('exp num',labels)),'uniformoutput',0);
+dataOutput(cell2mat(cellfun(@isnan,dataOutput(:,strcmpi('cno num',labels)),'uniformoutput',0)),strcmpi('cno num',labels)) = {0};
+
 %% add within-session stability
 seshNames = unique(dataOutput(:,strcmpi('session',labels)),'stable');
 if ~isempty(seshNames)
@@ -157,19 +163,13 @@ if ~isempty(seshNames)
     defaultanswer = seshNames;
     Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
     if isempty(Answers)
-        return
+        warning('Skipping within-session stability.')
     else
         [dataOutput,labels] = minions.addStability(dataOutput,labels,Answers);
     end
 else
     warning('Skipping within-session stability because no session names detected.')
 end
-
-%% convert some numbers into strings to make things easier later 
-dataOutput(:,strcmpi('quality',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('quality',labels)),'uniformoutput',0);
-dataOutput(:,strcmpi('cell num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('cell num',labels)),'uniformoutput',0);
-dataOutput(:,strcmpi('exp num',labels)) = cellfun(@num2str,dataOutput(:,strcmpi('exp num',labels)),'uniformoutput',0);
-dataOutput(cell2mat(cellfun(@isnan,dataOutput(:,strcmpi('cno num',labels)),'uniformoutput',0)),strcmpi('cno num',labels)) = {0};
 
 %% save output
 save(matFile,'dataOutput','labels');
