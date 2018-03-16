@@ -116,7 +116,7 @@ while flag
     if strcmpi(Answer,'Yes')
         labels(end+1) = {'Exp num'};
         folderList = folders';
-        seshNames = unique(dataOutput(:,strcmpi('session',labels)));
+        seshNames = unique(dataOutput(:,strcmpi('session',labels)),'stable');
         numSesh = numel(seshNames);
         if numSesh == 0
             Answer2 = inputdlg('How many sessions are in each experiment?','',1,{'3'});
@@ -143,6 +143,26 @@ while flag
     else
         flag = 0;
     end
+end
+
+%% add within-session stability
+seshNames = unique(dataOutput(:,strcmpi('session',labels)),'stable');
+if ~isempty(seshNames)
+    prompt = cell(1);
+    for i = 1:length(seshNames)
+        prompt{i} = ['Session ' num2str(i)];
+    end
+    name = 'Map settings';
+    numlines = 1;
+    defaultanswer = seshNames;
+    Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
+    if isempty(Answers)
+        return
+    else
+        [dataOutput,labels] = minions.addStability(dataOutput,labels,Answers);
+    end
+else
+    warning('Skipping within-session stability because no session names detected.')
 end
 
 %% convert some numbers into strings to make things easier later 
