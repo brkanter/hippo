@@ -336,7 +336,16 @@ for iFolder = 1:length(folders)
                 
                 sesh1comp = ccComps(iCorrs,1) + seshPerExp * (expNum-1);
                 sesh2comp = ccComps(iCorrs,2) + seshPerExp * (expNum-1);
-                CC = analyses.spatialCrossCorrelation(clustData(iCluster,sesh1comp,expNum).rateMap,clustData(iCluster,sesh2comp,expNum).rateMap);
+                m1 = clustData(iCluster,sesh1comp,expNum).rateMap;
+                m2 = clustData(iCluster,sesh2comp,expNum).rateMap;
+                % map rotations?
+%                 if sesh1comp > 1 && sesh1comp < 6
+%                     m1 = rot90(m1,2);
+%                 end
+%                 if sesh2comp > 1 && sesh2comp < 6
+%                     m2 = rot90(m2,2);
+%                 end
+                CC = analyses.spatialCrossCorrelation(m1,m2);
                 % store in repeating fashion for each session
                 for iSession = (iFolder-seshPerExp+1):iFolder
                     eval(sprintf('clustData(iCluster,iSession,expNum).cc%dvs%d = CC;',ccComps(iCorrs,1),ccComps(iCorrs,2)));
