@@ -3,8 +3,11 @@
 % to check for theta power in the LFP during screening.
 %
 %   USAGE
-%       plt.powerSpectrum(<CSCnums>)
-%       CSCnums         (optional) vector specifying which CSC numbers to analyze (default = 
+%       plt.powerSpectrum(<CSCnums>,<numSesh>)
+%       CSCnums         (optional) vector specifying which CSC numbers to
+%                       analyze (default = 1:4)
+%       numSesh         (optional) double specifying number of sessions to
+%                       analyze (default = 10)
 %
 %   NOTES
 %       This function works by searching directories for your mouse ID and may fail
@@ -13,12 +16,15 @@
 %
 % Written by BRK 2015
 
-function powerSpectrum(CSCnums)
+function powerSpectrum(CSCnums,numSesh)
 
 %% choose directory and CSC files
 userDir = uigetdir();
-if ~exist('CSCnums','var')
+if ~exist('CSCnums','var') || isempty(CSCnums)
     CSCnums = 1:4;
+end
+if ~exist('numSesh','var')
+    numSesh = 10;
 end
 
 %% find directory names
@@ -57,19 +63,19 @@ else
 end
 
 %% find all session names and show 10 most recent
-numSesh = 0;
+seshCount = 0;
 for iFolder = 1:length(names)
     ind = strfind(names{iFolder},mouseName);
     if ~isempty(ind)
-        numSesh = numSesh + 1;
-        nameStore{numSesh} = names{iFolder};
+        seshCount = seshCount + 1;
+        nameStore{seshCount} = names{iFolder};
     end
 end
-if numSesh > 10
-    nameStore = nameStore(end-9:end);
-    numSesh = 10;
-    display('Warning! Only showing 10 most recent sessions ...')
-elseif ~numSesh
+if seshCount > numSesh
+    nameStore = nameStore(end-(numSesh-1):end);
+    seshCount = numSesh;
+    fprintf('Only showing %d most recent sessions ...\n',numSesh)
+elseif ~seshCount
     error('Did not find any directories matching mouse name: %s',mouseName)
 end
 
@@ -85,8 +91,8 @@ set(gcf,'name',mouseName)
 %% do it
 plotSize = ceil(sqrt(numel(CSCnums)));
 for iCSC = CSCnums
-    power = nan(numSesh,nPower);
-    for iSession = 1:numSesh
+    power = nan(seshCount,nPower);
+    for iSession = 1:seshCount
         % get data and clean up
         fileEnding = sprintf('CSC%d.ncs',iCSC);
         filename = fullfile(splits{1:end-1},nameStore{iSession},fileEnding);
@@ -139,7 +145,7 @@ for iCSC = CSCnums
     %% heat maps for each recording session for each LFP channel
     figure(h1)
     subplot(plotSize,plotSize,find(CSCnums == iCSC))
-    imagesc(hz(hzBounds(1):hzBounds(2)),1:numSesh,power(:,hzBounds(1):hzBounds(2)))
+    imagesc(hz(hzBounds(1):hzBounds(2)),1:seshCount,power(:,hzBounds(1):hzBounds(2)))
     xlabel('Frequency'), ylabel('Session')
     title(fileEnding(1:end-4))
     
@@ -148,7 +154,7 @@ for iCSC = CSCnums
     figure(h2);
     subplot(plotSize,plotSize,find(CSCnums == iCSC))
     cmap = colormap('jet');
-    cmap = cmap(round(linspace(1,length(cmap),numSesh)),:);
+    cmap = cmap(round(linspace(1,length(cmap),seshCount)),:);
     set(gca,'colororder',cmap,'NextPlot','replacechildren')
     plot(hz(hzBounds(1):hzBounds(2)),power(:,hzBounds(1):hzBounds(2)))
     axis([1 15 0 nanmax(nanmax(power(:,hzBounds(1):hzBounds(2))))])

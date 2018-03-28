@@ -872,13 +872,15 @@ for iCluster = 1:numClusters
     end
     %% make rate maps
     for iBlock = 1:numBlocks
-        map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-        mapMat{iCluster,iBlock} = map.z;
-        meanRateMat(iCluster,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
-        subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
-        colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-        title(sprintf('%.2f',meanRateMat(iCluster,iBlock)))
-        hold on
+        try
+            map = analyses.map([spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y], spikesStruct(iBlock).s, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
+            mapMat{iCluster,iBlock} = map.z;
+            meanRateMat(iCluster,iBlock) = analyses.meanRate(spikesStruct(iBlock).s,[spikesStruct(iBlock).t spikesStruct(iBlock).x spikesStruct(iBlock).y]);
+            subplot(ceil(sqrt(numBlocks)),ceil(sqrt(numBlocks)),iBlock)
+            colorMapBRK(map.z,'bar','on','pubQual',pubQual);
+            title(sprintf('%.2f',meanRateMat(iCluster,iBlock)))
+            hold on
+        end
     end
 end
 figure;

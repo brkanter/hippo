@@ -66,9 +66,7 @@ for iFolder = 1:length(folders)
     data.loadSessions(hippoGlobe.inputFile);    
     
     %% get positions, spikes, map, and rates
-    pos = data.getPositions('average','off','speedFilter',hippoGlobe.posSpeedFilter);
-    posAve = data.getPositions('speedFilter',hippoGlobe.posSpeedFilter);
-    save(fullfile(folders{1,iFolder},'posCleanScaled.mat'),'pos','posAve');
+    posAve = minions.loadPosClean(folders{1,iFolder});
     posT = posAve(:,1);
     posX = posAve(:,2);
     posY = posAve(:,3);

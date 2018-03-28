@@ -48,7 +48,7 @@ params.pad = 2;
 params.trialave = 1;
 params.err = 0;
 
-[specPower,specTime,specFreq] = mtspecgramc(dt',movingWin,params);
+[specPower,specTime,specFreq] = mtspecgramc(dt,movingWin,params);
 
 %% plot
 figure;

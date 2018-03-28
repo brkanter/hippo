@@ -26,7 +26,7 @@ for iSession = 1:numel(sessions)
     clusterNums = unique(extract.cols(raw,labels,'cell num'),'stable');
     numTotalClusters = length(clusterNums);
     for iCluster = 1:numTotalClusters
-        display(sprintf('Cluster %d of %d',iCluster,numTotalClusters))
+%         display(sprintf('Cluster %d of %d',iCluster,numTotalClusters))
         folder = extract.cols(raw,labels,'folder','cell num',clusterNums{iCluster},'session',sessions{iSession});
         if isempty(folder)
             raw(strcmpi(raw(:,strcmpi('cell num',labels)),clusterNums{iCluster}), ...
