@@ -114,7 +114,7 @@ function circularTurningBRK(data, varargin)
 
     hold on;
     %% BRK
-    plot(x, y, varargin{:},'k','linewidth',3);
+    plot(x, y, varargin{:});
     set(gca,'ydir','reverse')
     %%
         

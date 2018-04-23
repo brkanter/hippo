@@ -273,7 +273,7 @@ for iFolder = 1:length(folders)
                     meanAngle = nan;
                 end
                 clustData(iCluster,iFolder,expNum).mvl = vLength;
-                clustData(iCluster,iFolder,expNum).angle = meanAngle;
+                clustData(iCluster,iFolder,expNum).angle = mod(360-meanAngle,360);
             end
             
             %% speed

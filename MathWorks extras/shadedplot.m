@@ -25,6 +25,7 @@ function [ha hb hc] = shadedplot(x, y1, y2, varargin)
 %
 %   Example:
 %
+% figure
 %     x1 = [1 2 3 4 5 6];
 %     y1 = x1;
 %     y2 = x1+1;
@@ -46,7 +47,7 @@ set(ha, 'LineStyle', 'none')
 hold on 
 hb = plot(x, y1, 'LineWidth', 1);
 hc = plot(x, y2, 'LineWidth', 1);
-hold off
+% hold off
 
 % set the line and area colors if they are specified
 switch length(varargin)

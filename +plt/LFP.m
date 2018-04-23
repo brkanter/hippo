@@ -39,6 +39,27 @@ ylabel 'Voltage (uV)'
 cmap = colormap('parula');
 cmap = cmap(round(linspace(1,50,numTraces)),:);
 
+try % animal speed colorbar
+    global hippoGlobe
+    writeInputBNT(hippoGlobe.inputFile,path,hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile)
+    pos = data.getPositions();
+    s = general.speed(pos);
+    s(isnan(s)) = 0;
+    if hippoGlobe.posSpeedFilter(1) > 0 && hippoGlobe.posSpeedFilter(1) <= 5
+        [~,~,s] = histcounts(s,[0 hippoGlobe.posSpeedFilter(1) 5 10 15 20 25 30 inf]);
+        speedLabels = {sprintf('Below %d',hippoGlobe.posSpeedFilter(1)), ...
+                    sprintf('%d - 5',hippoGlobe.posSpeedFilter(1)), ...
+                    '5 - 10','10 - 15','15 - 20','20 - 25','25 - 30','30+'};
+    elseif hippoGlobe.posSpeedFilter(1) > 5 && hippoGlobe.posSpeedFilter(1) <= 10
+        [~,~,s] = histcounts(s,[0 hippoGlobe.posSpeedFilter(1) 10 15 20 25 30 inf]);
+        speedLabels = {sprintf('Below %d',hippoGlobe.posSpeedFilter(1)), ...
+                    sprintf('%d - 10',hippoGlobe.posSpeedFilter(1)), ...
+                    '10 - 15','15 - 20','20 - 25','25 - 30','30+'};
+    end
+    
+end
+
 %% load trace(s)
 for iTrace = 1:numTraces
     
@@ -77,7 +98,14 @@ for iTrace = 1:numTraces
         xVals = linspace(0,length(dt_resampled)/rsrate,length(dt_resampled));   % convert to secs
         if numTraces > 1
             plot(xVals,dt_resampled,'color',cmap(iTrace,:))
-            offset = max(abs(dt_resampled));
+            offset = std(dt_resampled)*3;
+            try % animal speed colorbar
+                speedX = linspace(0,length(s)/25,length(s));   % convert to secs
+                cmapSpeed = getColors('jet',numel(unique(s)));
+                cmapSpeed(1,:) = 0;
+                hotLine(speedX,zeros(1,length(speedX))+offset,zeros(1,length(speedX)),s,8,cmapSpeed)
+                colorbar('TickLabels',speedLabels,'FontWeight','bold');
+            end
         else
             plot(xVals,dt_resampled,'k')
         end
@@ -89,7 +117,7 @@ for iTrace = 1:numTraces
 end
 
 %% legend
-[~,icons] = legend(name,'location','eastoutside','box','off');
+[~,icons] = legend(flipud(findobj(gca,'type','line')),name,'location','eastoutside','box','off');
 set(findobj(icons,'type','line'),'linew',3)
 
 disp('Done.')

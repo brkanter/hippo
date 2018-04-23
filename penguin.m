@@ -920,8 +920,10 @@ allHD = analyses.calcHeadDirection(pos);
 tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
 tcStat = analyses.tcStatistics(tc,6,20);
 figure;
-circularTurningBRK(tc(:,2))
-title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,tcStat.mean));
+circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
+hold on
+circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
+title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,mod(360-tcStat.mean,360)));
 
 % --- Executes on button press in butt_batchHD.
 function butt_batchHD_Callback(hObject, eventdata, handles)
@@ -949,10 +951,11 @@ for iCluster = 1:numClusters
     subplot(plotSize,plotSize,iCluster)
     tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
     tcStat = analyses.tcStatistics(tc,6,20);
-    circularTurningBRK(tc(:,2))
+    circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
+    hold on
+    circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
     axis equal
-    title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',handles.tetrode,handles.cluster,tcStat.r,tcStat.mean));
-    title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),tcStat.r,tcStat.mean));
+    title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),tcStat.r,mod(360-tcStat.mean,360)));
 end
 saveas(figBatchHD,fullfile(handles.userDir,sprintf('HDplots_%s.pdf',splitHandlesUserDir{end})));
 
@@ -1740,9 +1743,11 @@ for iCluster = 1:numClusters
         spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
         tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
         tcStat = analyses.tcStatistics(tc, 10, 20);
-        circularTurningBRK(tc(:,2))
+        circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
+        hold on
+        circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
         axis equal
-        title(sprintf('length = %.2f angle = %.2f',tcStat.r,tcStat.mean),'fontweight','normal','fontsize',10);
+        title(sprintf('length = %.2f angle = %.2f',tcStat.r,mod(360-tcStat.mean,360)),'fontweight','normal','fontsize',10);
 
         %% grid
         subplot(324)

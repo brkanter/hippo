@@ -60,6 +60,18 @@ plot(xVals,dt_resampled,'k')
 xlabel 'Time (sec)'
 ylabel 'Voltage (uV)'
 
+try % animal speed colorbar
+    global hippoGlobe
+    writeInputBNT(hippoGlobe.inputFile,path,hippoGlobe.arena,hippoGlobe.clusterFormat)
+    data.loadSessions(hippoGlobe.inputFile)
+    pos = data.getPositions();
+    s = general.speed(pos);
+    s(isnan(s)) = inf; % NaNs are not good ripple times
+    [~,~,s] = histcounts(s,[0 hippoGlobe.posSpeedFilter(1) inf]);
+    speedLabels = {sprintf('Below %d',hippoGlobe.posSpeedFilter(1)), ...
+        sprintf('%d+',hippoGlobe.posSpeedFilter(1))};
+end
+
 % allow quick switching between x limits
 uicontrol(gcf,'style','togglebutton', ...
     'string','<html>Change x range<br>to 2 sec', ...
@@ -72,7 +84,7 @@ if sum(strcmpi('theta',varargin))
     disp('Theta filter...')
     [b a] = butter(2,[4/(rsrate/2) 12/(rsrate/2)],'bandpass');
     filt_theta = filter(b,a,dt_resampled);
-    offset = max(abs(dt_resampled));
+    offset = std(dt_resampled)*3;
     plot(xVals,filt_theta - offset,'b')
     
     % resize window
@@ -85,9 +97,15 @@ if sum(strcmpi('ripple',varargin))
     [b a] = butter(2,[100/(rsrate/2) 400/(rsrate/2)],'bandpass');
     filt_ripple = filter(b,a,dt_resampled);
     if ~exist('offset','var')
-        offset = max(abs(dt_resampled));
+        offset = std(dt_resampled)*3;
     end
     plot(xVals,filt_ripple + offset,'r')
+    try % animal speed colorbar
+        speedX = linspace(0,length(s)/25,length(s));   % convert to secs
+        cmapSpeed = [0 0 1; 0 0 0]; % bllue is good times, black is bad times (high speed)
+        hotLine(speedX,zeros(1,length(speedX))+offset*2,zeros(1,length(speedX)),s,8,cmapSpeed)
+        colorbar('Ticks',1:2,'TickLabels',speedLabels,'FontWeight','bold');
+    end
     
     % resize window
     if sum(strcmpi('theta',varargin))

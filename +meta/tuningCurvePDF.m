@@ -207,7 +207,9 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             for iPltSession = 1:spCols           % each session
                 axes('position',sub_pos{iPltCluster,iPltSession}); %#ok<LAXES>
                 if ~isempty(mapMat{cellCount,sessionCount})    % make sure map exists
-                    circularTurningBRK(tcMat{cellCount,sessionCount}(:,2))
+                    circularTurningBRK(tc{cellCount,sessionCount}(:,2)/max(tc{cellCount,sessionCount}(:,2)),'k-','linewidth',3)
+                    hold on
+                    circularTurningBRK(tc{cellCount,sessionCount}(:,3)/max(tc{cellCount,sessionCount}(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
                     axis equal
                 else
                     cellCount = cellCount + 1;
