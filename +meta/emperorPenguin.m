@@ -134,6 +134,10 @@ for iFolder = 1:length(folders)
     %% extract necessary measures that don't rely on clusters to save time
     if include.HD
         pos = data.getPositions('average','off','speedFilter',hippoGlobe.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),hippoGlobe.mapLimits(1),hippoGlobe.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),hippoGlobe.mapLimits(3),hippoGlobe.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),hippoGlobe.mapLimits(1),hippoGlobe.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),hippoGlobe.mapLimits(3),hippoGlobe.mapLimits(4));
         allHD = analyses.calcHeadDirection(pos);
     end
     if include.speed
@@ -261,7 +265,7 @@ for iFolder = 1:length(folders)
             
             %% head direction
             if include.HD
-                [spikePos,spkInd] = data.getSpikePositions(spikes,posAve);
+                [spikePos,spkInd] = data.getSpikePositions(spikes,pos);
                 try
                     spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
                     tc = analyses.turningCurve(spkHDdeg,allHD,data.sampleTime,'binWidth',binWidthHD);

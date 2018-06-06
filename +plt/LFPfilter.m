@@ -2,7 +2,7 @@
 % Plot broadband LFP trace, optionally adding theta- and ripple-band filtered traces.
 %
 %   USAGE
-%       plt.LFP(<options>)
+%       plt.LFPfilter(<options>)
 %       <options>       'theta' and/or 'ripple' will add these filtered traces
 %
 %   NOTES
@@ -28,7 +28,7 @@ end
 filename = fullfile(path,name);
 
 disp('Loading CSC file...')
-[~,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
+[Timestamps,SampleFrequency,Samples,Header] = io.neuralynx.Nlx2MatCSC(filename,[1 0 1 0 1],1,1);
 squeezedSamples = reshape(Samples,512*size(Samples,2),1);   
 
 % scale to microvolts
@@ -100,6 +100,13 @@ if sum(strcmpi('ripple',varargin))
         offset = std(dt_resampled)*3;
     end
     plot(xVals,filt_ripple + offset,'r')
+    
+    %
+%     load('G:\Ymaze\Refined\2017-10-29_08-06-24_VK121_maze_BL\2017-10-29_08-06-24_VK121_maze_BL_T1C1_4F18E1C1F7DD8BB0235E118FF7CC7AED.mat')
+%     plot(cellTS-(Timestamps(1)/1000000),ones(1,length(cellTS))+1000,'b*')
+    %
+    
+    
     try % animal speed colorbar
         speedX = linspace(0,length(s)/25,length(s));   % convert to secs
         cmapSpeed = [0 0 1; 0 0 0]; % bllue is good times, black is bad times (high speed)

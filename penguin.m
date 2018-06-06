@@ -914,11 +914,15 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 
 %% calculate HD
 pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-[~,spkInd] = data.getSpikePositions(handles.spikes, handles.posAve);
+pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+[~,spkInd] = data.getSpikePositions(handles.spikes,pos);
 spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
 allHD = analyses.calcHeadDirection(pos);
 tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
-tcStat = analyses.tcStatistics(tc,6,20);
+tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
 figure;
 circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
 hold on
@@ -934,6 +938,10 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 %% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
 msg = msgbox('Loading position data for each LED...');
 pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
 close(msg);
 cellMatrix = data.getCells; 
 cellMatrix = sortrows(cellMatrix,[1 2]);
@@ -944,13 +952,13 @@ figBatchHD = figure;
 set(figBatchHD,'Name',handles.userDir,'Color','w')
 for iCluster = 1:numClusters
     spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
+    [~,spkInd] = data.getSpikePositions(spikes,pos);
     spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
     figure(figBatchHD);
     plotSize = ceil(sqrt(numClusters));
     subplot(plotSize,plotSize,iCluster)
     tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
-    tcStat = analyses.tcStatistics(tc,6,20);
+    tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
     circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
     hold on
     circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
