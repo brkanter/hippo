@@ -35,6 +35,8 @@ array = extract.rows(array,labels,'keep','cell num',cellsToKeep);
 cellsToKeep = [];
 switch cellType
     
+    case 'inhibitory'
+        return
     case 'place'
         for iSession = 1:length(sessionsToCheck)
             temp = extract.cols(array,labels,'cell num','session',sessionsToCheck{iSession},'mean rate','>=',0.1,'number of fields','>',0);

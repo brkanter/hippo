@@ -31,7 +31,7 @@
 %    'pubQual'**   interpolate map for finer smoothing,
 %                  either 0 (default) or 1
 %    'aspectRat'** set aspect ratio to something other than square (default)
-%    'clrMap'**    colormap other than 'jet' (default)
+%    'clrMap'**    colormap other than 'viridis' (default)
 %
 %   **BRK 2014
 %   =========================================================================
@@ -159,7 +159,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     if exist('clrMap','var')
         colormap(a,clrMap)
     else
-        colormap(a,jet(64));
+%         colormap(a,jet(64));
+        colormap(a,viridis(64));
     end
     %%
     

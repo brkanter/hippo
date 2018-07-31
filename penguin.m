@@ -157,6 +157,11 @@ catch caughtErr
 end
 
 data.loadSessions(handles.inputFile);
+
+if isfield(hippoGlobe,'cameraLimits') && ~isempty(hippoGlobe.cameraLimits)
+    minions.cameraLims(handles.userDir)
+end
+
 try
     posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
     handles.gotPos = 1;
@@ -309,17 +314,17 @@ try
     clustData.WriteTfiles;
     writeInputBNT(handles.inputFile, TTdn, handles.arena, handles.clusterFormat, [], clusterDir);
     data.loadSessions(handles.inputFile);
+    
+    if isfield(hippoGlobe,'cameraLimits') && ~isempty(hippoGlobe.cameraLimits)
+        minions.cameraLims(handles.userDir)
+    end
+    
     try
-        load(fullfile(handles.userDir,'posMasked.mat'))
+        posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
         handles.gotPos = 1;
     catch
-        try
-            posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
-            handles.gotPos = 1;
-        catch
-            warndlg('Error getting position samples')
-            handles.gotPos = 0;
-        end
+        warndlg('Error getting position samples')
+        handles.gotPos = 0;
     end
     helpers.deleteCache(handles.inputFile);
 catch
