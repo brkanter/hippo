@@ -304,13 +304,13 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                 Xlims = get(gca,'xlim');
                 Ylims = get(gca,'ylim');                
                 switch expType                    
-                    case {1,7,8}
+                    case {1,6,7,8}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             Q = qualityMat{cellCount,sessionCount};
                             if strcmpi(Q,'4')
                                 Q = 'off';
                             end
-                            bottomTitle = title(sprintf('T%dC%d  Q%s  m=%.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},Q,meanMat{cellCount,sessionCount}));
+                            bottomTitle = title(sprintf('T%dC%d  Q%s  %.2f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},Q,meanMat{cellCount,sessionCount}));
                             set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))+5.5],'VerticalAlignment','bottom','FontSize',9)
                             if strcmpi(Q,'3')
                                 set(bottomTitle,'color','r')
@@ -321,7 +321,7 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                                 set(scaleBar,'FontSize',8)
                             end
                         end
-                    case {2,3,5,6}
+                    case {2,3,5}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             bottomTitle = title(sprintf('T%dC%d  [%.2f]  [%.2f]',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},meanMat{cellCount,sessionCount},peakMat{cellCount,sessionCount}));
                             set(bottomTitle,'Position',[(Xlims(2)-Xlims(1))/1.87,(Ylims(2)-Ylims(1))/0.8],'VerticalAlignment','bottom','FontSize',9)

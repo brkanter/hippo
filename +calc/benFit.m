@@ -62,5 +62,7 @@ AR2 = 1 - (SSresid/SStotal) * ((length(y)-1) / (length(y)-degree-1));
 
 %% plot best fit line
 if showLine
+    hold on
     plot(x,yfit,'k-','linewidth',2)
+    hold off
 end

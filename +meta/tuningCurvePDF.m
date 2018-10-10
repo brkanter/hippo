@@ -95,6 +95,8 @@ for iFolder = 1:length(allFolders)
         tcMat{iCluster,iFolder} = tc;
         vectorLengthMat{iCluster,iFolder} = tcStat.r;
         meanAngleMat{iCluster,iFolder} = tcStat.mean;
+        quality = minions.loadQualityInfo(allFolders{1,iFolder},cellMatrix(iCluster,1),cellMatrix(iCluster,2));
+        qualityMat{iCluster,iFolder} = num2str(quality);
     end
 end
 
@@ -207,9 +209,9 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
             for iPltSession = 1:spCols           % each session
                 axes('position',sub_pos{iPltCluster,iPltSession}); %#ok<LAXES>
                 if ~isempty(mapMat{cellCount,sessionCount})    % make sure map exists
-                    circularTurningBRK(tc{cellCount,sessionCount}(:,2)/max(tc{cellCount,sessionCount}(:,2)),'k-','linewidth',3)
+                    circularTurningBRK(tcMat{cellCount,sessionCount}(:,2)/max(tcMat{cellCount,sessionCount}(:,2)),'k-','linewidth',3)
                     hold on
-                    circularTurningBRK(tc{cellCount,sessionCount}(:,3)/max(tc{cellCount,sessionCount}(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
+                    circularTurningBRK(tcMat{cellCount,sessionCount}(:,3)/max(tcMat{cellCount,sessionCount}(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
                     axis equal
                 else
                     cellCount = cellCount + 1;
@@ -227,13 +229,23 @@ for iExp = 1:(length(allFolders)/numSesh)  % every experiment
                     case {2,3,5,6}
                         if ~isempty(mapMat{cellCount,sessionCount})
                             bottomTitle = title(sprintf('T%dC%d  r = %.4f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},vectorLengthMat{cellCount,sessionCount}));
-                            set(bottomTitle,'Position',[0,Ylims(2)+(Ylims(2)*0.1)],'VerticalAlignment','bottom','FontSize',9)
+                            set(bottomTitle,'Position',[0,Ylims(2)+(Ylims(2)*0.45)],'VerticalAlignment','bottom','FontSize',9)
                         end
                     case 4
                         if ~isempty(mapMat{cellCount,sessionCount})
                             bottomTitle = title(sprintf('T%dC%d  r = %.4f',tetrodeMat{cellCount,sessionCount},clusterMat{cellCount,sessionCount},vectorLengthMat{cellCount,sessionCount}));
                             set(bottomTitle,'Position',[0,Ylims(2)+(Ylims(2)*0.1)],'VerticalAlignment','bottom','FontSize',9)
                         end
+                end
+                % add quality
+                Q = qualityMat{cellCount,sessionCount};
+                if strcmpi(Q,'4')
+                    Q = 'off';
+                end
+                if strcmpi(Q,'3')
+                    set(bottomTitle,'color','r')
+                elseif strcmpi(Q,'off')
+                    set(bottomTitle,'color',[0.5 0.5 0.5])
                 end
                 %% column labels
                 if iPltCluster == 1
