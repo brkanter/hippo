@@ -1,5 +1,5 @@
 Name: general; Version: 1.0
-Sessions Q:\chrislyk\MATLAB practice files\Experiments\11-01_11-02\2016-11-02_08-38-48_CML120_B
-Cuts PP4_TT%u_%u; PP6_TT%u_%u; PP7_TT%u_%u; 
-Units 1  1  2  3  4  5  6  7; 2  1  2; 3  1  10   2   3   4   5   6   7   8   9; 
+Sessions O:\chrislyk\Test Sessions\2018-11-29_11-23-44_MEC20
+Cuts TT%u_%u; TT%u_%u; TT%u_%u; 
+Units 1  1  2  3; 2  1  2; 3  1; 
 Shape cylinder 60 60

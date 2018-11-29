@@ -979,60 +979,24 @@ function butt_grid_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% prompt for settings
-prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
-gridThresh = str2double(Answers{4});
-if gridThresh < 0 || gridThresh > 1
-    gridThresh = 0.2;
-    disp('Grid threshold value out of range, using default 0.2.')
-end
-
-% %% prompt for settings
-% prompt={'Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
-% name='Settings';
-% numlines=1;
-% defaultanswer={'0.2'};
-% Answers = inputdlg(prompt,name,numlines,defaultanswer);
-% if isempty(Answers); return; end;
-% gridThresh = str2double(Answers{1});
-% if gridThresh < 0 || gridThresh > 1
-%     gridThresh = 0.2;
-%     display('Grid threshold value out of range, using default 0.2.')
-% end
-
-% %% shuffle
-% posX = handles.posAve(:,2);
-% posY = handles.posAve(:,3);
-% numTimestamps = length(handles.posAve(:,1));
-% totalTimeSec = numTimestamps/32;
-% indices20sec = (numTimestamps*20)/totalTimeSec;
-% shiftList = indices20sec:1:(numTimestamps-indices20sec);
-% for iShuffle = 1:100
-%     randInd = randi([min(shiftList),max(shiftList)],1);
-%     shuffledX = circshift(posX,randInd);
-%     shuffledY = circshift(posY,randInd);
-%     map = analyses.map([handles.posT shuffledX shuffledY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0, 'limits', handles.mapLimits);
-%     autoCorr = analyses.autocorrelation(map.z);
-%     score = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
-%     if ~isempty(score)
-%         gridScoreShuffle(iShuffle) = score;
-%     else
-%         gridScoreShuffle(iShuffle) = nan;
-%     end
-% end
-% cutoff = prctile(gridScoreShuffle,95)
 
 %% autocorrelation
 map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
 autoCorr = analyses.autocorrelation(map.z);
-[score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
+try
+    [score, stats] = analyses.gridnessScore(autoCorr);
+catch % old method
+    [score, stats] = analyses.gridnessScore(autoCorr,'threshold',0.2);
+end
 if ~isempty(stats.spacing)
     gridScore = score;
     gridSpacing = mean(stats.spacing);
@@ -1064,20 +1028,15 @@ cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
-prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
-gridThresh = str2double(Answers{4});
-if gridThresh < 0 || gridThresh > 1
-    gridThresh = 0.2;
-    disp('Grid threshold value out of range, using default 0.2.')
-end
 
 %% calculate and plot
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
@@ -1088,7 +1047,11 @@ for iCluster = 1:numClusters
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     %% autocorrelations
     autoCorr = analyses.autocorrelation(map.z);
-    [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
+    try
+        [score, stats] = analyses.gridnessScore(autoCorr);
+    catch % old method
+        [score, stats] = analyses.gridnessScore(autoCorr,'threshold',0.2);
+    end
     if ~isempty(stats.spacing)
         gridScore = score;
         gridSpacing = mean(stats.spacing);
@@ -1694,20 +1657,15 @@ cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
-prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
+prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
 name='Settings';
 numlines=1;
-defaultanswer={'2',num2str(handles.binWidth),'0','0.2'};
+defaultanswer={'2',num2str(handles.binWidth),'0'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
-gridThresh = str2double(Answers{4});
-if gridThresh < 0 || gridThresh > 1
-    gridThresh = 0.2;
-    disp('Grid threshold value out of range, using default 0.2.')
-end
 
 prompt={'Threshold for including surrounding bins (included if > thresh*peak)','Bin width (cm)','Minimum bins for a field','Minimum peak rate for a field (Hz?)'};
 name='Find field settings';
@@ -1765,7 +1723,11 @@ for iCluster = 1:numClusters
         %% grid
         subplot(324)
         autoCorr = analyses.autocorrelation(map.z);
-        [score, stats] = analyses.gridnessScore(autoCorr, 'threshold', gridThresh);
+        try
+            [score, stats] = analyses.gridnessScore(autoCorr);
+        catch % old method
+            [score, stats] = analyses.gridnessScore(autoCorr,'threshold',0.2);
+        end
         if ~isempty(stats.spacing)
             gridScore = score;
             gridSpacing = mean(stats.spacing);

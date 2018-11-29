@@ -62,21 +62,6 @@ if include.fields
     minPeak = str2double(Answers{3});
 end
 
-%% grid stats settings
-if include.grid
-    prompt={'Normalized threshold value used to search for peaks on the autocorrelogram (0:1)'};
-    name='Grid stats settings';
-    numlines=1;
-    defaultanswer={'0.2'};
-    Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
-    if isempty(Answers); return; end;
-    gridThresh = str2double(Answers{1});
-    if gridThresh < 0 || gridThresh > 1
-        gridThresh = 0.2;
-        disp('Grid threshold value out of range, using default 0.2.')
-    end
-end
-
 %% HD settings
 if include.HD
     prompt={'Angle bin width','Percentile'};
@@ -235,7 +220,11 @@ for iFolder = 1:length(folders)
             if include.grid
                 autoCorr = analyses.autocorrelation(map.z);
                 try
-                    [score,stats] = analyses.gridnessScore(autoCorr,'threshold',gridThresh);
+                    try
+                        [score, stats] = analyses.gridnessScore(autoCorr);
+                    catch % old method
+                        [score, stats] = analyses.gridnessScore(autoCorr,'threshold',0.2);
+                    end
                     if ~isempty(stats.spacing)
                         gridScore = score;
                         gridSpacing = mean(stats.spacing);
@@ -410,9 +399,6 @@ end
 if ~exist('minPeak','var')
     minPeak = '';
 end
-if ~exist('gridThresh','var')
-    gridThresh = '';
-end
 
 settingsValues = {hippoGlobe.clusterFormat, ...
     hippoGlobe.arena, ...
@@ -439,8 +425,6 @@ settingsValues = {hippoGlobe.clusterFormat, ...
     binWidth, ...
     minBins, ...
     minPeak, ...
-    '', ...
-    gridThresh, ...
     '', ...
     fullName};
 Settings = horzcat(settingsNames',settingsValues');
