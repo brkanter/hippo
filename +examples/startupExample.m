@@ -5,7 +5,7 @@
 %% update path and start BNT
 addpath(genpath('\\home.ansatt.ntnu.no\benjamka\My Documents\MATLAB')); % CHANGE ME
 
-set(groot,'defaultfigurecolor','w','defaultfigurecolormap',jet);
+set(groot,'defaultfigurecolor','w','defaultfigurecolormap',viridis);
 close
 
 InitBNT();
