@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 03-Feb-2018 16:52:15
+% Last Modified by GUIDE v2.5 10-Dec-2018 12:18:20
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -538,7 +538,7 @@ map = analyses.map([handles.posT handles.posX handles.posY],handles.spikes,'smoo
 colorMapBRK(map.z);
 axis on
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
-guidata(hObject,handles);
+guidata(hObject,handles); % i'm useless :(
 
 % --- Executes on button press in butt_batchRM.
 function butt_batchRM_Callback(hObject, eventdata, handles)
@@ -1678,6 +1678,9 @@ binWidth = str2double(Answers{2});
 minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
 
+pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+allHD = analyses.calcHeadDirection(pos);
+
 for iCluster = 1:numClusters
     figCheck = figure;
     set(figCheck,'name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
@@ -1708,8 +1711,6 @@ for iCluster = 1:numClusters
 
         %% HD
         subplot(323)
-        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-        allHD = analyses.calcHeadDirection(pos);
         [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
         spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
         tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
