@@ -29,6 +29,7 @@ if ~iscell(folders); return; end;
 if OK == 0; return; end;
 
 %% get experiment details
+% N.B. experiments analyzed at the same time must have the same number of sessions
 prompt={'How many sessions per experiment?'};
 name='Sessions/experiment';
 numlines=1;
@@ -36,7 +37,13 @@ defaultanswer={'3'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer,'on');
 if isempty(Answers); return; end;
 seshPerExp = str2double(Answers{1});
-ccComps = nchoosek(1:seshPerExp,2);
+
+%% get spatial correlation comparison list
+if include.CC && (seshPerExp > 1)
+    ccComps = nchoosek(1:seshPerExp,2);
+else
+    ccComps = [];
+end
 
 %% rate map settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Mininum occupancy'};
@@ -111,6 +118,11 @@ for iFolder = 1:length(folders)
     %% get positions, spikes, map, and rates
     writeInputBNT(hippoGlobe.inputFile,folders{1,iFolder},hippoGlobe.arena,hippoGlobe.clusterFormat)
     data.loadSessions(hippoGlobe.inputFile);
+    if seshPerExp == 1
+        cellMatrix = data.getCells;
+        cellMatrix = sortrows(cellMatrix);
+        numClusters = size(cellMatrix,1);
+    end
     posAve = data.getPositions('speedFilter',hippoGlobe.posSpeedFilter);
     posT = posAve(:,1);
     posX = posAve(:,2);
@@ -323,7 +335,7 @@ for iFolder = 1:length(folders)
     end
     
     %% store spatial correlation values at the end of each experiment
-    if include.CC && (mod(iFolder,seshPerExp) == 0)
+    if include.CC && (seshPerExp > 1) && (mod(iFolder,seshPerExp) == 0)
         for iCluster = 1:numClusters
             for iCorrs = 1:size(ccComps,1)
                 
