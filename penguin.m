@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 10-Dec-2018 12:18:20
+% Last Modified by GUIDE v2.5 15-Dec-2018 16:14:31
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -176,8 +176,21 @@ if handles.gotPos
     handles.posY = posAve(:,3);
     handles.spikePos = [];
 end
+try
+    pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+    pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+    pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+    pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+    pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+    handles.pos = pos;
+    handles.gotPosHD = 1;
+catch
+    handles.gotPosHD = 0;
+end
 
 handles = loadData(handles);
+cellMatrix = data.getCells;
+handles.cellMatrix = sortrows(cellMatrix,[1 2]);
 
 close(h);
 guidata(hObject,handles);
@@ -451,14 +464,38 @@ function butt_spikepathplot_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
-set(hSPP,'hittest','off') 
+%% plot path
+hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]);
+set(hSPP,'hittest','off') % necessary for pop-out behavior
 set(gca,'ydir','reverse')
 axis equal
 hold on
-plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
+
+%% either color by HD or just black
+if handles.gotPosHD && handles.checkbox_SPP.Value
+    [spikePos,spkInd] = data.getSpikePositions(handles.spikes,handles.pos);
+    spkHDdeg = analyses.calcHeadDirection(handles.pos(spkInd,:));
+    spkHDdeg2 = mod(360-spkHDdeg,360);
+    [vals,inds] = sort(spkHDdeg2);
+    spikePosSort = spikePos(inds,:);
+    spkcmap = zeros(length(vals),3);
+    cmap = hsv(360);
+    colormap(gca,cmap);
+    for iSpike = 1:length(vals)
+        try
+            spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
+        catch
+            spkcmap(iSpike,:) = [0 0 0];
+        end
+    end
+    hSPP = scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
+    set(hSPP,'hittest','off')
+else
+    hSPP = plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker);
+    set(hSPP,'hittest','off')
+end
 hold off
-set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn) % enable pop-out
 
 % --- Executes on selection change in edit_markersize
 function edit_markersize_Callback(hObject, eventdata, handles)
@@ -472,16 +509,21 @@ function edit_markersize_Callback(hObject, eventdata, handles)
 %% change marker size for spike overlay
 handles.marker = str2double(get(hObject,'String'));
 axes(handles.axes1);
-hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
-set(hSPP,'hittest','off') 
-set(gca,'ydir','reverse')
-axis equal
-hold on
-plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker)
-hold off
-set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
-
 guidata(hObject,handles);
+
+%% replot
+butt_spikepathplot_Callback(handles.butt_spikepathplot, eventdata,handles);
+
+% --- Executes on button press in checkbox_SPP.
+function checkbox_SPP_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox_SPP (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox_SPP
+
+%% replot
+butt_spikepathplot_Callback(handles.butt_spikepathplot,eventdata,handles);
 
 % --- Executes on button press in butt_batchSPP.
 function butt_batchSPP_Callback(hObject, eventdata, handles)
@@ -490,44 +532,100 @@ function butt_batchSPP_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% prompt for settings
-cellMatrix = data.getCells; cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
-prompt={'Spike marker size'};
-name='Marker';
+numClusters = size(handles.cellMatrix,1);
+prompt={'Spike marker size','Color by HD (y/n)'};
+name='Markers';
 numlines=1;
-defaultanswer={'15'};
+defaultanswer={'15','n'};
 Answers = inputdlg(prompt,name,numlines,defaultanswer);
 if isempty(Answers); return; end;
 Marker = str2double(Answers{1});
+colorByHD = Answers{2};
 
-%% setup figure
-figBatchSPP = figure;
-set(figBatchSPP,'Name',handles.userDir,'Color','w')
+%% set up subplots
+pageHeight = 12;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 1.2;
+rightEdge = 0.4;
+topEdge = 1;
+bottomEdge = 1;
+spaceX = 0;
+spaceY = 0.6;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,bottomEdge,topEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
+cmap = hsv(360);
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
 
-%% plot
+%% go thru clusters
 for iCluster = 1:numClusters
-    %% get spike times
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    spikePos = data.getSpikePositions(spikes,handles.posAve);
-    %% plot animal path
-    figure(figBatchSPP);
-    plotSize = ceil(sqrt(numClusters));
-    subplot(plotSize,plotSize,iCluster)
-    hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
-    set(hSPP,'hittest','off') 
-    set(gca,'ydir','reverse')
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchSPP = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+        clf(figBatchSPP);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    %% plot
+    plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5])
+    set(gca,'ydir','rev')
     hold on
-    %% overlay spikes
-    plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
-    title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
-    axis off;
-    axis equal;
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
+    if handles.gotPosHD && strcmpi(colorByHD,'y')
+        [spikePos,spkInd] = data.getSpikePositions(spikes,handles.pos);
+        spkHDdeg = analyses.calcHeadDirection(handles.pos(spkInd,:));
+        spkHDdeg2 = mod(360-spkHDdeg,360);
+        [vals,inds] = sort(spkHDdeg2);
+        spikePosSort = spikePos(inds,:);
+        spkcmap = zeros(length(vals),3);
+        colormap(gca,cmap);
+        for iSpike = 1:length(vals)
+            try
+                spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
+            catch
+                spkcmap(iSpike,:) = [0 0 0];
+            end
+        end
+        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
+    else
+        spikePos = data.getSpikePositions(spikes,handles.posAve);
+        plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
+    end
+    title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)));
+    axis off
+    axis equal
     hold off
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]*2);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]*2);
+        saveas(figBatchSPP,fullfile(handles.userDir,sprintf('SPPs_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchSPP = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+            clf(figBatchSPP);
+        end
+    end
 end
-
-saveas(figBatchSPP,fullfile(handles.userDir,sprintf('SPPs_%s.pdf',splitHandlesUserDir{end})));
-
+    
 % --- Executes on button press in butt_ratemap.
 function butt_ratemap_Callback(hObject, eventdata, handles)
 % hObject    handle to butt_ratemap (see GCBO)
@@ -538,7 +636,6 @@ map = analyses.map([handles.posT handles.posX handles.posY],handles.spikes,'smoo
 colorMapBRK(map.z);
 axis on
 set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
-guidata(hObject,handles); % i'm useless :(
 
 % --- Executes on button press in butt_batchRM.
 function butt_batchRM_Callback(hObject, eventdata, handles)
@@ -546,9 +643,7 @@ function butt_batchRM_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells;
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 
 %% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
@@ -561,25 +656,66 @@ smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
 
-%% calculate and plot
+%% set up subplots
+pageHeight = 16;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 0.4;
+rightEdge = 0;
+topEdge = 1;
+bottomEdge = 0;
+spaceX = 0;
+spaceY = 0.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-figBatchRM = figure;
-set(figBatchRM,'Name',splitHandlesUserDir{end})
+
+%% go thru clusters
 for iCluster = 1:numClusters
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchRM = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+        clf(figBatchRM);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    %% plot
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     meanRate = analyses.meanRate(spikes, handles.posAve);
-    if ~isfield(map,'peakRate')
-        map.peakRate = 0;
-    end
-    figure(figBatchRM);
-    plotSize = ceil(sqrt(numClusters));
-    subplot(plotSize,plotSize,iCluster)
     colorMapBRK(map.z,'bar','on');
-    title(sprintf('T%d C%d\nmean = %.2f Hz\npeak = %.2f Hz',cellMatrix(iCluster,1),cellMatrix(iCluster,2),meanRate,map.peakRate),'fontweight','normal','fontsize',10)
+    title(sprintf('T%d C%d\nmean = %.2f Hz',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),meanRate),'fontweight','normal','fontsize',10)
     hold on
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);
+        saveas(figBatchRM,fullfile(handles.userDir,sprintf('rateMaps_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchRM = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+            clf(figBatchRM);
+        end
+    end
 end
-saveas(figBatchRM,fullfile(handles.userDir,sprintf('rateMaps_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_findFields.
 function butt_findFields_Callback(hObject, eventdata, handles)
@@ -630,8 +766,6 @@ function butt_batchFindFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% prompt for settings
@@ -666,14 +800,14 @@ set(figBatchFF,'Name',splitHandlesUserDir{end})
 plotSize = ceil(sqrt(numClusters));
 for iCluster = 1:numClusters
     subplot(plotSize,plotSize,iCluster)
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     [fieldMap,fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
     fieldMap(isnan(map.z)) = nan;
     if isempty(fields)
         colorMapBRK(zeros(30));
         colormap(gca,[1 1 1])
-        title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
+        title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
         axis off
         continue
     end
@@ -714,7 +848,7 @@ for iCluster = 1:numClusters
     else
         plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',10);
     end
-    title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
+    title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
     hold off
 
 end
@@ -727,9 +861,7 @@ function butt_timeDivRM_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get cell list and all timestamps
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 posAve = handles.posAve;
 times = posAve(:,1);
 numTimeStamps = length(times);
@@ -818,9 +950,7 @@ function butt_batchTimeDivRM_Callback(hObject, eventdata, handles) %#ok<*INUSD>
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get cell list and all timestamps
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 posAve = handles.posAve;
 times = posAve(:,1);
 numTimeStamps = length(times);
@@ -850,9 +980,9 @@ entries = {field_names{:} ; empty_cells{:}};
 spikesStruct = struct(entries{:});
 for iCluster = 1:numClusters
     figTimeDivRM = figure;
-    set(figTimeDivRM,'Name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'Color','w');
+    set(figTimeDivRM,'Name',sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'Color','w');
     %% get spike times
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     for iBlock = 1:numBlocks
         if iBlock == 1   %% first time block
             spikesStruct(iBlock).s = spikes(spikes <= times(blockLength));    % spike times
@@ -892,7 +1022,7 @@ figure;
 numMaps = 1:1:numBlocks;
 combo = nchoosek(numMaps,2);
 for iCluster = 1:numClusters
-    nametag = sprintf('T%dC%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2));
+    nametag = sprintf('T%dC%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2));
     text(1,iCluster,nametag,'horizontalalignment','center')
     for iComp = 1:size(combo,1)
         if iCluster == 1
@@ -918,14 +1048,9 @@ function butt_headDirection_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% calculate HD
-pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
-pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
-pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
-pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
-[~,spkInd] = data.getSpikePositions(handles.spikes,pos);
-spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
-allHD = analyses.calcHeadDirection(pos);
+[~,spkInd] = data.getSpikePositions(handles.spikes,handles.pos);
+spkHDdeg = analyses.calcHeadDirection(handles.pos(spkInd,:));
+allHD = analyses.calcHeadDirection(handles.pos);
 tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
 tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
 figure;
@@ -941,36 +1066,78 @@ function butt_batchHD_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get N X 5 matrix of position data (timestamp, X1, Y1, X2, Y2)
-msg = msgbox('Loading position data for each LED...');
-pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
-pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
-pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
-pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
-close(msg);
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
-allHD = analyses.calcHeadDirection(pos);
+numClusters = size(handles.cellMatrix,1);
+allHD = analyses.calcHeadDirection(handles.pos);
+
+%% set up subplots
+pageHeight = 10;
+pageWidth = 10;
+spCols = 4;
+spRows = 4;
+leftEdge = 0.2;
+rightEdge = 0;
+topEdge = 1.2;
+bottomEdge = 0;
+spaceX = 0;
+spaceY = 0.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-figBatchHD = figure;
-set(figBatchHD,'Name',handles.userDir,'Color','w')
+
 for iCluster = 1:numClusters
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-    [~,spkInd] = data.getSpikePositions(spikes,pos);
-    spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
-    figure(figBatchHD);
-    plotSize = ceil(sqrt(numClusters));
-    subplot(plotSize,plotSize,iCluster)
-    tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
-    tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
-    circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
-    hold on
-    circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
-    axis equal
-    title(sprintf('T%d C%d\nlength = %.2f angle = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),tcStat.r,mod(360-tcStat.mean,360)));
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchHD = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.01 0.5 0.9]);
+        clf(figBatchHD);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
+    [~,spkInd] = data.getSpikePositions(spikes,handles.pos);
+    spkHDdeg = analyses.calcHeadDirection(handles.pos(spkInd,:));
+
+    if ~isempty(spkHDdeg)
+        tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime,'binWidth',handles.binWidthHD);
+        tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
+        circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
+        hold on
+        circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
+        axis equal
+        title(sprintf('T%d C%d\nlength = %.2f\nangle = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),tcStat.r,mod(360-tcStat.mean,360)),'fontsize',10);
+    else
+        title(sprintf('T%d C%d\n\n',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontsize',10);
+        axis off
+    end
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(figBatchHD,'PaperUnits','centimeters');
+        set(figBatchHD,'PaperSize',[pageWidth*2 pageHeight*2]);
+        set(figBatchHD,'PaperPositionMode','manual');
+        set(figBatchHD,'PaperPosition',[0 0 pageWidth*2 pageHeight*2]);
+        saveas(figBatchHD,fullfile(handles.userDir,sprintf('HDplots_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchHD = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.01 0.5 0.9]);
+            clf(figBatchHD);
+        end
+    end
+    
 end
-saveas(figBatchHD,fullfile(handles.userDir,sprintf('HDplots_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_grid.
 function butt_grid_Callback(hObject, eventdata, handles)
@@ -1023,9 +1190,7 @@ function butt_batchGrid_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 
 %% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
@@ -1043,7 +1208,7 @@ splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchAC = figure;
 set(figBatchAC,'Name',splitHandlesUserDir{end})
 for iCluster = 1:numClusters
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     %% autocorrelations
     autoCorr = analyses.autocorrelation(map.z);
@@ -1164,9 +1329,7 @@ function butt_batchBorder_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 
 %% rate map settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)','Publication quality? (y/n)'};
@@ -1201,7 +1364,7 @@ splitHandlesUserDir = regexp(handles.userDir,'\','split');
 figBatchBorder = figure;
 set(figBatchBorder,'Name',splitHandlesUserDir{end})
 for iCluster = 1:numClusters
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     [fieldsMap, fields] = analyses.placefield(map,'threshold',fieldThresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
     border = analyses.borderScore(map.z, fieldsMap, fields);
@@ -1210,9 +1373,9 @@ for iCluster = 1:numClusters
     subplot(plotSize,plotSize,iCluster)
     colorMapBRK(map.z,'bar','on','pubQual',pubQual);
     if border >= 0.5
-        title(sprintf('T%d C%d\nBORDER = %.3f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),border),'fontweight','bold')
+        title(sprintf('T%d C%d\nBORDER = %.3f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),border),'fontweight','bold')
     else
-        title(sprintf('T%d C%d\nborder = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),border))
+        title(sprintf('T%d C%d\nborder = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),border))
     end
     hold on
 end
@@ -1380,8 +1543,7 @@ function butt_clustView_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% get clusters
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix(cellMatrix(:,1) == handles.tetrode,:),[1 2]);
+cellMatrix = sortrows(handles.cellMatrix(handles.cellMatrix(:,1) == handles.tetrode,:),[1 2]);
 numClusters = size(cellMatrix,1);
 
 %% fix me
@@ -1544,9 +1706,7 @@ function butt_batchAutocorr_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 %% set parameters
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 figAutocorr = figure;
 set(figAutocorr,'color','white')
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
@@ -1554,19 +1714,19 @@ plotSize = ceil(sqrt(numClusters));
 for iCluster = 1:numClusters
     subplot(plotSize,plotSize,iCluster)
     %% autocorrelation
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     if length(spikes) >= 100
         [counts,centers,thetaInd] = calc.thetaIndex(spikes);
         bar(centers,counts,'facecolor','k');
         xlabel('msec');
         ylabel('Count');
         if thetaInd >= 5
-            title(sprintf('T%d C%d\ntheta = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaInd),'color','b');
+            title(sprintf('T%d C%d\ntheta = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),thetaInd),'color','b');
         else
-            title(sprintf('T%d C%d\ntheta = %.2f',cellMatrix(iCluster,1),cellMatrix(iCluster,2),thetaInd),'fontweight','normal');
+            title(sprintf('T%d C%d\ntheta = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),thetaInd),'fontweight','normal');
         end
     else
-        title(sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)),'fontweight','normal');
+        title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal');
     end
 end
 
@@ -1652,9 +1812,7 @@ function butt_MECcells_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-cellMatrix = data.getCells; 
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 
 %% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
@@ -1678,22 +1836,39 @@ binWidth = str2double(Answers{2});
 minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
 
-pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-allHD = analyses.calcHeadDirection(pos);
+allHD = analyses.calcHeadDirection(handles.pos);
 
 for iCluster = 1:numClusters
     figCheck = figure;
-    set(figCheck,'name',sprintf('T%d C%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)))
-    try
+    set(figCheck,'name',sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)))
+%     try
         %% path plot
         subplot(321)
-        spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
-        spikePos = data.getSpikePositions(spikes,handles.posAve);
-        hSPP = plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]); 
-        set(hSPP,'hittest','off') 
+        cmap = hsv(360);
+        colormap(gca,cmap);
+        spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
+%         spikePos = data.getSpikePositions(spikes,handles.posAve);
+        [spikePos,spkInd] = data.getSpikePositions(spikes,handles.pos);
+        spkHDdeg = analyses.calcHeadDirection(handles.pos(spkInd,:));
+        spkHDdeg2 = mod(360-spkHDdeg,360); % invert y-dir for colored spikes
+        [vals,inds] = sort(spkHDdeg2);
+        spikePosSort = spikePos(inds,:);
+        spkcmap = zeros(length(vals),3);
+        for iSpike = 1:length(vals)
+            try
+                spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
+            catch
+                spkcmap(iSpike,:) = [0 0 0];
+            end
+        end
+        plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]);
         set(gca,'ydir','reverse')
         hold on
-        plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',15)
+        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled')
+        cbar = colorbar;
+        cbar.Ticks = linspace(0,1,5);
+        cbar.TickLabels = num2cell(0:90:360);
+%         plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',15)
         axis off;
         axis equal;
         hold off
@@ -1711,10 +1886,8 @@ for iCluster = 1:numClusters
 
         %% HD
         subplot(323)
-        [~,spkInd] = data.getSpikePositions(spikes, handles.posAve);
-        spkHDdeg = analyses.calcHeadDirection(pos(spkInd,:));
-        tc = analyses.turningCurve(spkHDdeg, allHD, data.sampleTime);
-        tcStat = analyses.tcStatistics(tc, 10, 20);
+        tc = analyses.turningCurve(spkHDdeg,allHD,data.sampleTime,'binWidth',handles.binWidthHD);
+        tcStat = analyses.tcStatistics(tc,handles.binWidthHD,20);
         circularTurningBRK(tc(:,2)/max(tc(:,2)),'k-','linewidth',3)
         hold on
         circularTurningBRK(tc(:,3)/max(tc(:,3)),'adjustaxis',false,'color',[.5 .5 .5])
@@ -1781,7 +1954,7 @@ for iCluster = 1:numClusters
             text(0.5,0,'THETA','fontweight','bold','fontsize',10)
         end
         axis off
-    end
+%     end
 end
 
 % --- Executes on button press in butt_objects.
@@ -1895,19 +2068,17 @@ minTime = str2double(Answers{3});
 
 h = msgbox('Working ...');
 
-cellMatrix = data.getCells;
-cellMatrix = sortrows(cellMatrix,[1 2]);
-numClusters = size(cellMatrix,1);
+numClusters = size(handles.cellMatrix,1);
 
 for iCluster = 1:numClusters
-    spikes = data.getSpikeTimes(cellMatrix(iCluster,:));
+    spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
 
     %% compute
     [objRate objTime] = calc.objectAnalysis(map,objectLocations);
     
     %% rate plot
-    figure('name',sprintf('T%dC%d',cellMatrix(iCluster,1),cellMatrix(iCluster,2)));
+    figure('name',sprintf('T%dC%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)));
     subplot(211)
     colorMapBRK(map.z,'bar','on');
     subplot(212)
@@ -2162,4 +2333,5 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
 
