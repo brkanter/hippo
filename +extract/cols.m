@@ -87,10 +87,10 @@ if ~isempty(varargin)
             nLog = nLog - 1;
         end
     end
-    colsOut = eval(sprintf('array(%s,%s)','totalLog','columns'));
+    colsOut = array(totalLog,columns);
     
 else
-    colsOut = eval(sprintf('array(:,%s);','columns'));
+    colsOut = array(:,columns);
 end
 
 if length(colsOut) == 1
