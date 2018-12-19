@@ -61,7 +61,7 @@ function penguin_OpeningFcn(hObject, eventdata, handles, varargin)
 % if isempty(penguinInput)
 %     startup
 % end
-handles.output = hObject;
+handles.output = hObject; % HELLO
 
 % Update handles structure
 guidata(hObject, handles);
