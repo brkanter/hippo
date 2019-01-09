@@ -80,7 +80,7 @@ for i=1:n_bs_levels
             error('At least one empty cell found');
         end
         n_subs_per_cell(i,j)=length(this_cell_inds); %#ok<AGROW>
-        cell_totals(i,j)=sum(all_dvs(this_cell_inds)); %#ok<AGROW>
+        cell_totals(i,j)=nansum(all_dvs(this_cell_inds)); %#ok<AGROW>
     end
     
     if any(n_subs_per_cell(i,:)~=n_subs_per_cell(i,1))
@@ -97,23 +97,23 @@ for k=1:n_subjects
         %our second check for this issue
         error('At least one subject missing at least one repeated measure (or is possibly entered more than once)');
     end
-    subj_totals(k)=sum(all_dvs(this_subj_inds)); %#ok<AGROW>
+    subj_totals(k)=nansum(all_dvs(this_subj_inds)); %#ok<AGROW>
 end
 
-correction_term = sum(all_dvs)^2 / length(all_dvs);
-SStot = sum(all_dvs.^2) - correction_term;
+correction_term = nansum(all_dvs)^2 / length(all_dvs);
+SStot = nansum(all_dvs.^2) - correction_term;
 %don't really need this for calculations, but can uncomment if we want to print
 % DFtot = length(all_dvs) - 1; %total degrees of freedom
 
 %subject "factor" (i.e. differences in subject means)
-SSsub = sum(subj_totals .^ 2)/n_ws_levels - correction_term;
+SSsub = nansum(subj_totals .^ 2)/n_ws_levels - correction_term;
 
 %between-subjects factor
 SStmp=[];
 for i=1:n_bs_levels
-    SStmp(i)=(sum(cell_totals(i,:))^2) / sum(n_subs_per_cell(i,:)); %#ok<AGROW>
+    SStmp(i)=(nansum(cell_totals(i,:))^2) / nansum(n_subs_per_cell(i,:)); %#ok<AGROW>
 end
-SSbs    = sum(SStmp) - correction_term;
+SSbs    = nansum(SStmp) - correction_term;
 DFbs    = n_bs_levels - 1;
 MSbs    = SSbs / DFbs;
 %error terms for between-subjects factor
@@ -124,27 +124,27 @@ MSERRbs = ERRbs / DFERRbs;
 %correction with harmonic mean of cell sizes if cell sizes are not all equal
 n_subs_hm=harmmean(n_subs_per_cell(:));
 cell_totals_hm = (cell_totals ./ n_subs_per_cell) * n_subs_hm;
-correction_term_hm = sum(cell_totals_hm(:))^2 / (n_subs_hm * n_bs_levels * n_ws_levels);
+correction_term_hm = nansum(cell_totals_hm(:))^2 / (n_subs_hm * n_bs_levels * n_ws_levels);
 n_subs_per_cell_hm = ones(n_bs_levels,n_ws_levels) * n_subs_hm;
 
 %within-subjects factor
 SStmp=[];
 for j=1:n_ws_levels
-    SStmp(j)=(sum(cell_totals_hm(:,j))^2) ./ sum(n_subs_per_cell_hm(:,j)); %#ok<AGROW>
+    SStmp(j)=(nansum(cell_totals_hm(:,j))^2) ./ nansum(n_subs_per_cell_hm(:,j)); %#ok<AGROW>
 end
-SSws  = sum(SStmp) - correction_term_hm;
+SSws  = nansum(SStmp) - correction_term_hm;
 DFws  = n_ws_levels - 1;
 MSws  = SSws / DFws;
 
 %uncorrected version of within-subjects factor for calculating interaction
 SStmp=[];
 for j=1:n_ws_levels
-    SStmp(j)=(sum(cell_totals(:,j))^2) ./ sum(n_subs_per_cell(:,j)); %#ok<AGROW>
+    SStmp(j)=(nansum(cell_totals(:,j))^2) ./ nansum(n_subs_per_cell(:,j)); %#ok<AGROW>
 end
-SSws_unc = sum(SStmp) - correction_term;
+SSws_unc = nansum(SStmp) - correction_term;
 
 %interaction of between-subjects and within-subjects factor
-SStmp = sum((cell_totals(:) .^ 2) ./ n_subs_per_cell(:));
+SStmp = nansum((cell_totals(:) .^ 2) ./ n_subs_per_cell(:));
 SSint = SStmp - SSbs - SSws_unc - correction_term;
 DFint = DFbs * DFws;
 MSint = SSint / DFint;
