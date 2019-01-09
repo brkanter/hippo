@@ -61,7 +61,7 @@ function penguin_OpeningFcn(hObject, eventdata, handles, varargin)
 % if isempty(penguinInput)
 %     startup
 % end
-handles.output = hObject;
+handles.output = hObject; % HELLO
 
 % Update handles structure
 guidata(hObject, handles);
@@ -766,7 +766,8 @@ function butt_batchFindFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-numClusters = size(cellMatrix,1);
+handles.cellMatrix = vertcat(handles.cellMatrix,handles.cellMatrix);
+numClusters = size(handles.cellMatrix,1);
 
 %% prompt for settings
 prompt={'Smoothing (# of bins)','Spatial bin width (cm)','Minimum occupancy (s)'};
@@ -792,14 +793,45 @@ minBins = str2double(Answers{3});
 minPeak = str2double(Answers{4});
 displayRates = Answers{5};
 
-%% calculate and plot
+%% set up subplots
+pageHeight = 16;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 0.4;
+rightEdge = 0;
+topEdge = 1;
+bottomEdge = 0.4;
+spaceX = 0;
+spaceY = 0.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-figBatchFF = figure;
-hold on
-set(figBatchFF,'Name',splitHandlesUserDir{end})
-plotSize = ceil(sqrt(numClusters));
+
 for iCluster = 1:numClusters
-    subplot(plotSize,plotSize,iCluster)
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchFF = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0.03 0.09 0.55 0.8]);
+        clf(figBatchFF);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    %% plot
     spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     [fieldMap,fields] = analyses.placefield(map,'threshold',thresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
@@ -839,20 +871,34 @@ for iCluster = 1:numClusters
     colormap(gca,cmap)
     caxis([-1 8])
     hold on
-
-    % display peak rates or just main peak
+    
+    %% display peak rates or just main peak
     if strcmpi(displayRates,'y')
         for iFieldNum = 1:size(fields,2)
-            text(fields(1,iFieldNum).peakX,fields(1,iFieldNum).peakY,sprintf('%.2f',peakRates(iFieldNum)),'horizontalalignment','center')
+            text(fields(1,iFieldNum).peakX,fields(1,iFieldNum).peakY,sprintf('%.2f',peakRates(iFieldNum)), ...
+                'color',[255 109 221]/255,'fontweight','bold','horizontalalignment','center')
         end
     else
         plot(fields(1,mainField).peakX,fields(1,mainField).peakY,'o','markerfacecolor','m','markeredgecolor','w','linewidth',2,'markersize',10);
     end
     title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10)
     hold off
-
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);
+        saveas(figBatchFF,fullfile(handles.userDir,sprintf('findFields_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchFF = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0.03 0.09 0.55 0.8]);
+            clf(figBatchFF);
+        end
+    end
+    
 end
-saveas(figBatchFF,fullfile(handles.userDir,sprintf('findFields_%s.pdf',splitHandlesUserDir{end})));
+
 
 % --- Executes on button press in butt_timeDivRM.
 function butt_timeDivRM_Callback(hObject, eventdata, handles)
@@ -1175,12 +1221,7 @@ end
 %% plot autocorrelogram with score and spacing
 ACfig = figure;
 colorMapBRK(autoCorr);
-if gridScore >= 0.5
-    % if gridScore >= cutoff
-    title(sprintf('SCORE = %.3f\nSPACING = %.3f', gridScore, gridSpacing),'fontweight','bold','fontsize',14)
-else
-    title(sprintf('Score = %.2f\nSpacing = %.2f', gridScore, gridSpacing),'fontsize',14)
-end
+title(sprintf('score = %.2f\nspacing = %.2f', gridScore, gridSpacing),'fontsize',14)
 set(ACfig, 'Name', handles.userDir)
 axis off
 
@@ -1203,14 +1244,47 @@ smooth = str2double(Answers{1});
 binWidth = str2double(Answers{2});
 minTime = str2double(Answers{3});
 
-%% calculate and plot
+%% set up subplots
+pageHeight = 16;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 0.4;
+rightEdge = 0;
+topEdge = 1;
+bottomEdge = 0;
+spaceX = 0;
+spaceY = 0.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-figBatchAC = figure;
-set(figBatchAC,'Name',splitHandlesUserDir{end})
+
+%% go thru clusters
 for iCluster = 1:numClusters
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchAC = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+        clf(figBatchAC);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
     spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
-    %% autocorrelations
     autoCorr = analyses.autocorrelation(map.z);
     try
         [score, stats] = analyses.gridnessScore(autoCorr);
@@ -1224,21 +1298,25 @@ for iCluster = 1:numClusters
         gridScore = nan;
         gridSpacing = nan;
     end
-    %% plot autocorrelogram with score and spacing
-    figure(figBatchAC);
-    plotSize = ceil(sqrt(numClusters));
-    subplot(plotSize,plotSize,iCluster)
     colorMapBRK(autoCorr);
-    if gridScore >= 0.5
-        title(sprintf('SCORE = %.3f\nSPACING = %.3f', gridScore, gridSpacing),'fontweight','bold')
-    else
-        title(sprintf('Score = %.2f\nSpacing = %.2f', gridScore, gridSpacing))
-    end
+    title(sprintf('T%dC%d\nscore = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),gridScore),'fontsize',10,'fontweight','normal')
     axis off
     axis equal
     hold on
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);
+        saveas(figBatchAC,fullfile(handles.userDir,sprintf('grids_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchAC = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+            clf(figBatchAC);
+        end
+    end
 end
-saveas(figBatchAC,fullfile(handles.userDir,sprintf('autoCorrs_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_border.
 function butt_border_Callback(hObject, eventdata, handles)
@@ -1314,14 +1392,8 @@ end
 
 figBorder = figure;
 colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-if border >= 0.5
-    title(sprintf('T%d C%d\nBORDER = %.2f',handles.tetrode,handles.cluster,border),'fontweight','bold')
-else
-    title(sprintf('T%d C%d\nborder = %.2f',handles.tetrode,handles.cluster,border))
-end
+title(sprintf('T%d C%d\nborder = %.2f',handles.tetrode,handles.cluster,border))
 set(figBorder,'Name',handles.userDir);
-
-guidata(hObject,handles);
 
 % --- Executes on button press in butt_batchBorder.
 function butt_batchBorder_Callback(hObject, eventdata, handles)
@@ -1359,30 +1431,67 @@ binWidth = str2double(Answers4{2});
 minBins = str2double(Answers4{3});
 minPeak = str2double(Answers4{4});
 
-%% calculate and plot
+%% set up subplots
+pageHeight = 16;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 0.4;
+rightEdge = 0;
+topEdge = 1;
+bottomEdge = 0;
+spaceX = 0;
+spaceY = 0.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-figBatchBorder = figure;
-set(figBatchBorder,'Name',splitHandlesUserDir{end})
+
+%% go thru clusters
 for iCluster = 1:numClusters
+    
+    %% set up figure
+    if iCluster == 1
+        figBatchBorder = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+        clf(figBatchBorder);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    %% plot
     spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     map = analyses.map([handles.posT handles.posX handles.posY], spikes, 'smooth', smooth, 'binWidth', binWidth, 'minTime', minTime, 'limits', handles.mapLimits);
     [fieldsMap, fields] = analyses.placefield(map,'threshold',fieldThresh,'binWidth',binWidth,'minBins',minBins,'minPeak',minPeak);
     border = analyses.borderScore(map.z, fieldsMap, fields);
-    figure(figBatchBorder);
-    plotSize = ceil(sqrt(numClusters));
-    subplot(plotSize,plotSize,iCluster)
     colorMapBRK(map.z,'bar','on','pubQual',pubQual);
-    if border >= 0.5
-        title(sprintf('T%d C%d\nBORDER = %.3f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),border),'fontweight','bold')
-    else
-        title(sprintf('T%d C%d\nborder = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),border))
-    end
+    title(sprintf('T%d C%d\nborder = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),border),'fontweight','normal','fontsize',10)
     hold on
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]);
+        saveas(figBatchBorder,fullfile(handles.userDir,sprintf('borders_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figBatchBorder = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+            clf(figBatchBorder);
+        end
+    end
 end
-
-saveas(figBatchBorder,fullfile(handles.userDir,sprintf('borders_%s.pdf',splitHandlesUserDir{end})));
-
-guidata(hObject,handles);
 
 % --- Executes on button press in butt_waves.
 function butt_waves_Callback(hObject, eventdata, handles)
@@ -1692,11 +1801,7 @@ if length(spikes) >= 100
     bar(centers,counts,'facecolor','k');
     xlabel('msec');
     ylabel('Count');
-    if thetaInd >= 5
-        title(sprintf('theta = %.2f',thetaInd),'color','b');
-    else
-        title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
-    end
+    title(sprintf('theta = %.2f',thetaInd),'fontweight','normal');
 end
 
 % --- Executes on button press in butt_batchAutocorr.
@@ -1705,32 +1810,73 @@ function butt_batchAutocorr_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-%% set parameters
 numClusters = size(handles.cellMatrix,1);
-figAutocorr = figure;
-set(figAutocorr,'color','white')
+
+%% set up subplots
+pageHeight = 16;
+pageWidth = 16;
+spCols = 4;
+spRows = 4;
+leftEdge = 1;
+rightEdge = 0.6;
+topEdge = 1;
+bottomEdge = 1;
+spaceX = 1;
+spaceY = 1.8;
+fontsize = 10;
+sub_pos = subplot_pos(pageWidth,pageHeight,leftEdge,rightEdge,topEdge,bottomEdge,spCols,spRows,spaceX,spaceY);
+numSheets = ceil(numClusters/(spRows*spCols));
+
 splitHandlesUserDir = regexp(handles.userDir,'\','split');
-plotSize = ceil(sqrt(numClusters));
+
+%% go thru clusters
 for iCluster = 1:numClusters
-    subplot(plotSize,plotSize,iCluster)
-    %% autocorrelation
+    
+    %% set up figure
+    if iCluster == 1
+        figAutocorr = figure('Name',[handles.userDir,sprintf('[%d]',1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+        clf(figAutocorr);
+    end
+    
+    %% currently supports up to 4 sheets (64 cells)
+    if iCluster <= (spRows*spCols)
+        iSheet = 1;
+    elseif iCluster > (spRows*spCols) && iCluster <= (spRows*spCols)*2
+        iSheet = 2;
+    elseif iCluster > (spRows*spCols)*2 && iCluster <= (spRows*spCols)*3
+        iSheet = 3;
+    elseif iCluster > (spRows*spCols)*3 && iCluster <= (spRows*spCols)*4
+        iSheet = 4;
+    end
+    [c r] = ind2sub([spRows,spCols],iCluster-((spRows*spCols)*(iSheet-1)));
+    axes('position',sub_pos{r,c}); %#ok<LAXES>
+    
+    %% plot
     spikes = data.getSpikeTimes(handles.cellMatrix(iCluster,:));
     if length(spikes) >= 100
         [counts,centers,thetaInd] = calc.thetaIndex(spikes);
         bar(centers,counts,'facecolor','k');
         xlabel('msec');
         ylabel('Count');
-        if thetaInd >= 5
-            title(sprintf('T%d C%d\ntheta = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),thetaInd),'color','b');
-        else
-            title(sprintf('T%d C%d\ntheta = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),thetaInd),'fontweight','normal');
-        end
+        title(sprintf('T%d C%d\ntheta = %.2f',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2),thetaInd),'fontweight','normal','fontsize',10);
     else
-        title(sprintf('T%d C%d',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal');
+        title(sprintf('T%d C%d\n',handles.cellMatrix(iCluster,1),handles.cellMatrix(iCluster,2)),'fontweight','normal','fontsize',10);
+    end
+    hold on
+    
+    %% save sheet
+    if mod(iCluster,spRows*spCols) == 0 || iCluster == numClusters
+        set(gcf,'PaperUnits','centimeters');
+        set(gcf,'PaperSize',[pageWidth pageHeight]*1.5);
+        set(gcf,'PaperPositionMode','manual');
+        set(gcf,'PaperPosition',[0 0 pageWidth pageHeight]*1.5);
+        saveas(figAutocorr,fullfile(handles.userDir,sprintf('autocorrs_%s[%d].pdf',splitHandlesUserDir{end},iSheet)));
+        if iCluster < numClusters
+            figAutocorr = figure('Name',[handles.userDir,sprintf('[%d]',iSheet+1)],'Color','w','units','norm','pos',[0 0.05 0.75 0.8]);
+            clf(figAutocorr);
+        end
     end
 end
-
-saveas(figAutocorr,fullfile(handles.userDir,sprintf('autocorrelations_%s.pdf',splitHandlesUserDir{end})));
 
 % --- Executes on button press in butt_cellStats.
 function butt_cellStats_Callback(hObject, eventdata, handles)

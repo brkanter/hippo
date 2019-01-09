@@ -1,5 +1,5 @@
 Name: general; Version: 1.0
-Sessions O:\omchadne\CheetahData_OC\2018-12-11_12-45-15_OC13_big
-Cuts TT%u_%u; TT%u_%u; TT%u_%u; TT%u_%u; 
-Units 1  1  2  3  4  5; 2  1  2; 3  1  2; 4  1  2  3  4  5  6; 
-Shape box 100 100
+Sessions O:\chrislyk\Test Sessions\2019-01-04_14-12-08_MEC22
+Cuts TT%u_%u; TT%u_%u; TT%u_%u; 
+Units 1  1  2; 2  1  2; 4  1 ; 
+Shape cylinder 60 60

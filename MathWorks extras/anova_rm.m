@@ -72,7 +72,7 @@ n_h = zeros(s, 1);
 for h=1:s
     n_h(h) = size(X{h}, 1);    
 end
-n = sum(n_h);
+n = nansum(n_h);
 
 %number of follow-ups
 t = size(X{1},2);   
@@ -80,7 +80,7 @@ t = size(X{1},2);
 % overall mean
 y = 0;
 for h=1:s
-    y = y + sum(sum(X{h}));
+    y = y + nansum(nansum(X{h}));
 end
 y = y / (n * t);
 
@@ -95,14 +95,14 @@ end
 
 % group means
 for h=1:s
-    y_h(h) = sum(sum(X{h})) / (n_h(h) * t);
+    y_h(h) = nansum(nansum(X{h})) / (n_h(h) * t);
 end
 
 % follow-up means
 for j=1:t
     y_j(j) = 0;
     for h=1:s
-        y_j(j) = y_j(j) + sum(X{h}(:,j));
+        y_j(j) = y_j(j) + nansum(X{h}(:,j));
     end
     y_j(j) = y_j(j) / n;
 end
@@ -110,18 +110,18 @@ end
 % group h and time j mean
 for h=1:s
     for j=1:t
-        y_hj(h,j) = sum(X{h}(:,j) / n_h(h));
+        y_hj(h,j) = nansum(X{h}(:,j) / n_h(h));
     end
 end
 
 % subject i'th of group h mean
 for h=1:s
     for i=1:n_h(h)
-        y_hi{h}(i) = sum(X{h}(i,:)) / t;
+        y_hi{h}(i) = nansum(X{h}(i,:)) / t;
     end
 end
 
-% calculate the sum of squares
+% calculate the nansum of squares
 ssG = 0;
 ssSG = 0;
 ssT = 0;
@@ -139,6 +139,27 @@ for h=1:s
         end
     end
 end
+
+%% BK allow missing values
+count = 1;
+for h=1:s
+    for i=1:n_h(h)
+        for j=1:t
+            ssG(count) = (y_h(h) - y)^2;
+            ssSG(count) = (y_hi{h}(i) - y_h(h))^2;
+            ssT(count) = (y_j(j) - y)^2;
+            ssGT(count) = (y_hj(h,j) - y_h(h) - y_j(j) + y)^2;
+            ssR(count) = (X{h}(i,j) - y_hj(h,j) - y_hi{h}(i) + y_h(h))^2;
+            count = count + 1;
+        end
+    end
+end
+ssG = nansum(ssG);
+ssSG = nansum(ssSG);
+ssT = nansum(ssT);
+ssGT = nansum(ssGT);
+ssR = nansum(ssR);
+%%
 
 % calculate means
 if s > 1
@@ -177,8 +198,8 @@ if s > 1
         'Error' ssR (n-s)*(t-1) msR  [] []
         'Total' [] [] [] [] []
         };
-    table{end, 2} = sum([table{2:end-1,2}]);
-    table{end, 3} = sum([table{2:end-1,3}]);
+    table{end, 2} = nansum([table{2:end-1,2}]);
+    table{end, 3} = nansum([table{2:end-1,3}]);
 
     if (isequal(displayopt, 'on'))
         digits = [-1 -1 0 -1 2 4];
@@ -197,8 +218,8 @@ else
         'Error' ssR (n-s)*(t-1) msR  [] []
         'Total' [] [] [] [] []
         };
-    table{end, 2} = sum([table{2:end-1,2}]);
-    table{end, 3} = sum([table{2:end-1,3}]);
+    table{end, 2} = nansum([table{2:end-1,2}]);
+    table{end, 3} = nansum([table{2:end-1,3}]);
 
     if (isequal(displayopt, 'on'))
         digits = [-1 -1 0 -1 2 4];

@@ -169,7 +169,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         numBinsX = size(inputMap,1);
         numBinsY = size(inputMap,2);
         data2 = inpaint_nans(inputMap);                      % guess at what nans would have been
-        [xi, yi] = meshgrid(1:0.1:numBinsX,1:0.1:numBinsY);  % make a finer grid
+        [xi, yi] = meshgrid(1:0.5:numBinsX,1:0.5:numBinsY);  % make a finer grid
         z = interp2(inputMap,xi,yi,'nearest');               % track nans to be filled back in
         z2 = interp2(data2,xi,yi,'bicubic');                 % interpolate image onto finer grid
         mask = isnan(z);                                     % fill nans back into image
@@ -178,11 +178,11 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         shading flat;
         lighting phong;
         % scale fig to include only visited pixels
-        xmin = find(any(z2,1),1,'first');
-        xmax = find(any(z2,1),1,'last');
-        ymin = find(any(z2,2),1,'first');
-        ymax = find(any(z2,2),1,'last');
-        axis([xmin xmax ymin ymax])
+%         xmin = find(any(z2,1),1,'first');
+%         xmax = find(any(z2,1),1,'last');
+%         ymin = find(any(z2,2),1,'first');
+%         ymax = find(any(z2,2),1,'last');
+%         axis([xmin xmax ymin ymax])
     else
         if ~isempty(find(isnan(data), 1))
             m = m - ((M - m)/length(x)); % length(x) is just arbitary. the goal is to set NaN to be less than minimum.
@@ -192,6 +192,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
             colormap(a, [get(a,'color'); cmap]);
         end
         p = imagesc(x, y, data, [m M]);
+%         cmap = colormap(gca);
+%         colormap(a, [get(a,'color'); cmap]);
         set(a, 'color', [0 0 0]);
         set(p,'hittest','off')
         if any(dimm~=1)
@@ -209,9 +211,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     end
     
     %% BRK
-    if ~isempty(aspectRat)
-        set(gca,'DataAspectRatio',aspectRat)
-    end
+    set(gca,'DataAspectRatio',aspectRat)
     axis off
     %%
     
