@@ -36,7 +36,7 @@ uicontrol(gcf,'style','togglebutton', ...
 hold on
 xlabel 'Time (sec)'
 ylabel 'Voltage (uV)'
-cmap = colormap('parula');
+cmap = parula(64);
 cmap = cmap(round(linspace(1,50,numTraces)),:);
 
 try % animal speed colorbar
@@ -96,16 +96,16 @@ for iTrace = 1:numTraces
     %% plot broadband signal
     if iTrace == 1
         xVals = linspace(0,length(dt_resampled)/rsrate,length(dt_resampled));   % convert to secs
+        offset = std(dt_resampled)*3;
+        try % animal speed colorbar
+            speedX = linspace(0,length(s)/25,length(s));   % convert to secs
+            cmapSpeed = jet(numel(unique(s)));
+            cmapSpeed(1,:) = 0;
+            hotLine(speedX,zeros(1,length(speedX))+offset,zeros(1,length(speedX)),s,8,cmapSpeed)
+            colorbar('TickLabels',speedLabels,'FontWeight','bold');
+        end
         if numTraces > 1
             plot(xVals,dt_resampled,'color',cmap(iTrace,:))
-            offset = std(dt_resampled)*3;
-            try % animal speed colorbar
-                speedX = linspace(0,length(s)/25,length(s));   % convert to secs
-                cmapSpeed = getColors('jet',numel(unique(s)));
-                cmapSpeed(1,:) = 0;
-                hotLine(speedX,zeros(1,length(speedX))+offset,zeros(1,length(speedX)),s,8,cmapSpeed)
-                colorbar('TickLabels',speedLabels,'FontWeight','bold');
-            end
         else
             plot(xVals,dt_resampled,'k')
         end
