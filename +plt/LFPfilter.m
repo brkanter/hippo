@@ -74,7 +74,7 @@ end
 
 % allow quick switching between x limits
 uicontrol(gcf,'style','togglebutton', ...
-    'string','<html>Change x range<br>to 2 sec', ...
+    'string','<html>Change x range<br>to 5 sec', ...
     'units','normalized','position',[0.925 0.01 0.07 0.2], ...
     'enable','inactive', ...
     'buttondownfcn',@updateXlim);
@@ -165,9 +165,9 @@ function updateXlim(~,eventData)
 
 if strcmpi(eventData.Source.String,'<html>Change x range<br>to full session')
     xlim auto
-    eventData.Source.String = '<html>Change x range<br>to 2 sec';
+    eventData.Source.String = '<html>Change x range<br>to 5 sec';
 else
-    xlim([0 2])
+    xlim([0 5])
     eventData.Source.String = '<html>Change x range<br>to full session';
 end
 
@@ -243,7 +243,7 @@ if numRipples
         'callback',@updateRipple);
     
     % zoom in and plot all ripples
-    xlim([ripp_ints(1,1) - 1, ripp_ints(1,1) + 1])
+    xlim([ripp_ints(1,1) - 2.5, ripp_ints(1,1) + 2.5])
     for iRipp = 1:numRipples
         plot([ripp_ints(iRipp,1), ripp_ints(iRipp,2)],[MEAN+(STD*50), MEAN+(STD*50)],'r-','linew',3)      
     end
@@ -270,7 +270,7 @@ function updateRipple(hObject,~)
 
 handles = guidata(hObject);
 rippToShow = ceil(get(handles.slide_ripp,'value'));
-xlim([handles.ripp_ints(rippToShow,1) - 1, handles.ripp_ints(rippToShow,1) + 1])
+xlim([handles.ripp_ints(rippToShow,1) - 2.5, handles.ripp_ints(rippToShow,1) + 2.5])
 set(handles.text_ripp,'string',sprintf('%d of %d',rippToShow,handles.numRipples));
 
 guidata(hObject,handles)

@@ -31,7 +31,7 @@
 %    'pubQual'**   interpolate map for finer smoothing,
 %                  either 0 (default) or 1
 %    'aspectRat'** set aspect ratio to something other than square (default)
-%    'clrMap'**    colormap other than 'viridis' (default)
+%    'clrmap'**    colormap other than 'viridis' (default)
 %
 %   **BRK 2014
 %   =========================================================================
@@ -162,6 +162,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
 %         colormap(a,jet(64));
         colormap(a,viridis(64));
     end
+    cmap = colormap(gca);
     %%
     
     %% BRK  
@@ -187,10 +188,11 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         if ~isempty(find(isnan(data), 1))
             m = m - ((M - m)/length(x)); % length(x) is just arbitary. the goal is to set NaN to be less than minimum.
             data(isnan(data)) = m;
+            % set background color as first color for NaNs
+            cmap = [get(a,'color'); cmap];
         end
-        cmap = colormap(gca);
-        colormap(a, [get(a,'color'); cmap]);
         p = imagesc(x, y, data, [m M]);
+        colormap(a,cmap);
 %         set(a, 'color', [0 0 0]);
         set(p,'hittest','off')
         if any(dimm~=1)
