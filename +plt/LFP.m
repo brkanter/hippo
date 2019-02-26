@@ -96,7 +96,7 @@ for iTrace = 1:numTraces
     %% plot broadband signal
     if iTrace == 1
         xVals = linspace(0,length(dt_resampled)/rsrate,length(dt_resampled));   % convert to secs
-        offset = std(dt_resampled)*3;
+        offset = std(dt_resampled)*1.5;
         try % animal speed colorbar
             speedX = linspace(0,length(s)/25,length(s));   % convert to secs
             cmapSpeed = jet(numel(unique(s)));
