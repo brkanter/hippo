@@ -109,8 +109,8 @@ if sum(strcmpi('ripple',varargin))
     
     try % animal speed colorbar
         speedX = linspace(0,length(s)/25,length(s));   % convert to secs
-        cmapSpeed = [0 0 1; 0 0 0]; % bllue is good times, black is bad times (high speed)
-        hotLine(speedX,zeros(1,length(speedX))+offset*2,zeros(1,length(speedX)),s,8,cmapSpeed)
+        cmapSpeed = [0 0 1; 0 0 0]; % blue is good times, black is bad times (high speed)
+        plt.hotLine(speedX,zeros(1,length(speedX))+offset*2,zeros(1,length(speedX)),s,8,cmapSpeed)
         colorbar('Ticks',1:2,'TickLabels',speedLabels,'FontWeight','bold');
     end
     

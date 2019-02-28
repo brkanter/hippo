@@ -99,9 +99,10 @@ for iTrace = 1:numTraces
         offset = std(dt_resampled)*1.5;
         try % animal speed colorbar
             speedX = linspace(0,length(s)/25,length(s));   % convert to secs
-            cmapSpeed = jet(numel(unique(s)));
+            cmapSpeed = jet(numel(speedLabels));
             cmapSpeed(1,:) = 0;
-            hotLine(speedX,zeros(1,length(speedX))+offset,zeros(1,length(speedX)),s,8,cmapSpeed)
+            plt.hotLine(speedX,zeros(1,length(speedX))+offset,zeros(1,length(speedX)),s,8,cmapSpeed)
+            caxis([1 numel(speedLabels)])
             colorbar('TickLabels',speedLabels,'FontWeight','bold');
         end
         if numTraces > 1
