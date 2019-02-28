@@ -1,5 +1,0 @@
-Name: general; Version: 1.0
-Sessions O:\chrislyk\Test Sessions\2019-01-04_14-12-08_MEC22
-Cuts TT%u_%u; TT%u_%u; TT%u_%u; 
-Units 1  1  2; 2  1  2; 4  1 5; 
-Shape cylinder 60 60
