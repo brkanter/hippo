@@ -339,6 +339,24 @@ try
         warndlg('Error getting position samples')
         handles.gotPos = 0;
     end
+    if handles.gotPos
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+    end
+    try
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+        handles.pos = pos;
+        handles.gotPosHD = 1;
+    catch
+        handles.gotPosHD = 0;
+    end
     helpers.deleteCache(handles.inputFile);
 catch
     rmdir(clusterDir);
@@ -602,7 +620,7 @@ for iCluster = 1:numClusters
                 spkcmap(iSpike,:) = [0 0 0];
             end
         end
-        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
+        scatter(spikePosSort(:,2),spikePosSort(:,3),Marker,spkcmap,'filled');
     else
         spikePos = data.getSpikePositions(spikes,handles.posAve);
         plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
@@ -766,7 +784,6 @@ function butt_batchFindFields_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-handles.cellMatrix = vertcat(handles.cellMatrix,handles.cellMatrix);
 numClusters = size(handles.cellMatrix,1);
 
 %% prompt for settings

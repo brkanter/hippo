@@ -84,7 +84,8 @@ if sum(strcmpi('theta',varargin))
     disp('Theta filter...')
     [b a] = butter(2,[4/(rsrate/2) 12/(rsrate/2)],'bandpass');
     filt_theta = filter(b,a,dt_resampled);
-    offset = std(dt_resampled)*3;
+%     offset = std(dt_resampled)*3;
+    offset = 3000;
     plot(xVals,filt_theta - offset,'b')
     
     % resize window
