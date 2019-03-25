@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 15-Dec-2018 16:14:31
+% Last Modified by GUIDE v2.5 27-Feb-2019 17:03:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,8 @@ function penguin_OpeningFcn(hObject, eventdata, handles, varargin)
 %     startup
 % end
 handles.output = hObject; % HELLO
+handles.switchRats = 0;
+set(handles.butt_switchRats,'backgroundcolor',[.8 .8 .8],'String','Red/Green rat')
 
 % Update handles structure
 guidata(hObject, handles);
@@ -170,21 +172,48 @@ catch
     handles.gotPos = 0;
 end
 if handles.gotPos
-    handles.posAve = posAve;
-    handles.posT = posAve(:,1);
-    handles.posX = posAve(:,2);
-    handles.posY = posAve(:,3);
-    handles.spikePos = [];
+    if handles.switchRats % blue rat!
+%         pos = data.getPositions('speedFilter',handles.posSpeedFilter,'mode','all','scale','off','average','off');
+%         [includeRed includeGreen] = switchRatMask(handles.userDir,pos,1);
+%         pos = pos(includeRed,:);
+%         [cleanX,cleanY] = removePosJumpsTD(pos(:,2),pos(:,3),25);
+%         cleanX = minions.rescaleData(cleanX,handles.mapLimits(1),handles.mapLimits(2));
+%         cleanY = minions.rescaleData(cleanY,handles.mapLimits(3),handles.mapLimits(4));
+%         handles.pos = [pos(:,1),cleanX,cleanY];
+%         handles.posX = cleanX;
+%         handles.posY = cleanY;
+        
+        %% GET POST,BLUEX, AND BLUEY FROM BLUES.M
+        [posT,blueX,blueY] = blues(fullfile(handles.userDir,'VT1.nvt'));
+        handles.posAve = [posT,blueX,blueY];
+        handles.posX = blueX;
+        handles.posY = blueY;
+        handles.posT = posT;
+        handles.spikePos = [];
+        
+    else % normal red green inside rat
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+    end
 end
-try
-    pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-    pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
-    pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
-    pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
-    pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
-    handles.pos = pos;
-    handles.gotPosHD = 1;
-catch
+% head direction position data
+if ~handles.switchRats % red/green
+    try
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+        handles.pos = pos;
+        handles.gotPosHD = 1;
+    catch
+        handles.gotPosHD = 0;
+    end
+else % blue
+    handles.pos = [];
     handles.gotPosHD = 0;
 end
 
@@ -2399,6 +2428,171 @@ elseif strcmpi(class(oldKids),'matlab.graphics.primitive.Data')
     caxis([-1 8])
 end
 
+% --- Executes on button press in butt_switchRats.
+function butt_switchRats_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_switchRats (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+disp('miguel made a button!!')
+
+%% check which rat
+if handles.switchRats
+    handles.switchRats = 0;
+    set(hObject,'value',0,'backgroundColor',[.8 .8 .8],'string','Red/green rat')
+else
+    handles.switchRats = 1;
+    set(hObject,'value',1,'backgroundColor','b','string','Blue rat')  
+end
+
+%% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
+clear pos;
+try
+    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+    handles.gotPos = 1;
+catch
+    warndlg('Error getting position samples')
+    handles.gotPos = 0;
+end
+if handles.gotPos
+    if handles.switchRats % blue rat!
+%         pos = data.getPositions('speedFilter',handles.posSpeedFilter,'mode','all','scale','off','average','off');
+%         [includeRed includeGreen] = switchRatMask(handles.userDir,pos,1);
+%         pos = pos(includeRed,:);
+%         [cleanX,cleanY] = removePosJumpsTD(pos(:,2),pos(:,3),25);
+%         cleanX = minions.rescaleData(cleanX,handles.mapLimits(1),handles.mapLimits(2));
+%         cleanY = minions.rescaleData(cleanY,handles.mapLimits(3),handles.mapLimits(4));
+%         handles.pos = [pos(:,1),cleanX,cleanY];
+%         handles.posX = cleanX;
+%         handles.posY = cleanY;
+        
+        %% GET POST,BLUEX, AND BLUEY FROM BLUES.M
+        [posT,blueX,blueY] = blues(fullfile(handles.userDir,'VT1.nvt'));
+        handles.posAve = [posT,blueX,blueY];
+        handles.posX = blueX;
+        handles.posY = blueY;
+        handles.posT = posT;
+        handles.spikePos = [];
+        
+    else % normal red green inside rat
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+    end
+end
+% head direction position data
+if ~handles.switchRats % red/green
+    try
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+        handles.pos = pos;
+        handles.gotPosHD = 1;
+    catch
+        handles.gotPosHD = 0;
+    end
+else % blue
+    handles.pos = [];
+    handles.gotPosHD = 0;
+end
+
+%% UPDATE EVERYTHING
+%% update tetrode based on current folder
+clear current_tetCells;
+current_tetCells = data.getCells;
+handles.current_tetCells = current_tetCells;
+trode_nums = num2str(current_tetCells(:,1));
+current_trodes = cellstr(unique(trode_nums));
+handles.current_trodes = current_trodes;
+set(handles.list_tetrode,'String',current_trodes,'Value',1);
+contents = get(handles.list_tetrode,'String');
+selectedText = contents{get(handles.list_tetrode,'Value')};
+handles.tetrode = str2double(selectedText);
+set(handles.text_tetrode, 'String', handles.tetrode);
+
+%% update cluster based on current tetrode
+clust_indices = current_tetCells(:,1)==handles.tetrode;
+current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
+set(handles.list_cluster,'String',current_clusters,'Value',1);
+set(handles.list_cluster,'String',current_clusters,'Value',1);
+contents = get(handles.list_cluster,'String');
+selectedText = contents{get(handles.list_cluster,'Value')};
+handles.cluster = str2double(selectedText);
+set(handles.text_cluster, 'String', handles.cluster);
+
+%% initialize
+handles.meanRate = 0;
+handles.peakRate = 0;
+handles.totalSpikes = 0;
+handles.spikeWidth = 0;
+handles.Marker = 3;
+for iTrode = 1:8
+   handles.trodeTS{iTrode} = ''; 
+end
+
+%% plot animal path
+if handles.gotPos
+        axes(handles.axes1);
+        hSPP = plot(handles.posX,handles.posY,'color',[.5 .5 .5]); 
+        set(hSPP,'hittest','off') 
+        set(gca,'ydir','reverse')
+        set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+        axis(handles.mapLimits)
+        axis equal
+end
+
+%% get spike info
+handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
+if handles.gotPos
+    handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
+end
+
+if handles.gotPos
+    %% calculate rate map
+    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0);
+    handles.map = map.z;
+    
+    %% calculate mean rate in Hz
+    handles.meanRate = analyses.meanRate(handles.spikes, handles.pos);
+    set(handles.text_meanRate, 'String', handles.meanRate);
+    
+    %% calculate peak rate in Hz
+    if ~isfield(map,'peakRate')
+        handles.peakRate = 0;
+    else
+        handles.peakRate = map.peakRate;
+    end
+    set(handles.text_peakRate, 'String', handles.peakRate);
+end
+
+%% calculate total spikes
+handles.totalSpikes = length(handles.spikes);
+set(handles.text_totalSpikes, 'String', handles.totalSpikes);
+
+%% calculate spike width
+try
+    handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
+    set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
+catch
+    set(handles.text_spikeWidth, 'String', 0);
+end
+
+%% clear map stats
+set(handles.text_spatContent, 'String', '');
+set(handles.text_sparsity, 'String', '');
+set(handles.text_selectivity, 'String', '');
+set(handles.text_coherence, 'String', '');
+set(handles.text_fieldNo, 'String', '');
+set(handles.text_fieldMean, 'String', '');
+set(handles.text_fieldMax, 'String', '');
+
+guidata(hObject,handles);
+
+
 % --- Executes during object creation, after setting all properties.
 function text_meanRate_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_meanRate (see GCBO)
@@ -2479,5 +2673,8 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+
 
 
