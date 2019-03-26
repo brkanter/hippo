@@ -183,20 +183,24 @@ if handles.gotPos
 %         handles.posX = cleanX;
 %         handles.posY = cleanY;
         
-        %% GET POST,BLUEX, AND BLUEY FROM BLUES.M
-<<<<<<< HEAD
-        posAve = blues(fullfile(handles.userDir,'VT1.nvt'),handles);
+        %% get blue positions
+        try
+            posAve = blues(fullfile(handles.userDir,'VT1.nvt'),handles);
+        catch
+            if handles.switchRats
+                handles.switchRats = 0;
+                set(hObject,'value',0,'backgroundColor',[.8 .8 .8],'foregroundcolor','k','string','Red/green rat')
+            else
+                handles.switchRats = 1;
+                set(hObject,'value',1,'backgroundColor','b','foregroundcolor','w','string','Blue rat')
+            end
+            msgbox('Failed to find blue LED.');
+            return
+        end
         handles.posAve = posAve;
         handles.posT = posAve(:,1);
         handles.posX = posAve(:,2);
         handles.posY = posAve(:,3);
-=======
-        [posT,blueX,blueY] = blues(fullfile(handles.userDir,'VT1.nvt'));
-        handles.posAve = [posT,blueX,blueY];
-        handles.posX = blueX;
-        handles.posY = blueY;
-        handles.posT = posT;
->>>>>>> bae6b9dacc76c57dc60b09b6a97787e29cc0f786
         handles.spikePos = [];
         
     else % normal red green inside rat
@@ -2441,7 +2445,6 @@ function butt_switchRats_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-<<<<<<< HEAD
 %% check which rat
 if handles.switchRats
     handles.switchRats = 0;
@@ -2449,17 +2452,6 @@ if handles.switchRats
 else
     handles.switchRats = 1;
     set(hObject,'value',1,'backgroundColor','b','foregroundcolor','w','string','Blue rat')  
-=======
-disp('miguel made a button!!')
-
-%% check which rat
-if handles.switchRats
-    handles.switchRats = 0;
-    set(hObject,'value',0,'backgroundColor',[.8 .8 .8],'string','Red/green rat')
-else
-    handles.switchRats = 1;
-    set(hObject,'value',1,'backgroundColor','b','string','Blue rat')  
->>>>>>> bae6b9dacc76c57dc60b09b6a97787e29cc0f786
 end
 
 %% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
@@ -2483,8 +2475,7 @@ if handles.gotPos
 %         handles.posX = cleanX;
 %         handles.posY = cleanY;
         
-<<<<<<< HEAD
-        %% GET POST, BLUEX, AND BLUEY FROM BLUES FUNCTION
+        %% get blue positions
         try
             posAve = blues(fullfile(handles.userDir,'VT1.nvt'),handles);
         catch
@@ -2502,14 +2493,6 @@ if handles.gotPos
         handles.posT = posAve(:,1);
         handles.posX = posAve(:,2);
         handles.posY = posAve(:,3);
-=======
-        %% GET POST,BLUEX, AND BLUEY FROM BLUES.M
-        [posT,blueX,blueY] = blues(fullfile(handles.userDir,'VT1.nvt'));
-        handles.posAve = [posT,blueX,blueY];
-        handles.posX = blueX;
-        handles.posY = blueY;
-        handles.posT = posT;
->>>>>>> bae6b9dacc76c57dc60b09b6a97787e29cc0f786
         handles.spikePos = [];
         
     else % normal red green inside rat
@@ -2713,7 +2696,6 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % handles    empty - handles not created until after all CreateFcns called
 
 
-<<<<<<< HEAD
 function positions = blues(videoFile,handles)
 
 
@@ -2865,8 +2847,4 @@ positions(:, bntConstants.PosY) = positions(:, bntConstants.PosY) - centre(2);
 %     positions(validInd, [xIdx yIdx]) = sessionPos(:, 2:end);
 % end
 
-=======
-
-
->>>>>>> bae6b9dacc76c57dc60b09b6a97787e29cc0f786
 
