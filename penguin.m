@@ -27,7 +27,7 @@ function varargout = penguin(varargin)
 
 % Edit the above text to modify the response to help penguin
 
-% Last Modified by GUIDE v2.5 15-Dec-2018 16:14:31
+% Last Modified by GUIDE v2.5 27-Feb-2019 17:03:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -62,6 +62,8 @@ function penguin_OpeningFcn(hObject, eventdata, handles, varargin)
 %     startup
 % end
 handles.output = hObject; % HELLO
+handles.switchRats = 0;
+set(handles.butt_switchRats,'backgroundcolor',[.8 .8 .8],'String','Red/Green rat')
 
 % Update handles structure
 guidata(hObject, handles);
@@ -170,21 +172,48 @@ catch
     handles.gotPos = 0;
 end
 if handles.gotPos
-    handles.posAve = posAve;
-    handles.posT = posAve(:,1);
-    handles.posX = posAve(:,2);
-    handles.posY = posAve(:,3);
-    handles.spikePos = [];
+    if handles.switchRats % blue rat!
+%         pos = data.getPositions('speedFilter',handles.posSpeedFilter,'mode','all','scale','off','average','off');
+%         [includeRed includeGreen] = switchRatMask(handles.userDir,pos,1);
+%         pos = pos(includeRed,:);
+%         [cleanX,cleanY] = removePosJumpsTD(pos(:,2),pos(:,3),25);
+%         cleanX = minions.rescaleData(cleanX,handles.mapLimits(1),handles.mapLimits(2));
+%         cleanY = minions.rescaleData(cleanY,handles.mapLimits(3),handles.mapLimits(4));
+%         handles.pos = [pos(:,1),cleanX,cleanY];
+%         handles.posX = cleanX;
+%         handles.posY = cleanY;
+        
+        %% GET POST,BLUEX, AND BLUEY FROM BLUES.M
+        posAve = blues(fullfile(handles.userDir,'VT1.nvt'),handles);
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+        
+    else % normal red green inside rat
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+    end
 end
-try
-    pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-    pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
-    pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
-    pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
-    pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
-    handles.pos = pos;
-    handles.gotPosHD = 1;
-catch
+% head direction position data
+if ~handles.switchRats % red/green
+    try
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+        handles.pos = pos;
+        handles.gotPosHD = 1;
+    catch
+        handles.gotPosHD = 0;
+    end
+else % blue
+    handles.pos = [];
     handles.gotPosHD = 0;
 end
 
@@ -338,24 +367,6 @@ try
     catch
         warndlg('Error getting position samples')
         handles.gotPos = 0;
-    end
-    if handles.gotPos
-        handles.posAve = posAve;
-        handles.posT = posAve(:,1);
-        handles.posX = posAve(:,2);
-        handles.posY = posAve(:,3);
-        handles.spikePos = [];
-    end
-    try
-        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
-        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
-        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
-        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
-        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
-        handles.pos = pos;
-        handles.gotPosHD = 1;
-    catch
-        handles.gotPosHD = 0;
     end
     helpers.deleteCache(handles.inputFile);
 catch
@@ -620,7 +631,7 @@ for iCluster = 1:numClusters
                 spkcmap(iSpike,:) = [0 0 0];
             end
         end
-        scatter(spikePosSort(:,2),spikePosSort(:,3),Marker,spkcmap,'filled');
+        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
     else
         spikePos = data.getSpikePositions(spikes,handles.posAve);
         plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
@@ -2416,6 +2427,181 @@ elseif strcmpi(class(oldKids),'matlab.graphics.primitive.Data')
     caxis([-1 8])
 end
 
+% --- Executes on button press in butt_switchRats.
+function butt_switchRats_Callback(hObject, eventdata, handles)
+% hObject    handle to butt_switchRats (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%% check which rat
+if handles.switchRats
+    handles.switchRats = 0;
+    set(hObject,'value',0,'backgroundColor',[.8 .8 .8],'foregroundcolor','k','string','Red/green rat')
+else
+    handles.switchRats = 1;
+    set(hObject,'value',1,'backgroundColor','b','foregroundcolor','w','string','Blue rat')  
+end
+
+%% get N X 3 matrix of position data (timestamp, x-coordinate, y-coordinate)
+clear pos;
+try
+    posAve = data.getPositions('speedFilter',handles.posSpeedFilter);
+    handles.gotPos = 1;
+catch
+    warndlg('Error getting position samples')
+    handles.gotPos = 0;
+end
+if handles.gotPos
+    if handles.switchRats % blue rat!
+%         pos = data.getPositions('speedFilter',handles.posSpeedFilter,'mode','all','scale','off','average','off');
+%         [includeRed includeGreen] = switchRatMask(handles.userDir,pos,1);
+%         pos = pos(includeRed,:);
+%         [cleanX,cleanY] = removePosJumpsTD(pos(:,2),pos(:,3),25);
+%         cleanX = minions.rescaleData(cleanX,handles.mapLimits(1),handles.mapLimits(2));
+%         cleanY = minions.rescaleData(cleanY,handles.mapLimits(3),handles.mapLimits(4));
+%         handles.pos = [pos(:,1),cleanX,cleanY];
+%         handles.posX = cleanX;
+%         handles.posY = cleanY;
+        
+        %% GET POST, BLUEX, AND BLUEY FROM BLUES FUNCTION
+        try
+            posAve = blues(fullfile(handles.userDir,'VT1.nvt'),handles);
+        catch
+            if handles.switchRats
+                handles.switchRats = 0;
+                set(hObject,'value',0,'backgroundColor',[.8 .8 .8],'foregroundcolor','k','string','Red/green rat')
+            else
+                handles.switchRats = 1;
+                set(hObject,'value',1,'backgroundColor','b','foregroundcolor','w','string','Blue rat')
+            end
+            msgbox('Failed to find blue LED.');
+            return
+        end
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+        
+    else % normal red green inside rat
+        handles.posAve = posAve;
+        handles.posT = posAve(:,1);
+        handles.posX = posAve(:,2);
+        handles.posY = posAve(:,3);
+        handles.spikePos = [];
+    end
+end
+% head direction position data
+if ~handles.switchRats % red/green
+    try
+        pos = data.getPositions('average','off','speedFilter',handles.posSpeedFilter);
+        pos(:,2) = minions.rescaleData(pos(:,2),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,3) = minions.rescaleData(pos(:,3),handles.mapLimits(3),handles.mapLimits(4));
+        pos(:,4) = minions.rescaleData(pos(:,4),handles.mapLimits(1),handles.mapLimits(2));
+        pos(:,5) = minions.rescaleData(pos(:,5),handles.mapLimits(3),handles.mapLimits(4));
+        handles.pos = pos;
+        handles.gotPosHD = 1;
+    catch
+        handles.gotPosHD = 0;
+    end
+else % blue
+    handles.pos = [];
+    handles.gotPosHD = 0;
+end
+
+%% UPDATE EVERYTHING
+%% update tetrode based on current folder
+clear current_tetCells;
+current_tetCells = data.getCells;
+handles.current_tetCells = current_tetCells;
+trode_nums = num2str(current_tetCells(:,1));
+current_trodes = cellstr(unique(trode_nums));
+handles.current_trodes = current_trodes;
+set(handles.list_tetrode,'String',current_trodes,'Value',1);
+contents = get(handles.list_tetrode,'String');
+selectedText = contents{get(handles.list_tetrode,'Value')};
+handles.tetrode = str2double(selectedText);
+set(handles.text_tetrode, 'String', handles.tetrode);
+
+%% update cluster based on current tetrode
+clust_indices = current_tetCells(:,1)==handles.tetrode;
+current_clusters = cellstr(num2str(current_tetCells(clust_indices,2)));
+set(handles.list_cluster,'String',current_clusters,'Value',1);
+set(handles.list_cluster,'String',current_clusters,'Value',1);
+contents = get(handles.list_cluster,'String');
+selectedText = contents{get(handles.list_cluster,'Value')};
+handles.cluster = str2double(selectedText);
+set(handles.text_cluster, 'String', handles.cluster);
+
+%% initialize
+handles.meanRate = 0;
+handles.peakRate = 0;
+handles.totalSpikes = 0;
+handles.spikeWidth = 0;
+handles.Marker = 3;
+for iTrode = 1:8
+   handles.trodeTS{iTrode} = ''; 
+end
+
+%% plot animal path
+if handles.gotPos
+        axes(handles.axes1);
+        hSPP = plot(handles.posX,handles.posY,'color',[.5 .5 .5]); 
+        set(hSPP,'hittest','off') 
+        set(gca,'ydir','reverse')
+        set(gca,'color',[.8 .8 .8],'xcolor',[.8 .8 .8],'ycolor',[.8 .8 .8],'box','off','buttondownfcn',@axes1_ButtonDownFcn)
+        axis(handles.mapLimits)
+        axis equal
+end
+
+%% get spike info
+handles.spikes = data.getSpikeTimes([handles.tetrode handles.cluster]);
+if handles.gotPos
+    handles.spikePos = data.getSpikePositions(handles.spikes,handles.posAve);
+end
+
+if handles.gotPos
+    %% calculate rate map
+    map = analyses.map([handles.posT handles.posX handles.posY], handles.spikes, 'smooth', handles.smoothing, 'binWidth', handles.binWidth, 'minTime', 0);
+    handles.map = map.z;
+    
+    %% calculate mean rate in Hz
+    handles.meanRate = analyses.meanRate(handles.spikes, handles.pos);
+    set(handles.text_meanRate, 'String', handles.meanRate);
+    
+    %% calculate peak rate in Hz
+    if ~isfield(map,'peakRate')
+        handles.peakRate = 0;
+    else
+        handles.peakRate = map.peakRate;
+    end
+    set(handles.text_peakRate, 'String', handles.peakRate);
+end
+
+%% calculate total spikes
+handles.totalSpikes = length(handles.spikes);
+set(handles.text_totalSpikes, 'String', handles.totalSpikes);
+
+%% calculate spike width
+try
+    handles.spikeWidth = halfMaxWidth(handles.userDir, handles.tetrode, handles.spikes);
+    set(handles.text_spikeWidth, 'String', round(handles.spikeWidth));
+catch
+    set(handles.text_spikeWidth, 'String', 0);
+end
+
+%% clear map stats
+set(handles.text_spatContent, 'String', '');
+set(handles.text_sparsity, 'String', '');
+set(handles.text_selectivity, 'String', '');
+set(handles.text_coherence, 'String', '');
+set(handles.text_fieldNo, 'String', '');
+set(handles.text_fieldMean, 'String', '');
+set(handles.text_fieldMax, 'String', '');
+
+guidata(hObject,handles);
+
+
 % --- Executes during object creation, after setting all properties.
 function text_meanRate_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_meanRate (see GCBO)
@@ -2496,5 +2682,157 @@ function text_spikeWidth_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to text_spikeWidth (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+function positions = blues(videoFile,handles)
+
+
+%% load targets
+% videoFile = 'O:\annikau\Test_tracking\2019-02-26_15-01-48_AttemptReflexion\VT1.nvt';
+fieldSelect = [1,0,0,0,1,0];
+getHeader = 0;
+extractMode = 1;
+[posT,targets] = io.neuralynx.Nlx2MatVT(videoFile,fieldSelect,getHeader,extractMode);
+posT = posT/1e6; % msec to sec
+dTargets = io.neuralynx.decodeTargets(targets);
+
+%% extract position
+% 1 - Luminance, 3 in targets
+% 2 - Pure Red, 7 in targets
+% 3 - Pure Green, 8 in targets
+% 4 - Pure Blue, 9 in targets
+% 5 - Raw Red, 4 in targets
+% 6 - Raw Green, 5 in targets
+% 7 - Raw Blue, 6 in targets
+blueInd = 9; % pure blue
+numSamp = size(dTargets,1);
+blueX = zeros(numSamp,1);
+blueY = zeros(numSamp,1);
+for i = 1:numSamp
+    ind = find(sum(dTargets(i,:,blueInd),3),1);
+    if ~isempty(ind)
+        blueX(i) = (dTargets(i,ind,1));
+        blueY(i) = (dTargets(i,ind,2));
+    end
+end
+    
+if length(blueX) ~= 1
+    ind = find(blueX == 0 & blueY == 0);
+    blueX(ind) = NaN;
+    blueY(ind) = NaN;
+end
+
+% % plot before cleaning
+% hold on
+% plot(blueX,blueY,'bo-')
+
+%% clean up
+p.distanceThreshold = 6;
+p.maxInterpolationGap = 1;
+p.posStdThreshold = 2.5;
+meanFilterOrder = 15;
+
+[blueX,blueY] = general.removePosJumps(blueX,blueY,p.distanceThreshold,p.posStdThreshold);
+blueX = helpers.fixIsolatedData(blueX);
+blueY = helpers.fixIsolatedData(blueY);
+[tmpPosx, tmpPosy] = general.interpolatePositions(posT,[blueX,blueY]);
+
+tmpPosx = medfilt1(tmpPosx', meanFilterOrder); % there should be no NaNs in input for medfilt1.
+tmpPosy = medfilt1(tmpPosy', meanFilterOrder);
+
+maxDiff = abs(nanmax(tmpPosx) - nanmax(tmpPosy));
+maxDiff_prev = abs(nanmax(blueX) - nanmax(blueY));
+diffPercentage = round(maxDiff / maxDiff_prev * 100);
+if maxDiff > 1000 || ((maxDiff > maxDiff_prev) && diffPercentage > 200)
+    warning('BNT:positionInQuestion', 'Seems that the interpolation of position samples have failed. Will remove suspicious values.');
+    minx = min(blueX);
+    maxx = max(blueX);
+    miny = min(blueY);
+    maxy = max(blueY);
+    badIndX = tmpPosx > maxx | tmpPosx < minx;
+    badIndY = tmpPosy > maxy | tmpPosy < miny;
+    tmpPosx(badIndX) = nan;
+    tmpPosy(badIndY) = nan;
+end
+blueX = tmpPosx;
+blueY = tmpPosy;
+clear tmpPosx tmpPosy;
+positions = [posT',blueX,blueY];
+negIdx = posT < 0;
+positions(negIdx,:) = [];
+
+%% scale to arena
+% XLIM = 100;
+% YLIM = 100;
+XLIM = handles.mapLimits(2)-handles.mapLimits(1);
+YLIM = handles.mapLimits(4)-handles.mapLimits(3);
+bntConstants.PosX = 2;
+bntConstants.PosY = 3;
+minX = nanmin(positions(:, bntConstants.PosX));
+maxX = nanmax(positions(:, bntConstants.PosX));
+minY = nanmin(positions(:, bntConstants.PosY));
+maxY = nanmax(positions(:, bntConstants.PosY));
+xLength = maxX - minX;
+yLength = maxY - minY;
+firstLedArenaIsBigger = true;
+scaleCoefX = XLIM / xLength;
+scaleCoefY = YLIM / yLength;
+if yLength == 1 || isinf(scaleCoefY)
+    % the data is probably from a VR linear track, thus all values along y-axis are the same.
+    scaleCoefY = 1;
+end
+% use single factor to scale positions in order to preserve distances between LEDs
+positions(:, bntConstants.PosX) = positions(:, bntConstants.PosX) * scaleCoefX;
+positions(:, bntConstants.PosY) = positions(:, bntConstants.PosY) * scaleCoefY;
+% This is more a hack. So far, scaling is disabled just for one
+% project where positions of different trials should be aligned
+% to a common value. Scaling and centring messes-up this allignment.
+% Centre the box in the coordinate system
+if firstLedArenaIsBigger
+    centre = general.centreBox(positions(:, bntConstants.PosX), positions(:, bntConstants.PosY));
+else
+    centre = general.centreBox(positions(:, bntConstants.PosX2), positions(:, bntConstants.PosY2));
+end
+positions(:, bntConstants.PosX) = positions(:, bntConstants.PosX) - centre(1);
+positions(:, bntConstants.PosY) = positions(:, bntConstants.PosY) - centre(2);
+
+
+%% speed filter (don't need for outside rat)
+% xIdx = bntConstants.PosX;
+% yIdx = bntConstants.PosY;
+% [startInd, endInd] = data.getRunIndices(s);
+% validInd = startInd:endInd;
+% 
+% sessionPos = positions(validInd, [bntConstants.PosT xIdx yIdx]);
+% 
+% % Indices of positions from LED1 that should be filtered
+% led1ToFilter = general.speedThreshold(sessionPos, speedFilter(1), speedFilter(2));
+% gBntData{gCurrentTrial}.numGoodSamplesFiltered(1) = length(led1ToFilter);
+% 
+% % Since we have only exact indices, make complete logical indices that can be used in
+% % logical operations (combination)
+% selected = false(1, size(sessionPos, 1));
+% selected(led1ToFilter) = true;
+% 
+% % NB! Time stays without NaNs since it should be continuous.
+% sessionPos(selected, 2:end) = nan;
+% positions(validInd, [xIdx yIdx]) = sessionPos(:, 2:end);
+% 
+% if size(positions, 2) > 3
+%     xIdx = bntConstants.PosX2;
+%     yIdx = bntConstants.PosY2;
+%     
+%     sessionPos = positions(validInd, [bntConstants.PosT xIdx yIdx]);
+%     
+%     led2ToFilter = general.speedThreshold(sessionPos, speedFilter(1), speedFilter(2));
+%     gBntData{gCurrentTrial}.numGoodSamplesFiltered(2) = length(led2ToFilter);
+%     
+%     selected = false(1, size(sessionPos, 1));
+%     selected(led2ToFilter) = true;
+%     
+%     % NB! Time stays without NaNs since it should be continuous.
+%     sessionPos(selected, 2:end) = nan;
+%     positions(validInd, [xIdx yIdx]) = sessionPos(:, 2:end);
+% end
 
 
