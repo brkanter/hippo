@@ -22,6 +22,9 @@
 %     'adjustAxis'  Flag that indicates whether axis should be adjusted to fit the data.
 %                   Default is TRUE. If FALSE, then function will just plot the data
 %                   in current axis. Adjustment involves setting new axis limits.
+%     'ydir'        Either 'normal' (default) or 'reverse' (useful when the
+%                   x and y coordinates correspond to spatial positions,
+%                   as video cameras can measure y in reverse direction)
 %    =========================================================================
 %
 function circularTurningBRK(data, varargin)
@@ -30,6 +33,7 @@ function circularTurningBRK(data, varargin)
     end
 
     adjustAxis = true;
+    ydir = 'normal';
 
     removeInd = [];
 
@@ -44,6 +48,11 @@ function circularTurningBRK(data, varargin)
         switch(lower(varargin{i})),
             case 'adjustaxis',
                 adjustAxis = varargin{i+1};
+                removeInd = [i i+1];
+                i = i + 2;
+                break;
+            case 'ydir',
+                ydir = varargin{i+1};
                 removeInd = [i i+1];
                 i = i + 2;
                 break;
@@ -115,7 +124,9 @@ function circularTurningBRK(data, varargin)
     hold on;
     %% BRK
     plot(x, y, varargin{:});
-    set(gca,'ydir','reverse')
+    if strcmpi(ydir,'reverse')
+        set(gca,'ydir','reverse')
+    end
     %%
         
     if adjustAxis

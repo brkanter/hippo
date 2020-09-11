@@ -521,15 +521,14 @@ if handles.gotPosHD && handles.checkbox_SPP.Value
     spikePosSort = spikePos(inds,:);
     spkcmap = zeros(length(vals),3);
     cmap = hsv(360);
-    colormap(gca,cmap);
     for iSpike = 1:length(vals)
         try
             spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
         catch
-            spkcmap(iSpike,:) = [0 0 0];
+            spkcmap(iSpike,:) = cmap(1,:);
         end
     end
-    hSPP = scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
+    hSPP = scatter(nanmean([spikePosSort(:,2),spikePosSort(:,4)],2),nanmean([spikePosSort(:,3),spikePosSort(:,5)],2),handles.marker,spkcmap,'filled');
     set(hSPP,'hittest','off')
 else
     hSPP = plot(handles.spikePos(:,2),handles.spikePos(:,3),'k.','MarkerSize',handles.marker);
@@ -640,10 +639,10 @@ for iCluster = 1:numClusters
             try
                 spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
             catch
-                spkcmap(iSpike,:) = [0 0 0];
+                spkcmap(iSpike,:) = cmap(1,:);
             end
         end
-        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled');
+        scatter(nanmean([spikePosSort(:,2),spikePosSort(:,4)],2),nanmean([spikePosSort(:,3),spikePosSort(:,5)],2),handles.marker,spkcmap,'filled');
     else
         spikePos = data.getSpikePositions(spikes,handles.posAve);
         plot(spikePos(:,2),spikePos(:,3),'k.','MarkerSize',Marker)
@@ -2044,13 +2043,13 @@ for iCluster = 1:numClusters
             try
                 spkcmap(iSpike,:) = cmap(round(vals(iSpike)),:);
             catch
-                spkcmap(iSpike,:) = [0 0 0];
+                spkcmap(iSpike,:) = cmap(1,:);
             end
         end
         plot(handles.posAve(:,2),handles.posAve(:,3),'color',[.5 .5 .5]);
         set(gca,'ydir','reverse')
         hold on
-        scatter(spikePosSort(:,2),spikePosSort(:,3),handles.marker,spkcmap,'filled')
+        scatter(nanmean([spikePosSort(:,2),spikePosSort(:,4)],2),nanmean([spikePosSort(:,3),spikePosSort(:,5)],2),handles.marker,spkcmap,'filled')
         cbar = colorbar;
         cbar.Ticks = linspace(0,1,5);
         cbar.TickLabels = num2cell(0:90:360);

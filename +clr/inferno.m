@@ -1,4 +1,4 @@
-function [cm_data]=inferno(m)
+function C = inferno(N)
 
 cm = [[  1.46159096e-03,   4.66127766e-04,   1.38655200e-02],
        [  2.26726368e-03,   1.26992553e-03,   1.85703520e-02],
@@ -257,13 +257,13 @@ cm = [[  1.46159096e-03,   4.66127766e-04,   1.38655200e-02],
        [  9.82257307e-01,   9.94108844e-01,   6.31017009e-01],
        [  9.88362068e-01,   9.98364143e-01,   6.44924005e-01]];
 if nargin < 1
-    cm_data = cm;
+    C = cm;
 else
     hsv=rgb2hsv(cm);
     hsv(144:end,1)=hsv(144:end,1)+1; % hardcoded
-    cm_data=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,m));
-    cm_data(cm_data(:,1)>1,1)=cm_data(cm_data(:,1)>1,1)-1;
-    cm_data=hsv2rgb(cm_data);
+    C=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,N));
+    C(C(:,1)>1,1)=C(C(:,1)>1,1)-1;
+    C=hsv2rgb(C);
   
 end
 end

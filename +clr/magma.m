@@ -1,4 +1,4 @@
-function [cm_data]=magma(m)
+function C = magma(N)
 
 cm = [[  1.46159096e-03,   4.66127766e-04,   1.38655200e-02],
     [  2.25764007e-03,   1.29495431e-03,   1.83311461e-02],
@@ -259,13 +259,13 @@ cm = [[  1.46159096e-03,   4.66127766e-04,   1.38655200e-02],
 
 
 if nargin < 1
-    cm_data = cm;
+    C = cm;
 else
     hsv=rgb2hsv(cm);
     hsv(170:end,1)=hsv(170:end,1)+1; % hardcoded
-    cm_data=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,m));
-    cm_data(cm_data(:,1)>1,1)=cm_data(cm_data(:,1)>1,1)-1;
-    cm_data=hsv2rgb(cm_data);
+    C=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,N));
+    C(C(:,1)>1,1)=C(C(:,1)>1,1)-1;
+    C=hsv2rgb(C);
   
 end
 end

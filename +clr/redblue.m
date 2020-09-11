@@ -1,4 +1,4 @@
-function c = redblue(m)
+function C = redblue(N)
 %REDBLUE    Shades of red and blue color map
 %   REDBLUE(M), is an M-by-3 matrix that defines a colormap.
 %   The colors begin with bright blue, range through shades of
@@ -15,11 +15,11 @@ function c = redblue(m)
 
 %   Adam Auton, 9th October 2009
 
-if nargin < 1, m = size(get(gcf,'colormap'),1); end
+if nargin < 1, N = size(get(gcf,'colormap'),1); end
 
-if (mod(m,2) == 0)
+if (mod(N,2) == 0)
     % From [0 0 1] to [1 1 1], then [1 1 1] to [1 0 0];
-    m1 = m*0.5;
+    m1 = N*0.5;
     r = (0:m1-1)'/max(m1-1,1);
     g = r;
     r = [r; ones(m1,1)];
@@ -27,7 +27,7 @@ if (mod(m,2) == 0)
     b = flipud(r);
 else
     % From [0 0 1] to [1 1 1] to [1 0 0];
-    m1 = floor(m*0.5);
+    m1 = floor(N*0.5);
     r = (0:m1-1)'/max(m1,1);
     g = r;
     r = [r; ones(m1+1,1)];
@@ -35,5 +35,5 @@ else
     b = flipud(r);
 end
 
-c = [r g b]; 
+C = [r g b]; 
 

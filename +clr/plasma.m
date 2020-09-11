@@ -1,4 +1,4 @@
-function cm_data=plasma(m)
+function C = plasma(N)
 
 cm = [[  5.03832136e-02,   2.98028976e-02,   5.27974883e-01],
        [  6.35363639e-02,   2.84259729e-02,   5.33123681e-01],
@@ -258,13 +258,13 @@ cm = [[  5.03832136e-02,   2.98028976e-02,   5.27974883e-01],
        [  9.40015097e-01,   9.75158357e-01,   1.31325517e-01]];
    
 if nargin < 1
-    cm_data = cm;
+    C = cm;
 else
     hsv=rgb2hsv(cm);
     hsv(153:end,1)=hsv(153:end,1)+1; % hardcoded
-    cm_data=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,m));
-    cm_data(cm_data(:,1)>1,1)=cm_data(cm_data(:,1)>1,1)-1;
-    cm_data=hsv2rgb(cm_data);
+    C=interp1(linspace(0,1,size(cm,1)),hsv,linspace(0,1,N));
+    C(C(:,1)>1,1)=C(C(:,1)>1,1)-1;
+    C=hsv2rgb(C);
   
 end
 end

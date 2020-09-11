@@ -24,8 +24,18 @@ end
 oldMin = nanmin(dataInput(:));
 oldMax = nanmax(dataInput(:));
 
+if isempty(newMin)
+    newMin = oldMin;
+end
+if isempty(newMax)
+    newMax = oldMax;
+end
+
 %% get ranges
 newRange = newMax - newMin;
+if newRange < 0
+    warning('New range has greater minimum than maximum! Values are inverted!')
+end
 oldRange = oldMax - oldMin;
 
 %% rescale

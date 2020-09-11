@@ -27,7 +27,7 @@
 %    'bar'         draw a color bar (default = 'off')
 %    'ydir'        either 'normal' (default) or 'reverse' (useful when the
 %                  x and y coordinates correspond to spatial positions,
-%                  as video cameras measure y in reverse direction)
+%                  as video cameras can measure y in reverse direction)
 %    'pubQual'**   interpolate map for finer smoothing,
 %                  either 0 (default) or 1
 %    'aspectRat'** set aspect ratio to something other than square (default)
@@ -66,8 +66,8 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
     drawBar = 0;
     [y, x] = size(data);
     x = 1:x; y = 1:y;
-%     ydir = 'normal';
-    ydir = 'reverse';
+    ydir = 'normal';
+%     ydir = 'reverse';
     scaleBar = 0;
     hSurf = 0;
     pubQual = 0;
@@ -160,7 +160,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         colormap(a,clrMap)
     else
 %         colormap(a,jet(64));
-        colormap(a,viridis(64));
+        colormap(a,clr.viridis(64));
     end
     cmap = colormap(gca);
     %%
@@ -170,7 +170,7 @@ function [scaleBar, hSurf] = colorMapBRK(data, dimm, varargin)
         numBinsX = size(inputMap,1);
         numBinsY = size(inputMap,2);
         data2 = inpaint_nans(inputMap);                      % guess at what nans would have been
-        [xi, yi] = meshgrid(1:0.5:numBinsX,1:0.5:numBinsY);  % make a finer grid
+        [xi, yi] = meshgrid(1:0.1:numBinsX,1:0.1:numBinsY);  % make a finer grid
         z = interp2(inputMap,xi,yi,'nearest');               % track nans to be filled back in
         z2 = interp2(data2,xi,yi,'bicubic');                 % interpolate image onto finer grid
         mask = isnan(z);                                     % fill nans back into image

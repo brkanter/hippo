@@ -98,7 +98,7 @@ def.xNames = [];
 def.showMM = false;
 def.xValues = [];
 def.distributionIdx = [];
-def.distributionColors = 'k';
+def.distributionColors = 'w';
 def.distributionMarkers = '.';
 def.xMode = 'manual';
 def.xyOri = 'normal';
@@ -107,6 +107,7 @@ def.categoryColors = [];
 def.categoryMarkers = '';
 def.yLabel = '';
 def.spreadWidth = [];
+def.markerSize = 12;
 
 %% CHECK INPUT
 
@@ -151,6 +152,7 @@ if ~isempty(varargin) && ~ischar(varargin{1}) && ~isstruct(varargin{1})
     opt.categoryMarkers = def.distributionMarkers;
     opt.yLabel = '';
     opt.spreadWidth = def.spreadWidth;
+    opt.markerSize = def.markerSize;
     
     for fn = fieldnames(def)'
         if ~isfield(opt,fn{1})
@@ -468,7 +470,7 @@ for iData = 1:nData
                     ph(iData,iCategory) = plot(ah,data(currentIdx,1),...
                         data(currentIdx,2),...
                         'marker',plotMarkers{iData,iCategory},...
-                        'markersize',12,...
+                        'markersize',opt.markerSize,...
                         'color',plotColors{iData,iCategory},...
                         'lineStyle','none',...
                         'DisplayName',plotLabels{iData,iCategory});
@@ -476,7 +478,7 @@ for iData = 1:nData
                     ph(iData,iCategory) = plot(ah,data(currentIdx,2),...
                         data(currentIdx,1),...
                         'marker',plotMarkers{iData,iCategory},...
-                        'markersize',12,...
+                        'markersize',opt.markerSize,...
                         'color',plotColors{iData,iCategory},...
                         'lineStyle','none',...
                         'DisplayName',plotLabels{iData,iCategory});
@@ -547,32 +549,32 @@ if opt.showMM
     switch opt.xyOri
         case 'normal'
             if any(opt.showMM==[1,2])
-                mh = plot(ah,opt.xValues,m,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,opt.xValues,m,'+r','Color','r','markersize',opt.markerSize);
             end
             if any(opt.showMM==[1,3])
-                mdh = plot(ah,opt.xValues,md,'sg','MarkerSize',12);
+                mdh = plot(ah,opt.xValues,md,'sg','markersize',opt.markerSize);
             end
             if opt.showMM == 4
-                mh = plot(ah,opt.xValues,m,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,opt.xValues,m,'+r','Color','r','markersize',opt.markerSize);
                 mdh = myErrorbar(ah,opt.xValues,m,sem);
             end
             if opt.showMM == 5
-                mh = plot(ah,opt.xValues,m,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,opt.xValues,m,'+r','Color','r','markersize',opt.markerSize);
                 mdh = myErrorbar(ah,opt.xValues,m,sd);
             end
         case 'flipped'
             if any(opt.showMM==[1,2])
-                mh = plot(ah,m,opt.xValues,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,m,opt.xValues,'+r','Color','r','markersize',opt.markerSize);
             end
             if any(opt.showMM==[1,3])
-                mdh = plot(ah,md,opt.xValues,'sg','MarkerSize',12);
+                mdh = plot(ah,md,opt.xValues,'sg','markersize',opt.markerSize);
             end
             if opt.showMM == 4
-                mh = plot(ah,m,opt.xValues,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,m,opt.xValues,'+r','Color','r','markersize',opt.markerSize);
                 mdh = myErrorbar(ah,m,opt.xValues,[sem,NaN(size(sem))]);
             end
             if opt.showMM == 5
-                mh = plot(ah,m,opt.xValues,'+r','Color','r','MarkerSize',12);
+                mh = plot(ah,m,opt.xValues,'+r','Color','r','markersize',opt.markerSize);
                 mdh = myErrorbar(ah,m,opt.xValues,[sd,NaN(size(sd))]);
             end
     end
