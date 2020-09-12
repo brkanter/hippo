@@ -66,6 +66,7 @@ function handles = plotSpread(varargin)
 %                the other axis.
 %       yLabel : string with label for y-axis. Default : ''
 %       ah  : handles of axes into which to plot
+%       markerSize : custom marker size. Default : 12 (added by BRK)
 %
 % OUTPUT handles: 3-by-1 cell array with handles to distributions,
 %          mean/median etc, and the axes, respectively
@@ -90,6 +91,8 @@ function handles = plotSpread(varargin)
 % created by: jonas
 % DATE: 11-Jul-2009
 %
+% modified by: BRK
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 def.binWidth = 0.1;
@@ -98,7 +101,7 @@ def.xNames = [];
 def.showMM = false;
 def.xValues = [];
 def.distributionIdx = [];
-def.distributionColors = 'w';
+def.distributionColors = 'b';
 def.distributionMarkers = '.';
 def.xMode = 'manual';
 def.xyOri = 'normal';
@@ -107,7 +110,15 @@ def.categoryColors = [];
 def.categoryMarkers = '';
 def.yLabel = '';
 def.spreadWidth = [];
+
+% BRK style modifications
+% color theme depends on figure background color
+def.distributionColors = 'k';
+if sum(get(groot,'defaultfigurecolor')) < 0.7
+    def.distributionColors = ones(1,3)*0.8;
+end
 def.markerSize = 12;
+%
 
 %% CHECK INPUT
 
