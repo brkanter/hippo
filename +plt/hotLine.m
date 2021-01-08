@@ -42,7 +42,7 @@ function hotLine(x,y,z,c,w,m)
 %% check inputs
 
 % must be 1D
-if ~any(size(x) == 1) | ~any(size(x) == 1) | ~any(size(x) == 1) | ~any(size(x) == 1)
+if ~any(size(x) == 1) | ~any(size(y) == 1) | ~any(size(z) == 1) | ~any(size(c) == 1)
     error('Input arguments x, y, z, and c must be one-dimensional.')
 end
 

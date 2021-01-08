@@ -1,4 +1,4 @@
-function C = pastel2(N)
+function C = pastel2
 %pastel2 colormap from ColorBrewer
   
 

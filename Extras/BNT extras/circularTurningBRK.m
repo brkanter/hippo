@@ -121,7 +121,7 @@ function circularTurningBRK(data, varargin)
         axis([axisMin axisMax axisMin axisMax]);
     end
 
-    hold on;
+%     hold on;
     %% BRK
     plot(x, y, varargin{:});
     if strcmpi(ydir,'reverse')
@@ -133,8 +133,8 @@ function circularTurningBRK(data, varargin)
         line([axisMin axisMax], [0 0], 'LineWidth', 0.5, 'color', 'k'); % x-axis
         line([0 0], [axisMin axisMax], 'linewidth', 0.5, 'color', 'k'); % y-axis
 
-        hold off;
+%         hold off;
         axis off;
     end
-    hold off;
+%     hold off;
 end
