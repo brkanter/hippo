@@ -21,11 +21,17 @@ Clone or download from here: https://github.com/brkanter/hippo
 ### Toolbox contents
 
 +calc: specific analyses (e.g. spike width, object responses, theta phase)
+
 +examples: examples and instructions (probably very outdated)
+
 +extract: extracting data of interest
+
 +meta: analyzing multiple recording sessions or entire projects
+
 +minions: helper functions
+
 +plt: plotting functions
+
 Extras: various things from MathWorks File Exchange, and some modifications/additions to BNT functions
 
 ### Parameters
@@ -40,13 +46,8 @@ Ensure that your parameters are correct by typing hippoGlobe at the command line
 
 Type exploreDataBNT at the command line and select a recording session where you have already cut some clusters. The data will be loaded by BNT, and you should see a plot with the path of the animal and a list of all the clusters that were found. Note that you did not have to explicitly make a BNT input file; it was created automatically for you by Hippo. Now that the data is loaded, you can use any BNT functions you like to explore your data (e.g. data.getPositions, data.getSpikeTimes, analyses.map). Try combining BNT and Hippo functions like this:   calc.ISI(data.getSpikeTimes([2 1]),1);
 
-Penguin is a graphical user interface for analyzing data from a single recording session. Type penguin at the command line to get started. There should be no instructions needed, as the interface is designed to be intuitive and user-friendly. Simply load data by clicking Video folder or MClust. The latter (from VF) loads data directly from an open MClust session and will include all clusters exported to the MClust main window, even if they are not yet saved.
+Penguin is a graphical user interface for analyzing data from a single recording session. Type penguin at the command line to get started. There should be no instructions needed, as the interface is designed to be intuitive and user-friendly. Simply load data by clicking Video folder or MClust. The latter loads data directly from an open MClust session and will include all clusters exported to the MClust main window, even if they are not yet saved.
 
 Perhaps the highlight of Hippo is its meta analysis capabilities. Preprocess all of your data from an experiment (or more than one) using emperorPenguin, which outputs an Excel file of your results. You could stop here and look at the data in Excel, but at this point you don’t have access to things like rate maps. When you’re ready to look at many experiments together, follow the steps provided in examples.metaAnalysisWorkflow to get your data back into MATLAB. Soon you will have all of your data in a single neat MATLAB array. See examples.analysisIntro for a full guide explaining how to quickly extract the information you want from this array.
 
-### Help
-
-Help is provided at the top of all Hippo files. Simply type help filename at the command line or open the .m file.
-
-For bug reports, questions, comments, and suggestions, please contact BRK: brkanter (at) gmail (dot) com).
-
+Creator and main developer: Benjamin R. Kanter (brkanter (at) gmail (dot) com)
