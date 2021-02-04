@@ -5,9 +5,12 @@
 %
 % Written by BRK 2015. Please distribute and modify freely.
 
-function [X,Y] = ginputSmooth()
+function [X,Y] = ginputSmooth(maxPts)
 
 % initialize coordinate vectors and handles structure
+if nargin == 0
+    maxPts = 15;
+end
 X = [];
 Y = [];
 finalData = [];
@@ -54,9 +57,9 @@ set(gcf,'windowbuttondownfcn',@click);
             Y = finalData.y;
             % limit number of stored coordinates to save memory
             totalPoints = length(X);
-            if totalPoints > 15
-                X = X(1:round(totalPoints/15):end);
-                Y = Y(1:round(totalPoints/15):end);
+            if totalPoints > maxPts
+                X = X(1:round(totalPoints/maxPts):end);
+                Y = Y(1:round(totalPoints/maxPts):end);
             end
             % need to alter fig property to trigger resume of waitfor
             set(gcf,'UserData',datestr(now))
